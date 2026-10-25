@@ -1,6 +1,12 @@
-# 09 · What this research establishes, and what comes next
+# 09 · Findings and next steps
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/09-learnings.html).
+
+> **At a glance**
+>
+> - **Question:** What is established, and which experiment should come next?
+> - **Result:** Recompilation, reverse engineering and runtime tests solved different parts of the problem; rendering and multiplayer prototypes now have bounded evidence.
+> - **Still open:** Prioritize current-phone tests, menu cost, full game journeys and end-to-end multiplayer acceptance before making broader release claims.
 
 **Report date: 2026-10-25.** Recompilation made the original game executable in a new environment. Reverse engineering made specific behavior understandable enough to change. The research has produced useful rendering and multiplayer prototypes, alongside clear evidence that a working fixture is not yet a complete game integration.
 
@@ -12,7 +18,7 @@ Ghidra with the PS2 extension helped recover those meanings from the original ex
 
 The effective loop was: reproduce a symptom, trace the responsible instructions, make a narrow change, compare controlled behavior, then test ordinary interaction. The failed Start press demonstrated why that final step matters: a successful throughput benchmark still missed a real input defect.
 
-## Evidence has a boundary
+## What the evidence supports
 
 | Area | Supported by retained evidence | Not yet established |
 | --- | --- | --- |
@@ -24,7 +30,7 @@ The effective loop was: reproduce a symptom, trace the responsible instructions,
 
 The detailed limits and source hashes are in [rendering findings](../evidence/rendering-findings.json), [network findings](../evidence/network-findings.json) and the preceding chapters. These are curated records of previous work; assembling this report did not rerun the game.
 
-## Priorities for the next implementation stage
+## What to implement next
 
 1. **Validate the current phone build.** Record ordinary boot, menu, selection and battle with stable windows, current browser cadence and running audio. Compare the same scene at fixed 60 and Auto, including fullscreen and a longer warm-device session. Distinguish computation, shown callbacks and physical display evidence.
 2. **Resolve the menu bottleneck.** Capture the command observer on the affected phone before modifying batching. If many small batches are implicated, prove texture and framebuffer dependencies, compare images and VRAM, and retain the conservative fallback. Fast desktop menus cannot demonstrate a phone fix.

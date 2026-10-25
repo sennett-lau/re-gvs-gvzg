@@ -1,10 +1,16 @@
-# 08 — Two devices, one synchronized match
+# 08 · Multiplayer route B: a game on each device
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/08-independent-clients.html).
 
-**Report date: 2026-10-25.** The second multiplayer route runs a game locally on each device. A relay exchanges inputs and state checks; it sends no video. The working prototype uses the original local two-player Arcade challenge fixture. It does **not** restore the main menu's **通信対戦 / Network Battle** service, and it has not completed the selection-to-rematch integration.
+> **At a glance**
+>
+> - **Question:** Can each player run the game locally while both copies agree on the match?
+> - **Result:** The 60-Hz input-sync prototype passed bounded state comparisons after disc-completion timing was corrected.
+> - **Still open:** Selection, results and rematch are not integrated. Restoring the original Network Battle service is an option within this route, not a completed feature.
 
-## Establishing a real two-player fixture
+**Route B runs a copy of the game on each device.** A relay exchanges inputs and state checks; it sends no video. The working prototype uses the original local two-player Arcade challenge fixture. It does **not** restore the main menu's **通信対戦 / Network Battle** service, and it has not completed the selection-to-rematch integration. This chapter reviews the available evidence on 2026-10-25.
+
+## Start with two independently controlled players
 
 Connecting two pad slots was insufficient evidence. Native tests first compared neutral input with P1-only and P2-only movement and firing. Each port changed its assigned human actor, while the other human's position and ammunition matched the neutral run at all 181 sampled boundaries. The fixture places the two human players on opposing sides, each with a CPU partner, using the game's original vertical split screen.
 
@@ -12,7 +18,7 @@ Two native processes then executed 300 frames through an HTTP input relay, with 
 
 These tests establish actor ownership and a bounded deterministic baseline. They do not prove browser or cross-device agreement. In the browser prototype, each client still renders the original two-player scene; CSS displays its own half. This provides separate views without a new full-width camera renderer or a reduction to rendering only one player view.
 
-## Why startup stopped, and why the first repair was insufficient
+## Fix startup failures and state mismatches
 
 The transport assigns player slots, agrees on build and initial-state identities, buffers future inputs and waits for the shared input pair before each 60 Hz simulation tick. It periodically compares full-RAM hashes. Missing input pauses progress; mismatches stop the session. There is no rollback or mid-match resynchronization.
 
@@ -45,7 +51,14 @@ The compatible [zdxsv server](https://github.com/inada-s/zdxsv/tree/35ffbdad9257
 
 Changing a hostname is therefore insufficient. The original connection calls still need mapping to a browser-compatible runtime bridge. Server-supplied R5900 patches also need review: writing guest machine code does not prove the static translation will execute the new behavior.
 
-Two integrations remain possible. A browser-owned lobby can intercept the menu handoff and launch the existing input-sync route. Alternatively, restoring the original lobby needs its actual network/session bridge and compatible backend. The first is a shorter implementation path; neither has yet been completed. An invitation should identify the chosen server and room, while a short code would only make sense within that server.
+There are two ways to integrate the game's online menu within route B:
+
+| Integration option | Work needed | Current status |
+| --- | --- | --- |
+| Browser-owned lobby | Intercept the menu handoff, agree on settings, then launch the existing input-sync route | The shorter proposed path; not integrated |
+| Restore the original lobby | Bridge the original network/session calls to a compatible backend | Original behavior has been inspected; no working connection has been demonstrated |
+
+Both belong to the independent-client route. An invitation should identify the chosen server and room, while a short code would only make sense within that server.
 
 ## What Co-op Anything contributes
 
@@ -53,7 +66,7 @@ The pinned [Co-op Anything review target](https://github.com/cranebeaker/coop-an
 
 Rendering interpolation is useful observability, but positions alone are not a replication schema. Projectiles, damage, randomness, ownership, timers and transitions must also agree. New cooperative rules would additionally require teams, spawning, AI, camera, HUD and win/loss work. Neither transport makes campaign co-op appear automatically.
 
-## The next integration gate
+## What to integrate and test next
 
 First expose the proven 60 Hz fixture through a full-game launcher entry. Replace its fixed battle start with agreed selection/settings, then prove a complete battle, results, rematch and cancellation with matching checkpoints. Repeat with delayed loading and an actual phone. Personal memory-card state must not silently alter initialization.
 

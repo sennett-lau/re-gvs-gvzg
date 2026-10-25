@@ -1,10 +1,16 @@
-# 07 — One host, two remote controllers
+# 07 · Multiplayer route A: one host, two controllers
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/07-host-streaming.html).
 
-**Report date: 2026-10-25.** Streaming is the first multiplayer route: one browser runs the game, while two other devices receive its picture and sound and send controller input. The implementation exists in the research working tree. A user reported that two devices controlled the same screen. A retained, complete match with a separate host and two remote clients, measured latency and disconnect recovery is still missing.
+> **At a glance**
+>
+> - **Question:** Can two devices play while a separate host does the game computation?
+> - **Result:** The host streams one game’s picture and sound; clients send input to separate controller ports. Two-device control was reported working.
+> - **Still open:** A complete host-plus-two-client match, latency measurements and reconnect tests have not been retained. The current connection path requires TURN.
 
-## The problem and the chosen boundary
+**Route A puts all game computation on one host.** Two other devices receive its picture and sound and send controller input. The implementation exists in the research working tree, and a user reported that two devices controlled the same screen. A complete host-plus-two-client match, measured latency and disconnect recovery still need a retained test record. This chapter reviews the available evidence on 2026-10-25.
+
+## Move game computation to a host
 
 A phone that struggles to execute the translated PS2 game can still be a useful remote player. Moving game computation to a stronger host changes its workload: the phone decodes video, plays audio and captures controls. It no longer executes the game WASM. This addresses the location of computation; it does not remove encoding, network or decoding delay.
 
@@ -43,15 +49,15 @@ Both WebRTC endpoints currently force `iceTransportPolicy: 'relay'`. This implem
 
 The source references and an explicitly selected implementation summary are retained in [network-findings.json](../evidence/network-findings.json). They describe inspected code; they are not a new runtime benchmark.
 
-## What has actually been demonstrated
+## What has been tested
 
 The user's two-device observation is encouraging evidence for connection and input, but does not establish latency, image quality, every character combination or a full match. Separately, native experiments proved that the original Arcade challenge fixture has two independently controlled opposing players. That result establishes a usable game mode; it does not turn the streaming observation into a completed end-to-end acceptance test.
 
-Both streamed clients seeing the same screen is expected. If the game renders split-screen, both currently receive that split-screen picture. Sending each device a cropped view is a possible extension, with another choice between cropping before transmission and cropping on the receiver. Neither should be described as a new independent camera. The separate-client prototype already uses a page crop, but that implementation belongs to the other route.
+**Both streamed clients receive the same game picture.** If the game renders split-screen, both currently receive that split-screen picture. Sending each device a cropped view is a possible extension, with another choice between cropping before transmission and cropping on the receiver. Neither should be described as a new independent camera. The separate-client prototype already uses a page crop, but that implementation belongs to the other route.
 
 The adaptive renderer also does not automatically create a 120 FPS stream. Capture, encoding, network delivery, receiver decoding and physical display refresh each impose their own limits. Raising the current 60 FPS capture setting without measuring those stages would only change a request.
 
-## Decision and next proof
+## What to integrate and test next
 
 Retain streaming as the lower-complexity route for friends whose client devices cannot run the game smoothly. Keep its source and acceptance work separate from the independent-client proof of concept until they are integrated into the full-game launcher.
 
