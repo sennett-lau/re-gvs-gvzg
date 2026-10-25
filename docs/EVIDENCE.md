@@ -35,10 +35,24 @@ AI agents assisted code investigation, test preparation and writing. Claims in t
 
 ## Checks performed while assembling this report
 
-The report's local checker parses the curated JSON, resolves Markdown and generated-reader links/anchors, checks for selected privacy markers and rejects accidental game payloads or oversized ordinary-Git files. It also checks that each chapter's summary sentences survive Markdown-to-HTML conversion. It is a bounded check, not an exhaustive anonymization guarantee. Run `npm run check` after building the reader in a Git checkout; `node scripts/check-report.mjs --source-only` defers reader links until a build exists. A private comma-separated `REPORT_FORBIDDEN_TERMS` environment value can add project-specific wording checks without storing those terms in the report.
+The local checker parses the curated JSON and resolves Markdown and reader links, including anchors. It checks selected privacy markers and rejects accidental game payloads or oversized files. It also checks that chapter summaries and callout text survive conversion to HTML. Each callout must retain its evidence limits inside the same block.
 
-During assembly, 69 unique original-source SHA-256 fingerprints matched the retained files. The redesigned reader passed **90 layout checks across all 18 pages** at widths of 320, 390, 768, 1,024 and 1,440 pixels. Each chapter summary was present at every width. The stage and Evidence navigation, keyboard-operated mobile menu, active-section outline, reading progress and expandable source trail were exercised, alongside the slider, repeat/interpolate comparison, budget selector and architecture switch.
+These are bounded checks. They do not guarantee exhaustive anonymization. Run `npm run check` after building the reader in a Git checkout. Use `node scripts/check-report.mjs --source-only` to defer reader checks until a build exists. A private comma-separated `REPORT_FORBIDDEN_TERMS` environment value can add wording checks without storing those terms in the report.
 
-With JavaScript disabled, the full chapter, summary, static figure and native navigation remained available. No page exception or failed HTTP response was observed in that reader test. A separate negative control removed a summary from generated HTML and confirmed that the checker rejected the missing content; the generated file was then restored. This guards against a conversion bug where removing the reader hint also removed an adjacent summary.
+During assembly, 69 unique original-source SHA-256 fingerprints matched the retained files. The revised reader passed these checks:
+
+| Reader check | Result |
+| --- | --- |
+| Page layout | 95 checks across all 19 pages, at widths of 320, 390, 768, 1,024 and 1,440 pixels |
+| Chapter summaries | All nine summaries appeared at all five widths |
+| Callouts | All 10 blocks appeared at all five widths, with their evidence limits |
+| Navigation | Stage links, Evidence links, keyboard mobile menu, section tracking and source disclosure passed |
+| Interactive figures | Slider, keyboard input, repeat/interpolate comparison, budget selector and architecture switch passed |
+| JavaScript disabled | Full chapter, summary, callout, static figure and native navigation remained available |
+| Page and HTTP errors | None observed in this reader test |
+
+Negative controls removed a summary and a callout limitation from generated HTML. The checker rejected both missing-content cases. Each test restored the generated file afterward. These checks guard against losing content during conversion, including an earlier bug that removed a summary with its adjacent reader hint.
+
+The wording review preserved the chapters' existing numeric values and code identifiers. It checked descriptive sentence length and paragraph length. The [writing guide](WRITING.md) records the rules for future edits.
 
 These checks validate the report artifact and its reading interface. They do not add a new game, phone, audio or multiplayer performance result to the historical research.

@@ -16,6 +16,7 @@ const counts = {
   json: 0,
   markdown: 0,
   html: 0,
+  callouts: 0,
   links: 0,
   pendingWikiLinks: 0,
 };
@@ -285,6 +286,45 @@ function checkChapterBrief(source) {
   }
 }
 
+function checkCalloutContent(source) {
+  const name = relative(source);
+  const output =
+    name === "README.md"
+      ? "index.html"
+      : name.startsWith("docs/chapters/")
+        ? path.basename(name, ".md") + ".html"
+        : name.replace(/\.md$/, ".html");
+  const file = path.join(wiki, output);
+  if (!fs.existsSync(file)) return;
+  const plain = (html) =>
+    decodeEntities(html.replace(/<[^>]*>/g, " "))
+      .replace(/\s+/g, " ")
+      .trim();
+  const html = read(file);
+  const bodies = [
+    ...html.matchAll(
+      /<aside\b[^>]*class="research-callout[^>]*>([\s\S]*?)<\/aside>/g,
+    ),
+  ].map((match) => plain(match[1]));
+  const expected = [];
+  marked.walkTokens(marked.lexer(read(source)), (token) => {
+    if (token.type !== "blockquote") return;
+    const marker = /^\[!(IMPORTANT|NOTE|TIP)\][ \t]*(?:\n|$)/.exec(token.text);
+    if (marker)
+      expected.push(plain(marked.parse(token.text.slice(marker[0].length))));
+  });
+  if (bodies.length !== expected.length)
+    fail(file, "callout count differs from the Markdown source");
+  for (const content of expected) {
+    if (!bodies.some((body) => body.includes(content)))
+      fail(
+        file,
+        "callout text or evidence limit missing from its generated block",
+      );
+  }
+  counts.callouts += expected.length;
+}
+
 let files = [];
 try {
   files = [
@@ -370,6 +410,8 @@ if (!sourceOnly) {
     file.endsWith(".md"),
   ))
     checkChapterBrief(source);
+  for (const source of files.filter((file) => file.endsWith(".md")))
+    checkCalloutContent(source);
 }
 
 if (errors.length) {
@@ -378,7 +420,7 @@ if (errors.length) {
   process.exitCode = 1;
 } else {
   console.log(
-    `Report checks passed: ${counts.files} files, ${counts.json} JSON documents, ${counts.markdown} Markdown documents, ${counts.html} HTML pages, ${counts.links} local references.`,
+    `Report checks passed: ${counts.files} files, ${counts.json} JSON documents, ${counts.markdown} Markdown documents, ${counts.html} HTML pages, ${counts.callouts} callouts, ${counts.links} local references.`,
   );
   if (sourceOnly)
     console.log(
