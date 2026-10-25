@@ -1,0 +1,652 @@
+{
+  "schema_version": 1,
+  "reviewed_on": "2026-10-25",
+  "scope": "Curated derived research evidence, not raw capture exports. Source paths are relative to the original ps2-web-recomp working tree; they need not exist in this report repository.",
+  "reproduction": "No gameplay was rerun for report compilation. Private originals are identified by hashes; this file preserves selected claims and limits, not complete independent reproduction.",
+  "records": [
+    {
+      "id": "R01",
+      "title": "Rate-only and countdown-only failures",
+      "original_working_tree_sources": [
+        {
+          "path": "games/gundam-vs-z-gundam/fps-research/validated/results.json",
+          "sha256": "dc7e0b61b34ffef2ba543eba8c28ce8fe93b370bf3e0dbe75a5bb76314556c65"
+        },
+        {
+          "path": "docs/gundam-high-fps-research.md",
+          "sha256": "2f8af2e1b4ff5056f0bfbab5f224063f2674585c18095dc3907b8781a54b394e"
+        }
+      ],
+      "extraction_method": "Allowlisted fields from the first five validated metrics rows; interpretation checked against the source report.",
+      "findings": {
+        "runs": [
+          {
+            "run": "rate-only-60",
+            "virtual_hz": 60,
+            "vblank_intervals": 300,
+            "guest_seconds": 5.00000411309,
+            "battle_updates": 300,
+            "timer_ticks_elapsed": 300,
+            "audio_samples": 240000
+          },
+          {
+            "run": "rate-only-120",
+            "virtual_hz": 120,
+            "vblank_intervals": 600,
+            "guest_seconds": 5.00000822279,
+            "battle_updates": 600,
+            "timer_ticks_elapsed": 600,
+            "audio_samples": 240000
+          },
+          {
+            "run": "rate-only-144",
+            "virtual_hz": 144,
+            "vblank_intervals": 720,
+            "guest_seconds": 5.00001004367,
+            "battle_updates": 720,
+            "timer_ticks_elapsed": 720,
+            "audio_samples": 240000
+          },
+          {
+            "run": "timer-control-120",
+            "virtual_hz": 120,
+            "vblank_intervals": 600,
+            "guest_seconds": 5.00000822279,
+            "battle_updates": 600,
+            "timer_ticks_elapsed": 300,
+            "audio_samples": 240000
+          },
+          {
+            "run": "timer-control-144",
+            "virtual_hz": 144,
+            "vblank_intervals": 720,
+            "guest_seconds": 5.00001004367,
+            "battle_updates": 720,
+            "timer_ticks_elapsed": 300,
+            "audio_samples": 240000
+          }
+        ],
+        "interpretation": "120 and144 rate-only loops accelerate gameplay by2x and2.4x. Countdown-only controls do not fix movement."
+      },
+      "limits": [
+        "Simulated duration, not sustained real-time throughput.",
+        "One saved battle; no whole-game compatibility proof."
+      ]
+    },
+    {
+      "id": "R02",
+      "title": "Native rendering split and interpolation",
+      "original_working_tree_sources": [
+        {
+          "path": "games/gundam-vs-z-gundam/fps-research/render-validated-final/results.json",
+          "sha256": "fad58c934e992276500dc2f3d7899431f52d9205f64e2bdd3a502faa99e828d0"
+        },
+        {
+          "path": "docs/gundam-120fps-prototype.md",
+          "sha256": "057228f3388bf743f7763b7510608cb708c499731eb709a5c2054c253c8d496a"
+        }
+      ],
+      "extraction_method": "Selected numerical comparison and image counts from result JSON; bounded semantics from the source report.",
+      "findings": {
+        "passed": true,
+        "run_count": 16,
+        "aligned_comparisons": 6852,
+        "state_mismatches": 0,
+        "clock_mismatches": 0,
+        "image_checks": {
+          "movement60": {
+            "captures": 121,
+            "unique_images": 121,
+            "adjacent_duplicates": 0
+          },
+          "movement120": {
+            "captures": 241,
+            "unique_images": 241,
+            "adjacent_duplicates": 0
+          },
+          "repeat120": {
+            "captures": 241,
+            "unique_images": 122,
+            "adjacent_duplicates": 119
+          }
+        },
+        "presentation_history_delay_ms": 16.666666666666668
+      },
+      "limits": [
+        "Tracked fields, not whole-game equality.",
+        "Offline unique captures do not measure physical display refresh.",
+        "World-space interpolation and unhandled effects retain limitations."
+      ]
+    },
+    {
+      "id": "R03",
+      "title": "Variable and continuous cadence",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-adaptive-render/README.md",
+          "sha256": "065148010a9c9740faf4925a9fc06de8d795d1caf742e8bfee32a27430dce7e6"
+        },
+        {
+          "path": "web/adaptive-render-policy.js",
+          "sha256": "d5ce21aaed97df5e3e73910c93c5b86ea679a658717ad7bdc8f416289bb6c12b"
+        },
+        {
+          "path": "web/cadence-debt-pacing.js",
+          "sha256": "6ded57a73ecf4289a1a161a288c581804dd19909e20d051167555e15a594d0c1"
+        }
+      ],
+      "extraction_method": "Manual allowlisted summary of retained native results and direct policy/source inspection.",
+      "findings": {
+        "fixed_targets_hz": [
+          80,
+          90,
+          100,
+          120
+        ],
+        "fixed_duration_emulated_s": 2,
+        "fixed_logic_ticks": 120,
+        "fixed_audio_frames": 96000,
+        "dynamic_duration_emulated_s": 30,
+        "dynamic_rate_changes": 45,
+        "dynamic_matching_observations": 2296,
+        "dynamic_logic_ticks": 1800,
+        "dynamic_battle_timer_ticks": 1620,
+        "dynamic_audio_frames": 1440032,
+        "policy_steps_hz": [
+          60,
+          72,
+          80,
+          90,
+          100,
+          110,
+          120
+        ],
+        "policy_slow_samples": 2,
+        "policy_healthy_samples": 5,
+        "policy_settling_samples": 3
+      },
+      "limits": [
+        "Dynamic equivalence uses matched game-facing input-cache replay.",
+        "Natural IOP input arrival shifted by one logical tick in a failed control.",
+        "No adaptive cross-rate lockstep or144-Hz proof.",
+        "Software busy estimates are not complete GPU utilization."
+      ]
+    },
+    {
+      "id": "R04",
+      "title": "Preserve ordinary input edges",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-full-game-input-gate/phase-regression.json",
+          "sha256": "add90a075ae6080808cec2bec9c244dd4d6e40a2fe15cd694aaaee641f70e266"
+        },
+        {
+          "path": "research/gundam-full-game-input-gate/README.md",
+          "sha256": "c5b9b0865088fd860ecd4d01b6950bd851026af398b4a884ed9ef5a7c9aa4286"
+        }
+      ],
+      "extraction_method": "Allowlisted totals and phase suites from restricted original-instruction regression; browser continuation described in the source report.",
+      "findings": {
+        "phase_cases": 1265,
+        "old_failed_cases": 369,
+        "candidate_failed_cases": 0,
+        "suites": [
+          {
+            "suite": "fixed60",
+            "arrival_phases": 60,
+            "extra_arrivals": 0,
+            "old_failures": 0,
+            "candidate_failures": 0
+          },
+          {
+            "suite": "fixed72",
+            "arrival_phases": 72,
+            "extra_arrivals": 12,
+            "old_failures": 12,
+            "candidate_failures": 0
+          },
+          {
+            "suite": "fixed80",
+            "arrival_phases": 80,
+            "extra_arrivals": 20,
+            "old_failures": 20,
+            "candidate_failures": 0
+          },
+          {
+            "suite": "fixed90",
+            "arrival_phases": 90,
+            "extra_arrivals": 30,
+            "old_failures": 30,
+            "candidate_failures": 0
+          },
+          {
+            "suite": "fixed100",
+            "arrival_phases": 100,
+            "extra_arrivals": 40,
+            "old_failures": 40,
+            "candidate_failures": 0
+          },
+          {
+            "suite": "fixed110",
+            "arrival_phases": 110,
+            "extra_arrivals": 51,
+            "old_failures": 51,
+            "candidate_failures": 0
+          },
+          {
+            "suite": "fixed120",
+            "arrival_phases": 120,
+            "extra_arrivals": 60,
+            "old_failures": 60,
+            "candidate_failures": 0
+          },
+          {
+            "suite": "menu60-battle120-pause60-resume120",
+            "arrival_phases": 326,
+            "extra_arrivals": 101,
+            "old_failures": 101,
+            "candidate_failures": 0
+          },
+          {
+            "suite": "60-80-120-72-60-carried-phase",
+            "arrival_phases": 307,
+            "extra_arrivals": 55,
+            "old_failures": 55,
+            "candidate_failures": 0
+          }
+        ]
+      },
+      "limits": [
+        "Restricted instruction interpreter is not an IOP/browser scheduler emulation.",
+        "Correcting discarded edges does not remove all input latency variation."
+      ]
+    },
+    {
+      "id": "R05",
+      "title": "Canonical cue/marker clock",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-full-game-sound-clock/clock-regression.json",
+          "sha256": "967a4b487475e706db566401b2f570be1b2d35d219b0849848d1b788c686fe54"
+        },
+        {
+          "path": "research/gundam-full-game-sound-clock/README.md",
+          "sha256": "028d3d647a9ae6843769852a0632eef3c1d7da9d26f6414dbf6b0009999c2264"
+        }
+      ],
+      "extraction_method": "Allowlisted CPU regression totals; correction and interpretation checked against source report.",
+      "findings": {
+        "failures": 0,
+        "phase_suites": 63,
+        "phase_rows": 75600,
+        "sound_record_cases": 93,
+        "sound_record_observations": 29880,
+        "store_boundary_cases": 14
+      },
+      "limits": [
+        "Sound-associated time/marker semantics; no proven volume-envelope interpretation.",
+        "Bounded direct consumer scan is not absence-of-alias proof.",
+        "Synthetic cases alone do not validate audible events or complete interrupt scheduling."
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "Paired fullscreen fixed60 and120 PC trials",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-versus-audit/cue-clock-pair-root-verification.json",
+          "sha256": "7def16dabeb0aeafb4824d2df1639f988cea23f5f0f59cc74df0046d4872361e"
+        },
+        {
+          "path": "research/gundam-versus-audit/cue-clock-pair-findings.md",
+          "sha256": "31653d523049cd561f667aa5872aee4cd8421a51bd7d458101607a18fdbda018"
+        },
+        {
+          "path": "research/gundam-versus-audit/pc-versus-cue-clock60-22ac/README.md",
+          "sha256": "61509863ec957faec35b4e25024b9e22bf6c60cd55739d5a807f36229ba2a342"
+        },
+        {
+          "path": "research/gundam-versus-audit/pc-versus-cue-clock120-22ac/README.md",
+          "sha256": "50f510d3cca430b3fc050837124f7d129700442644732e4a7e27838f59f75038"
+        }
+      ],
+      "extraction_method": "Selected independent recomputation totals/rates. Raw sample hashes identify private originals; no samples, screenshots or environment identifiers are copied.",
+      "findings": {
+        "build_id": "22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c51075c4464f8a56c8252f",
+        "wasm_sha256": "2c44be21390cdddcb46ac396a0f86a24c4cce10137da88acd340ddbec9845f59",
+        "runs": {
+          "60": {
+            "sha256": "a4f380cb8e6faa9f0eca6085db7478ccaf0db1f6520370fda514b0b8105e229f",
+            "stableIntervals": 77,
+            "wallSeconds": 77.35753999996186,
+            "totals": {
+              "emulatedFrame": 4644,
+              "simulationTicks": 4643,
+              "guestSeconds": 77.4000630086263,
+              "audioProducedFrames": 3714816,
+              "extraFrames": 0,
+              "modelCopies": 0,
+              "cameraCopies": 0,
+              "gameVblankTicks": 4643
+            },
+            "ratesPerWallSecond": {
+              "emulatedFrame": 60.03293279494526,
+              "simulationTicks": 60.02000580683266,
+              "guestSeconds": 1.0005496944275176,
+              "audioProducedFrames": 48021.38227252097,
+              "extraFrames": 0.0,
+              "modelCopies": 0.0,
+              "cameraCopies": 0.0,
+              "gameVblankTicks": 60.02000580683266
+            }
+          },
+          "120": {
+            "sha256": "e022683d15f17534197890b6289023987c9219b767010bdb27c3121de7c6bb47",
+            "stableIntervals": 77,
+            "wallSeconds": 77.28849000000957,
+            "totals": {
+              "emulatedFrame": 9272,
+              "simulationTicks": 4636,
+              "guestSeconds": 77.26679307725695,
+              "audioProducedFrames": 3708896,
+              "extraFrames": 4636,
+              "modelCopies": 32165,
+              "cameraCopies": 9272,
+              "gameVblankTicks": 4636
+            },
+            "ratesPerWallSecond": {
+              "emulatedFrame": 119.96611655886733,
+              "simulationTicks": 59.98305827943366,
+              "guestSeconds": 0.999719273558681,
+              "audioProducedFrames": 47987.68872311441,
+              "extraFrames": 59.98305827943366,
+              "modelCopies": 416.1680477907644,
+              "cameraCopies": 119.96611655886733,
+              "gameVblankTicks": 59.98305827943366
+            }
+          }
+        },
+        "browser_shown_median_hz": {
+          "60": 55.753,
+          "120": 55.789
+        },
+        "display_exposed_hz": 60,
+        "audio": "Running engine and ring consumption, output gain0.",
+        "guard": "Single-human active Versus, single camera, stable scene generation, native fullscreen1280x720, scale1."
+      },
+      "limits": [
+        "No physical120-Hz scanout proof",
+        "No complete RAM/pixel equality between matches",
+        "No phone performance proof",
+        "Tail did not reach results/re-entry",
+        "Sequential automatic setups differ in suits/stage/CPU choices.",
+        "No exact underrun counter or complete audible-effect proof.",
+        "A one-frame endpoint difference remains in fixed60 render versus logic totals."
+      ]
+    },
+    {
+      "id": "R07",
+      "title": "Mode coverage and lifecycle guards",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-full-game-mode-coverage/README.md",
+          "sha256": "f29ac8f5753bc5ef761b5eb732ef65e717072ba0d4a2262291fd1a2a27d5ddc8"
+        },
+        {
+          "path": "research/gundam-full-game-sound-clock/full_game_web_hooks.cpp",
+          "sha256": "b8741660b008fad22ff8d700234a7205e4e1660fa04e0286a30ccbff4664dd5d"
+        }
+      ],
+      "extraction_method": "Manual summary of current source predicate and mode-specific original control-flow inventory.",
+      "findings": {
+        "high_refresh_paths": [
+          "Single-human active Arcade, mode3/state1/stage7/initialized1/phase2/pause0.",
+          "Single-human active Versus, mode4/state1/stage3/initialized1/phase2/pause0, verified configuration and single-camera flags."
+        ],
+        "fallback_hz": 60,
+        "pending_modes": [
+          "U.C. Mode",
+          "Survival",
+          "Training",
+          "Replay",
+          "Collection",
+          "Network Battle",
+          "Options"
+        ],
+        "history_reset": "Scene key changes or decreasing active battle counter."
+      },
+      "limits": [
+        "Shared battle-engine call target does not prove lifecycle compatibility.",
+        "Natural results/re-entry, split-screen and other modes remain unverified."
+      ]
+    },
+    {
+      "id": "R08",
+      "title": "Earlier phone main-menu and Versus capture",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-fps/mobile-audit/2026-10-24-c816-mode4/summary.json",
+          "sha256": "b021f221dc2c30617e35439b53354c03ef8428eb38343a10eb1b1ab6f58cb62c"
+        },
+        {
+          "path": "research/gundam-fps/mobile-audit/2026-10-24-c816-mode4/README.md",
+          "sha256": "26f3f0d98064f79d96aeb9256c6e3a13fec472d31b85c73a541baa999fe6e3da"
+        }
+      ],
+      "extraction_method": "Selected capture identity and manual stable-scene summary from the independent analysis report.",
+      "findings": {
+        "build_id": "c816cfe3e2b6d955e60fb511c0814ca76df083ad16140f9654e108d22a75ab28",
+        "source_sha256": "e77e90d0d6ac27a0920a146211977f4535fcbe2cbc2c6783e5fae64fe4b8110b",
+        "samples": 219,
+        "any_high_refresh_eligible_sample": false,
+        "computed_fps": {
+          "menu_first": 23.92,
+          "versus_selection": 60.0,
+          "versus_combat": 59.94,
+          "menu_return_fullscreen": 20.26,
+          "menu_return_windowed": 19.62
+        },
+        "long_combat_seconds": 73.69,
+        "applied_video_hz": 60,
+        "all_extra_frames": 0
+      },
+      "limits": [
+        "Earlier build, not latest cue-clock candidate phone performance.",
+        "A brief63.07 sample does not establish high refresh.",
+        "Later frozen battle counter is consistent with pause, not a proved thermal slowdown.",
+        "No root-cause GPU or browser diagnosis from these counters alone."
+      ]
+    },
+    {
+      "id": "R09",
+      "title": "Main-menu GPU command mix",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-menu-gpu-probe/paired-findings.md",
+          "sha256": "a00d33a2ee34f446cfed61b62b6613051eb887d36bd712e067c7e90e92f03ebb"
+        },
+        {
+          "path": "research/gundam-menu-gpu-probe/pc-pair-analysis.json",
+          "sha256": "037d04a7c7924df8832f38484dd48240d5c500817f14a2029ed445ef3a372a05"
+        }
+      ],
+      "extraction_method": "Manual allowlisted command counts and stable-window outcome from paired analysis; complete logs excluded.",
+      "findings": {
+        "raster_dispatches_per_guest_frame": {
+          "menu": 1446.06,
+          "versus_setup": 69.0
+        },
+        "snapshot_dispatches_per_guest_frame": {
+          "menu": 531.86,
+          "versus_setup": 31.0
+        },
+        "computed_fps_observer_on": {
+          "menu": 59.975,
+          "versus_setup": 60.052
+        },
+        "computed_fps_observer_off": {
+          "menu": 60.061,
+          "versus_setup": 59.916
+        },
+        "inference": "Many smaller menu batches motivate a phone-side dependency/batching investigation."
+      },
+      "limits": [
+        "PC did not reproduce phone menu slowdown.",
+        "Timestamp samples favored light passes; not total-frame GPU cost.",
+        "Sequential short trials do not establish zero observer overhead.",
+        "No batching optimization or phone improvement claimed."
+      ]
+    },
+    {
+      "id": "R10",
+      "title": "Pose-copy allocation reduction",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-full-game-adaptive/README.md",
+          "sha256": "bebfc8778f542aec6a5de3993ed9cc6a59e16add9a83a9455370445dcaa26bd0"
+        },
+        {
+          "path": "research/gundam-full-game-adaptive/full_game_interpolation.cpp",
+          "sha256": "f1cff46f7782ba01b6781b1f725e52f1ca0afa0fb3f64e1ee9a5eb832b17ed8f"
+        }
+      ],
+      "extraction_method": "Manual summary of documented allocation instrumentation and actual-game control comparison.",
+      "findings": {
+        "warmed_allocations_per_call_before": 6,
+        "warmed_allocations_per_call_after": 0,
+        "warmed_allocated_bytes_before": 4032,
+        "warmed_allocated_bytes_after": 0,
+        "matching_rgb_captures": 63,
+        "compared_ram_bytes": 33554432,
+        "trace_rows_match": true
+      },
+      "limits": [
+        "This demonstrates removed allocation work and tested equivalence, not an isolated browser/phone FPS gain."
+      ]
+    },
+    {
+      "id": "R11",
+      "title": "Bounded cadence allowance A/B",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-fps/web-audit/pc_cadence_debt_findings.md",
+          "sha256": "4f4ac245f2b1d87cebbb63d4bfb7cdb33c776e442912d55c5df185ee5ad2b1db"
+        },
+        {
+          "path": "research/gundam-fps/web-audit/pc-cadence-debt-comparison.json",
+          "sha256": "441418cc8645af36f6113d199cd1281db988a9a6cab3a2bf30993f6fceabce72"
+        }
+      ],
+      "extraction_method": "Manual allowlist from paired report, with comparison-source hash. Same package, saved battle, movement script, resolution and running zero-gain audio; only cadence policy differs.",
+      "findings": {
+        "computed_fps": {
+          "control": 112.43,
+          "enabled": 120.03
+        },
+        "logic_ticks_per_wall_s": {
+          "control": 56.21,
+          "enabled": 60.01
+        },
+        "guest_speed_percent": {
+          "control": 93.69,
+          "enabled": 100.02
+        },
+        "audio_frames_per_wall_s": {
+          "control": 44972,
+          "enabled": 48010
+        },
+        "extra_slots": 224,
+        "max_presentations_per_callback": 3,
+        "new_timer_fallbacks_in_window": 0
+      },
+      "limits": [
+        "60-Hz desktop with approximately56 shown updates/s.",
+        "Historical cadence-only candidate subsequently failed Start/pause; not promoted until input correction.",
+        "Not a demonstrated phone improvement at70\u201390Hz."
+      ]
+    },
+    {
+      "id": "R12",
+      "title": "Rejected renderer and wait experiments",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-fps/web-audit/render_cost_findings.md",
+          "sha256": "0898fcc4571e53736bb64d2f441ecc0605f6c64b37bc55c2e2aa30a006ef401b"
+        }
+      ],
+      "extraction_method": "Manual allowlisted rejection summary; no raw captures or environment identifiers copied.",
+      "findings": {
+        "gpu_completion_yields_after_warmup": 0,
+        "upload_original_vs_1mib_vs_256kib_wall_seconds": [
+          4.4,
+          5.87,
+          6.2
+        ],
+        "bounded_menu_deadline_wins": 0,
+        "decisions": [
+          "Retain original upload path; chunking increased measured upload cost.",
+          "Retain native time-slice settings; shorter budget did not demonstrate a presentation win.",
+          "Exclude bounded shown-wait deadline variant; no winning escapes or speed improvement."
+        ]
+      },
+      "limits": [
+        "Local Mac observations with environmental load as a confounder.",
+        "Some retained capture actions completed but cleanup acknowledgment timed out; those remain partial evidence.",
+        "No physical-phone benchmark or final renderer FPS gain established."
+      ]
+    },
+    {
+      "id": "R13",
+      "title": "Earlier physical-phone saved-battle adaptive session",
+      "original_working_tree_sources": [
+        {
+          "path": "research/gundam-fps/mobile-audit/2026-10-24-adaptive-findings.md",
+          "sha256": "9a508be9148d8fd84878c401335523c74709d176b9ea90a4d468effff90121de"
+        },
+        {
+          "path": "research/gundam-fps/mobile-audit/2026-10-24-adaptive-summary.json",
+          "sha256": "f00889a0b83f538a6bbf709d01fed8db92593bab8720e42ab7bf93673e9695e0"
+        }
+      ],
+      "extraction_method": "Allowlisted aggregate fields from the independent diagnostics summary. Excludes the first three startup samples; no user agent, device identifier, URLs or raw sample history copied.",
+      "findings": {
+        "build_id": "8b1037f58df6f33196c2992d6035d0ce9e936538f473f748bebebdafe2e8f5f9",
+        "source_sha256": "55028c7625f99d4628a958d9bac09a8f619f8ebe603ed4062d3dab81ea8036d3",
+        "sample_count": 57,
+        "fatal_error_recorded": false,
+        "mode": "auto",
+        "after_three_startup_samples": {
+          "intervalSeconds": 53.410915000006554,
+          "computedFramesPerSecond": 78.05520650600141,
+          "simulationTicksPerSecond": 60.00646122612965,
+          "guestSecondsPerWallSecond": 0.9999527183730162,
+          "audioFramesPerWallSecond": 47999.776824637534,
+          "medianReportedShownFps": 72.35075780453617,
+          "browserCallbacksPerSecond": 109.28477821432723,
+          "callbacksWithNewSubmissionPerSecond": 71.61457541027954,
+          "fallbackCountDelta": 0
+        },
+        "settled_audio_queue_ms_range": [
+          74.66666666666667,
+          88.66666666666667
+        ],
+        "selected_targets_hz": [
+          80,
+          60,
+          72,
+          80,
+          90
+        ],
+        "audio": "User-supplied capture had a running, unmuted audio context; this was not a newly conducted agent test."
+      },
+      "limits": [
+        "Saved-battle build8b1037..., distinct from later full-game c816... and latest22ac... candidate.",
+        "Browser callbacks with newly submitted output are not physical scanout or image-uniqueness measurement.",
+        "Not sustained120FPS, a thermal/endurance test or newest-build phone validation.",
+        "Groups at different targets cover different times/scenes and are not a controlled80-versus90 A/B.",
+        "Initial seconds were slow with an empty audio queue before recovery.",
+        "Download-time fullscreen/canvas snapshots do not establish the whole session history."
+      ]
+    }
+  ]
+}
