@@ -1,0 +1,9 @@
+{
+  "kind": "architecture-illustration",
+  "title": "Where does the game run?",
+  "caption": "Two multiplayer architectures, not a claim of finished integration. Streaming sends the same game's media to both players. Independent clients each run the game and exchange inputs; the current prototype uses a local two-player fixture, not the restored original online mode.",
+  "routes": [
+    {"id": "streaming", "label": "One host", "center": "One game + media encoder", "left": "Player 1: video + controls", "right": "Player 2: video + controls", "transport": "WebRTC media + controller inputs", "cost": "Clients decode video; host computes the game. Current capture target: 60 FPS."},
+    {"id": "independent", "label": "Independent clients", "center": "Input relay + checkpoints", "left": "Player 1: local game", "right": "Player 2: local game", "transport": "Input pairs + state checks; no video", "cost": "Both devices compute the game. Current fixture: 60-Hz lockstep; no rollback."}
+  ]
+}

@@ -1,0 +1,348 @@
+{
+  "schema_version": 1,
+  "report_date": "2026-10-25",
+  "evidence_id": "network-findings",
+  "scope": "Curated extraction from existing local research; no new game or network tests performed for this report.",
+  "source_root_label": "ps2-web-recomp working tree; source paths below are provenance identifiers, not bundled files.",
+  "extraction_method": "Manually selected scalar fields and bounded checkpoint pairs from the named JSON sources; narrative implementation observations checked against listed source files. No raw logs, URLs from browser captures, invitation fields, tokens, screenshots or RAM bytes copied.",
+  "sources": [
+    {
+      "id": "stream-host",
+      "original_relative_path": "web/remote-host.js",
+      "sha256": "cd2fc57c350b16e4e8c2cdf53f1c1d12cd778533fee6ed5d725104f9f1e34f66"
+    },
+    {
+      "id": "stream-client",
+      "original_relative_path": "web/remote-client.js",
+      "sha256": "1ae9777e87fd9e047917dda07559e33b8e9c72e5595813cbf95e7adc5e5afaa7"
+    },
+    {
+      "id": "stream-signaling",
+      "original_relative_path": "scripts/remote_play.py",
+      "sha256": "0967e5ae3d3a25fe08213aefc4fd5b596cb4a095a2d55d70770e01819239d653"
+    },
+    {
+      "id": "shell",
+      "original_relative_path": "web/shell.html",
+      "sha256": "c60ca3fcfbd1ea1f4879e1aa05eb722f816fb4bc98f252ef78f9f2f76371d25f"
+    },
+    {
+      "id": "netplay-lobby",
+      "original_relative_path": "web/gundam-netplay-lobby.js",
+      "sha256": "7f64e57c31f5d4a84aa51c1464a364abe7a6842b935151920d011cd5953bd7ef"
+    },
+    {
+      "id": "native-control",
+      "original_relative_path": "build/gundam-netplay/independent-control-proof.json",
+      "sha256": "9203740751084c798e4cdc2b57b118e2c223fac31e026b79b08a67f50ce56071"
+    },
+    {
+      "id": "native-versus",
+      "original_relative_path": "build/gundam-netplay/http-versus-01/summary.json",
+      "sha256": "c7eb8e788fb6b8e1dedaf88b7d59ebdb0db4a4d62c321747d9bb44f7ce714d73"
+    },
+    {
+      "id": "native-negative-control",
+      "original_relative_path": "build/gundam-netplay/http-desync-01/summary.json",
+      "sha256": "8da4db240b47fb84ac0d06e5c329191b9b0c3bf960a48cbe5f9b3b1bfb112a39"
+    },
+    {
+      "id": "readiness-causality",
+      "original_relative_path": "build/gundam-netplay/readiness-proof/comparison.json",
+      "sha256": "879f3a9407284bb0daa8f7c57000cbe442f20e4fb5323e66c503724239f0aca0"
+    },
+    {
+      "id": "browser-ram-comparison",
+      "original_relative_path": "build/gundam-netplay/browser-ram-delay-audit/room-01/browser-pair-ram-comparison.json",
+      "sha256": "19412d0f6725e78d0665b3bbdef106a85d324f82b45ba863feb97ba8ced06e2c"
+    },
+    {
+      "id": "native-browser-comparison",
+      "original_relative_path": "build/gundam-netplay/browser-ram-delay-audit/room-01/native-browser-ram-comparison.json",
+      "sha256": "cb309f18f6692b029f82162e888fd19cddc7151d170273d360fdabb39720ecc5"
+    },
+    {
+      "id": "browser-stress",
+      "original_relative_path": "research/gundam-fps/web-audit/pvp-release-delay-stress-2400-retry/pair-summary.json",
+      "sha256": "4dd74ebd9ef90dc3b2e654991da931d33026cea52fca7299e7956185a6d6e5c1"
+    },
+    {
+      "id": "browser-stress-checkpoints",
+      "original_relative_path": "research/gundam-fps/web-audit/pvp-release-delay-stress-2400-retry/relay-summary.json",
+      "sha256": "76850e9fc612803b610570e5a9b6c772d725a49587bd7b0d757dff69ce23c9f3"
+    },
+    {
+      "id": "browser-stress-delay",
+      "original_relative_path": "research/gundam-fps/web-audit/pvp-release-delay-stress-2400-retry/controlled-delay-observations.json",
+      "sha256": "6fc361433c48eab9b51e01d2654af13e50d98d0a44757111f01bf6de0aae2d91"
+    },
+    {
+      "id": "startup-audit",
+      "original_relative_path": "research/gundam-netplay/startup-audit/README.md",
+      "sha256": "0874e08382cb2bdd0e765005ede8abe0e30491d45d34d98155a0e400ae39c322"
+    },
+    {
+      "id": "original-online",
+      "original_relative_path": "research/gundam-original-online-flow/README.md",
+      "sha256": "1d9f1bc819ec279bfa6af5966d0ca1fa3bec474dd8c1c59e9beb4e4570ad2141"
+    },
+    {
+      "id": "original-online-bytes",
+      "original_relative_path": "research/gundam-original-online-flow/elf-evidence.json",
+      "sha256": "ffe9bf34bb42ba8af2ba1cbe2d1e2817c95f54ca1449eecf11d13bdf1080ec58"
+    },
+    {
+      "id": "zdxsv-inspection",
+      "original_relative_path": "research/gundam-netplay/zdxsv-player-flow-review/source-manifest.json",
+      "sha256": "6ed89f108df102cc5822c2c7af5cfd4a8521af237ecde51b4cbf817037e8baf3"
+    },
+    {
+      "id": "online-integration",
+      "original_relative_path": "docs/gundam-online-mode-integration.md",
+      "sha256": "810e51ab65606186f728559b0ba431045b122607f495bcc199427f6098f421ff"
+    },
+    {
+      "id": "coop-assessment",
+      "original_relative_path": "docs/gundam-coop-anything-assessment.md",
+      "sha256": "d07545fc823ac620aacb9f15e5cfd81230984c2b9db2b8f56600d917f62f1806"
+    }
+  ],
+  "streaming": {
+    "classification": "source inspection plus user observation; no complete retained end-to-end acceptance run",
+    "source_ids": [
+      "stream-host",
+      "stream-client",
+      "stream-signaling",
+      "shell"
+    ],
+    "host_game_instances": 1,
+    "remote_controller_ports": 2,
+    "same_media_stream_for_both": true,
+    "requested_capture_fps": 60,
+    "sender_max_framerate": 60,
+    "sender_max_bitrate_bps": 3000000,
+    "ice_transport_policy_both_ends": "relay",
+    "stale_input_neutral_after_ms": 750,
+    "user_observation": "Two devices controlled the same screen; not an independently instrumented latency or full-match result.",
+    "missing_acceptance": [
+      "Separate host plus two remote clients completing a match",
+      "Input-to-visible-response latency",
+      "Mobile suspension and reconnect behavior",
+      "Measured video frame delivery"
+    ]
+  },
+  "native_actor_control": {
+    "source_ids": [
+      "native-control"
+    ],
+    "fixture_sha256": "02b33b120d57fc821696ead8f996cda483e0a99bca5710cda07f7e96aa2490f5",
+    "sampled_boundaries_per_experiment": 181,
+    "experiments": [
+      {
+        "run": "versus-p1-only",
+        "controlled_entity_slot": 0,
+        "other_human_position_and_ammo_equal_at_all_181_barriers": true
+      },
+      {
+        "run": "versus-p2-only",
+        "controlled_entity_slot": 1,
+        "other_human_position_and_ammo_equal_at_all_181_barriers": true
+      }
+    ]
+  },
+  "native_lockstep": {
+    "source_ids": [
+      "native-versus"
+    ],
+    "frames_requested": 300,
+    "compared_barriers": 301,
+    "mismatch_barriers": 0,
+    "jitter_ms": 75,
+    "client_start_delay_seconds": 3.0,
+    "final_ram_equal": true,
+    "final_machine_state_equal": true,
+    "final_ram_sha256": "78e14e3b94517d1897512abc2556837260f784534f22bac5517afd5f4dd07420",
+    "limit": "Two native processes on one machine; a 300-frame fixture, not browser or internet acceptance."
+  },
+  "negative_control": {
+    "source_ids": [
+      "native-negative-control"
+    ],
+    "wrong_input_tick": 40,
+    "first_mismatch_tick": 41,
+    "both_clients_detected_at_tick": 60
+  },
+  "disc_readiness_causality": {
+    "source_ids": [
+      "readiness-causality",
+      "startup-audit"
+    ],
+    "false_probes": 20,
+    "first_ram_difference_tick": 10,
+    "different_bytes_at_tick120": 11,
+    "hash_at_tick120": "d64af6bc1403404b",
+    "interpretation": "Host download/cache readiness changed guest-visible I/O completion. Preserve guest scheduling while waiting in host time; do not exclude differing RAM from checkpoints."
+  },
+  "checkpoint240_complete_ram_comparison": {
+    "source_ids": [
+      "browser-ram-comparison",
+      "native-browser-comparison"
+    ],
+    "bytes_per_snapshot": 33554432,
+    "browser_pair_equal": true,
+    "native_browser_equal": true,
+    "different_bytes": 0,
+    "excluded_regions": 0,
+    "sha256": "ae1d47f0efa2e11764c8c738ab7f61714b0ce34ce728be964215b37cd8efffb0",
+    "fnv64": "124a0229a35470e0",
+    "limit": "Diagnostic candidate, one fixture and controlled delayed read; raw RAM remains private."
+  },
+  "browser_release_stress": {
+    "source_ids": [
+      "browser-stress",
+      "browser-stress-checkpoints",
+      "browser-stress-delay"
+    ],
+    "build_identity": "497eb9cebf9be1c50a119a015a44a4768a2d938da6a0335cd93625fbf08568b2",
+    "client_count": 2,
+    "environment": "Two Chrome 155 profiles on the same desktop using Metal; one mobile configuration, no physical phone.",
+    "injected_disc_delay_ms": 600,
+    "matching_checkpoint_count": 23,
+    "highest_matching_checkpoint": 2640,
+    "guest_seconds_through_highest_checkpoint": 44.0,
+    "all_checkpoints_equal": true,
+    "neutral_inputs_verified": true,
+    "matching_checkpoints": [
+      {
+        "tick": 0,
+        "hash": "d6ebc32d3bb5d8a2"
+      },
+      {
+        "tick": 120,
+        "hash": "8fc5a31a51db4f62"
+      },
+      {
+        "tick": 240,
+        "hash": "124a0229a35470e0"
+      },
+      {
+        "tick": 360,
+        "hash": "24b529b75316b193"
+      },
+      {
+        "tick": 480,
+        "hash": "2bd090816cf4c646"
+      },
+      {
+        "tick": 600,
+        "hash": "a57e9738c8631d40"
+      },
+      {
+        "tick": 720,
+        "hash": "2e1048c08eeb283a"
+      },
+      {
+        "tick": 840,
+        "hash": "a3e79d11de5e5240"
+      },
+      {
+        "tick": 960,
+        "hash": "8344a7014561498c"
+      },
+      {
+        "tick": 1080,
+        "hash": "b03070c0ffd1aa26"
+      },
+      {
+        "tick": 1200,
+        "hash": "6ab01728f824bbce"
+      },
+      {
+        "tick": 1320,
+        "hash": "dab4d7b05dc0f69d"
+      },
+      {
+        "tick": 1440,
+        "hash": "8a0e5f24f6cf76b3"
+      },
+      {
+        "tick": 1560,
+        "hash": "c4294a4609ba0939"
+      },
+      {
+        "tick": 1680,
+        "hash": "7814da936fcf4530"
+      },
+      {
+        "tick": 1800,
+        "hash": "53cc509175f14f52"
+      },
+      {
+        "tick": 1920,
+        "hash": "a1bc722ecd629da9"
+      },
+      {
+        "tick": 2040,
+        "hash": "c7e3f4450b35cfd4"
+      },
+      {
+        "tick": 2160,
+        "hash": "0a5097ecce729179"
+      },
+      {
+        "tick": 2280,
+        "hash": "d0e895ce984ad4db"
+      },
+      {
+        "tick": 2400,
+        "hash": "9dfcf6a0b5872fef"
+      },
+      {
+        "tick": 2520,
+        "hash": "75b1f37d8dc38531"
+      },
+      {
+        "tick": 2640,
+        "hash": "f81a76e6fa197672"
+      }
+    ],
+    "all_declared_actions_complete": true,
+    "missing_favicon_requests_observed": true,
+    "game_or_page_exception_reported": false,
+    "limit": "Neutral controls for 44 guest seconds on one host; not a full match, cross-architecture proof, mobile speed measurement or internet latency test."
+  },
+  "original_online": {
+    "source_ids": [
+      "original-online",
+      "original-online-bytes",
+      "online-integration",
+      "zdxsv-inspection"
+    ],
+    "elf_sha256": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+    "verified_string_count": 32,
+    "recorded_assertion_failures": 0,
+    "supported_ui_concepts": [
+      "Automatic matching",
+      "Named operation rooms",
+      "Title/password prompts",
+      "Faction selection",
+      "Return to lobby chat"
+    ],
+    "runtime_connection_tested": false,
+    "original_shareable_invite_code_established": false,
+    "zdxsv_revision": "35ffbdad9257eca5043bb4977d26cc07468b5045",
+    "zdxsv_limitations_at_revision": [
+      "Password access control not implemented",
+      "Friend presence/search/mail handlers incomplete"
+    ],
+    "integration_status": "Neither browser-menu handoff nor original network/session bridge is implemented."
+  },
+  "coop_anything": {
+    "source_ids": [
+      "coop-assessment"
+    ],
+    "revision": "5b86e5bb10ce864ab9872f2589651f73ffcae5db",
+    "installed_or_executed_in_review": false,
+    "assessment": "Useful workflow and QA references; no Gundam adapter or ready-made synchronization/co-op implementation."
+  }
+}
