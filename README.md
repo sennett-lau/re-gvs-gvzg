@@ -15,14 +15,46 @@ This project studies how a PS2 game can run in a browser. It follows the work fr
 
 Follow the stages in order, or choose the feature that interests you.
 
-| Stage | What you will learn | Read |
-| --- | --- | --- |
-| **1 · Recompile** | Translate the disc's executable code into C++, then make it run in a browser | [01 · Disc → C++](docs/chapters/01-disc-to-code.md) · [02 · C++ → browser](docs/chapters/02-browser-port.md) |
-| **2 · Optimize** | Improve the browser port and investigate performance problems | [03 · Performance](docs/chapters/03-performance.md) |
-| **3 · Extend — high refresh** | Draw smoother motion while preserving gameplay speed | [04 · The goal](docs/chapters/04-frame-rate.md) · [05 · Game hooks](docs/chapters/05-rendering-boundary.md) · [06 · Results and limits](docs/chapters/06-adaptive-rendering.md) |
-| **3 · Extend — multiplayer, route A** | Run one game on a host and stream it to remote controllers | [07 · One host, two controllers](docs/chapters/07-host-streaming.md) |
-| **3 · Extend — multiplayer, route B** | Run the game on each device and keep the copies synchronized | [08 · A game on each device](docs/chapters/08-independent-clients.md) |
-| **Next steps** | See what the research supports and which experiments come next | [09 · Findings and next steps](docs/chapters/09-learnings.md) |
+### 1 · Recompile
+
+Translate the disc's executable code into C++, then make it run in a browser.
+
+- [01 · From a PS2 disc to C++](docs/chapters/01-disc-to-code.md)
+- [02 · From C++ to the browser](docs/chapters/02-browser-port.md)
+
+### 2 · Optimize
+
+Improve the browser port and investigate performance problems.
+
+- [03 · Performance and usability](docs/chapters/03-performance.md)
+
+### 3 · Extend
+
+#### High-refresh rendering
+
+Draw smoother motion while preserving gameplay speed.
+
+- [04 · Understand the goal](docs/chapters/04-frame-rate.md)
+- [05 · Separate gameplay and rendering](docs/chapters/05-rendering-boundary.md)
+- [06 · Adaptive results and limits](docs/chapters/06-adaptive-rendering.md)
+
+#### Multiplayer
+
+Compare two ways to play together on separate devices.
+
+- [07 · Route A: One host, two controllers](docs/chapters/07-host-streaming.md)
+
+  Run one game on a host and stream it to remote controllers.
+
+- [08 · Route B: A game on each device](docs/chapters/08-independent-clients.md)
+
+  Run the game on each device and keep the copies synchronized.
+
+### Findings and next steps
+
+See what the research supports and which experiments come next.
+
+- [09 · Findings and next steps](docs/chapters/09-learnings.md)
 
 For a quick read, start with each chapter's **At a glance** box and highlighted finding. Detailed measurements and test conditions stay with the relevant experiment.
 

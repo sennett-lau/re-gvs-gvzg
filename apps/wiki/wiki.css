@@ -675,6 +675,57 @@ td strong {
 .overview-page article > p:first-of-type strong {
   font-weight: 550;
 }
+/* The overview reading path uses native Markdown headings and link lists. */
+.overview-page article > h3 {
+  margin: 34px 0 12px;
+  color: var(--ink);
+}
+.overview-page article > h4 {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 24px 0 10px;
+  color: var(--green);
+}
+.overview-page article > :is(h3, h4) + p {
+  margin-bottom: 14px;
+  color: var(--muted);
+}
+.overview-page article > ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.overview-page article > ul > li {
+  margin: 0;
+}
+.overview-page article > ul > li + li {
+  border-top: 1px solid var(--line);
+}
+.overview-page article > ul > li p {
+  margin: 0;
+  max-width: none;
+}
+.overview-page article > ul > li a {
+  display: block;
+  padding: 13px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  font-weight: 650;
+  text-decoration: none;
+}
+.overview-page article > ul > li a:is(:hover, :focus-visible) {
+  background: var(--green-wash);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.overview-page article > ul > li p + p {
+  padding: 0 12px 14px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
 figure {
   margin: 34px 0;
   padding: 25px;
