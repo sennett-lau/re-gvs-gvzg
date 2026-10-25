@@ -37,7 +37,11 @@ for (const id of ["render-clock", "multiplayer-routes"]) {
   );
 }
 const docs = await list("docs");
-const markdown = ["README.md", ...docs.filter((f) => f.endsWith(".md"))];
+const markdown = [
+  "README.md",
+  "CONTRIBUTING.md",
+  ...docs.filter((f) => f.endsWith(".md")),
+];
 const pagePath = (source) =>
   source === "README.md"
     ? "index.html"
@@ -63,6 +67,7 @@ for (const item of [
   navigation.conclusion,
   ...navigation.evidence,
   ...navigation.project,
+  ...navigation.contributing,
 ]) {
   if (!pageBySource.has(item.source))
     throw Error(`Missing navigation source: ${item.source}`);
@@ -101,7 +106,12 @@ await fs.cp(
   path.join(out, "assets/fonts"),
   { recursive: true },
 );
-for (const source of ["README.md", "upstream.lock", ...docs]) {
+for (const source of [
+  "README.md",
+  "CONTRIBUTING.md",
+  "upstream.lock",
+  ...docs,
+]) {
   const target = path.join(out, "sources", source);
   await fs.mkdir(path.dirname(target), { recursive: true });
   await fs.copyFile(path.join(root, source), target);
@@ -218,7 +228,12 @@ for (const page of pages) {
         `<section class="nav-stage${stage === activeStage ? " is-active-stage" : ""}" aria-label="Stage ${stage.number}: ${stage.title}"><h2><span>${stage.number}</span>${escapeHtml(stage.title)}</h2>${stage.items ? stage.items.map((item) => navLink(item)).join("") : stage.groups.map((group) => `<section class="nav-feature" aria-label="${escapeHtml(group.title)}"><h3>${escapeHtml(group.title)}</h3>${group.items.map((item) => navLink(item, group.title === "Multiplayer" ? "route-link" : "")).join("")}</section>`).join("")}</section>`,
     )
     .join("");
-  const nav = `<nav aria-label="Research stages">${navLink({ source: "README.md", label: "Overview" }, "overview-link")}${stageHtml}<div class="nav-conclusion">${navLink(navigation.conclusion)}</div></nav><nav class="evidence-links" aria-label="Evidence"><h2><span class="evidence-symbol" aria-hidden="true">◇</span> Evidence</h2>${navigation.evidence.map((item) => navLink(item)).join("")}</nav><details class="project-links"${navigation.project.some((item) => item.source === page.source) ? " open" : ""}><summary>Project reference</summary><nav aria-label="Project reference">${navigation.project.map((item) => navLink(item)).join("")}</nav></details>`;
+  const contributorPage = navigation.contributing.some(
+    (item) => item.source === page.source,
+  );
+  const secondaryNav = (items, label) =>
+    `<details class="project-links"${items.some((item) => item.source === page.source) ? " open" : ""}><summary>${escapeHtml(label)}</summary><nav aria-label="${escapeHtml(label)}">${items.map((item) => navLink(item)).join("")}</nav></details>`;
+  const nav = `<nav aria-label="Research stages">${navLink({ source: "README.md", label: "Overview" }, "overview-link")}${stageHtml}<div class="nav-conclusion">${navLink(navigation.conclusion)}</div></nav><nav class="evidence-links" aria-label="Evidence"><h2><span class="evidence-symbol" aria-hidden="true">◇</span> Evidence</h2>${navigation.evidence.map((item) => navLink(item)).join("")}</nav>${secondaryNav(navigation.project, "Project reference")}${secondaryNav(navigation.contributing, "Contributing")}`;
   const stageMap =
     page.source === "README.md"
       ? `<nav class="stage-map" aria-label="The research journey">${navigation.stages.map((stage) => `<a href="${rel(pageBySource.get(stageItems(stage)[0].source).output)}"><span>${stage.number}</span><strong>${escapeHtml(stage.title)}</strong><i aria-hidden="true">↗</i></a>`).join("")}</nav>`
@@ -254,7 +269,7 @@ for (const page of pages) {
     READING_META:
       index >= 0
         ? `<span>Chapter ${String(index + 1).padStart(2, "0")}</span><span>${Math.max(1, Math.ceil(page.text.split(/\s+/).length / 220))} min read</span><span>Research record</span>`
-        : `<span>${page.source === "README.md" ? "PS2 → C++ → WebAssembly" : "Project reference"}</span>`,
+        : `<span>${page.source === "README.md" ? "PS2 → C++ → WebAssembly" : contributorPage ? "Contributor reference" : "Project reference"}</span>`,
     ASSETS: rel("assets"),
     HOME: rel("index.html"),
     NAV: nav,
@@ -266,9 +281,11 @@ for (const page of pages) {
         ? "EVIDENCE / RESEARCH NOTES"
         : page.source === "README.md"
           ? "REVERSE ENGINEERING / A RESEARCH JOURNEY"
-          : index === chapters.length - 1
-            ? "LOOKING AHEAD / FINDINGS"
-            : "PROJECT / REFERENCE",
+          : contributorPage
+            ? "CONTRIBUTING / PROJECT WORK"
+            : index === chapters.length - 1
+              ? "LOOKING AHEAD / FINDINGS"
+              : "PROJECT / REFERENCE",
     BODY: body,
     PAGER: pager,
     SOURCE_ID: sourceId.slice(0, 12),

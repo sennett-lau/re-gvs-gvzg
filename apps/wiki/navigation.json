@@ -53,11 +53,11 @@
           "items": [
             {
               "source": "docs/chapters/07-host-streaming.md",
-              "label": "A · One host, two controllers"
+              "label": "A \u00b7 One host, two controllers"
             },
             {
               "source": "docs/chapters/08-independent-clients.md",
-              "label": "B · A game on each device"
+              "label": "B \u00b7 A game on each device"
             }
           ]
         }
@@ -69,19 +69,49 @@
     "label": "Findings & next steps"
   },
   "evidence": [
-    { "source": "docs/evidence/README.md", "label": "Evidence index" },
-    { "source": "docs/EVIDENCE.md", "label": "Methods & measurement notes" }
+    {
+      "source": "docs/evidence/README.md",
+      "label": "Evidence index"
+    },
+    {
+      "source": "docs/EVIDENCE.md",
+      "label": "Methods & measurement notes"
+    }
   ],
   "project": [
-    { "source": "docs/REPOSITORY.md", "label": "Repository design" },
-    { "source": "docs/VERSIONS.md", "label": "Versions & milestones" },
-    { "source": "docs/WRITING.md", "label": "Writing & presentation" },
-    { "source": "docs/DERIVED.md", "label": "Artifacts & file sizes" },
-    { "source": "docs/GAME_FILES.md", "label": "Game inputs & setup" },
-    { "source": "docs/license/CONTENT_NOTICE.md", "label": "Content notice" },
+    {
+      "source": "docs/GAME_FILES.md",
+      "label": "Game inputs & setup"
+    },
+    {
+      "source": "docs/license/CONTENT_NOTICE.md",
+      "label": "Content notice"
+    },
     {
       "source": "docs/license/THIRD_PARTY_NOTICES.md",
       "label": "Third-party notices"
+    }
+  ],
+  "contributing": [
+    {
+      "source": "CONTRIBUTING.md",
+      "label": "Start here"
+    },
+    {
+      "source": "docs/REPOSITORY.md",
+      "label": "Repository design"
+    },
+    {
+      "source": "docs/VERSIONS.md",
+      "label": "Versions & milestones"
+    },
+    {
+      "source": "docs/WRITING.md",
+      "label": "Writing & presentation"
+    },
+    {
+      "source": "docs/DERIVED.md",
+      "label": "Artifacts & file sizes"
     }
   ]
 }
