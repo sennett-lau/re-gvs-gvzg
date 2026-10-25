@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "scope": "research provenance; not a complete reproducible game toolchain lock",
+  "ps2_web_recomp": {
+    "repository": "https://github.com/snuri00/ps2-web-recomp",
+    "revision": "6526f4803d98e10de50bea3af104a4d26e9df033",
+    "local_game_work_includes_uncommitted_changes": true
+  },
+  "emscripten_recorded_version": "6.0.11",
+  "ghidra_recorded_version": "12.1.4",
+  "remaining_pins": ["PS2 processor extension revision", "complete game patch set and build profile"],
+  "game": {
+    "serial": "SLPS-25419",
+    "executable_crc": "435D8236",
+    "elf_sha256": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+    "mwo_modules": 325
+  }
+}

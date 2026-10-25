@@ -1,0 +1,15 @@
+.DS_Store
+node_modules/
+.local/
+__pycache__/
+*.pyc
+# Original discs and personal runtime state never belong in this repository.
+*.iso
+*.ISO
+*.rom
+*.ROM
+*.7z
+*.ps2
+.env
+.env.*
+# Generated C++, selected RE sources and matched web artifacts are NOT excluded.
