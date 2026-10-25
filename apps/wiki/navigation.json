@@ -75,6 +75,7 @@
   "project": [
     { "source": "docs/REPOSITORY.md", "label": "Repository design" },
     { "source": "docs/VERSIONS.md", "label": "Versions & milestones" },
+    { "source": "docs/WRITING.md", "label": "Writing & presentation" },
     { "source": "docs/DERIVED.md", "label": "Artifacts & file sizes" },
     { "source": "docs/GAME_FILES.md", "label": "Game inputs & setup" },
     { "source": "docs/license/CONTENT_NOTICE.md", "label": "Content notice" },
