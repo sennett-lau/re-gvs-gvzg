@@ -156,6 +156,22 @@ for (const page of pages) {
   renderer.image = function ({ href, text }) {
     return `<img src="${escapeHtml(rewrite(href))}" alt="${escapeHtml(text)}" loading="lazy">`;
   };
+  renderer.blockquote = function ({ text, tokens }) {
+    const marker = /^\[!(IMPORTANT|NOTE|TIP)\][ \t]*(?:\n|$)/.exec(text);
+    if (!marker)
+      return `<blockquote>\n${this.parser.parse(tokens)}</blockquote>\n`;
+    const labels = {
+      IMPORTANT: "Key finding",
+      NOTE: "Context & limits",
+      TIP: "Next check",
+    };
+    const kind = marker[1].toLowerCase();
+    const label = escapeHtml(labels[marker[1]]);
+    const content = this.parser.parse(
+      marked.lexer(text.slice(marker[0].length)),
+    );
+    return `<aside class="research-callout callout-${kind}" aria-label="${label}"><p class="callout-label"><span aria-hidden="true">◇</span>${label}</p><div class="callout-body">${content}</div></aside>\n`;
+  };
   // Remove only the Markdown reader hint before parsing. Adjacent blockquotes
   // can merge, so removing the resulting HTML block would also erase a brief.
   let body = marked.parse(
