@@ -48,11 +48,12 @@ Compare two ways to play together on separate devices.
 
   Run the game on each device and keep the copies synchronized.
 
-### Findings and next steps
+### Findings and further work
 
-See what the research supports and which experiments come next.
+Review the evidence and lessons, then explore the proposed next steps.
 
-- [09 · Findings and next steps](docs/chapters/09-learnings.md)
+- [09 · Findings and lessons](docs/chapters/09-learnings.md)
+- [10 · Further work](docs/chapters/10-further-work.md)
 
 For a quick read, start with each chapter's **At a glance** box and highlighted finding. Detailed measurements and test conditions stay with the relevant experiment.
 

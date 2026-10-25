@@ -64,10 +64,16 @@
       ]
     }
   ],
-  "conclusion": {
-    "source": "docs/chapters/09-learnings.md",
-    "label": "Findings & next steps"
-  },
+  "conclusions": [
+    {
+      "source": "docs/chapters/09-learnings.md",
+      "label": "Findings & lessons"
+    },
+    {
+      "source": "docs/chapters/10-further-work.md",
+      "label": "Further work"
+    }
+  ],
   "evidence": [
     {
       "source": "docs/evidence/README.md",

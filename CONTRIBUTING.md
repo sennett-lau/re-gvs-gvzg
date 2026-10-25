@@ -25,7 +25,8 @@ Create a new research section only when the material answers a distinct question
 | Project purpose and reading path | [Overview](README.md) |
 | Research question, mechanism, failed experiment or measured result | The relevant chapter in `docs/chapters/` |
 | Selected measurements and source records | `docs/evidence/`, linked from the relevant chapter |
-| Next research experiments | The relevant chapter and [Findings and next steps](docs/chapters/09-learnings.md) |
+| Cross-project findings and lessons | [Findings and lessons](docs/chapters/09-learnings.md) |
+| Next research experiments | The relevant chapter and [Further work](docs/chapters/10-further-work.md) |
 | Contributor workflow and local reader setup | This guide |
 | Repository structure and future code exports | [Repository design](docs/REPOSITORY.md) |
 | Candidate versions and release acceptance | [Version plan](docs/VERSIONS.md) |
@@ -84,9 +85,9 @@ The revised reader passed these checks:
 
 | Reader check | Result |
 | --- | --- |
-| Page layout | 100 checks across all 20 pages, at widths of 320, 390, 768, 1,024 and 1,440 pixels |
-| Chapter summaries | All nine summaries appeared at all five widths |
-| Callouts | All 10 blocks appeared at all five widths, with their evidence limits |
+| Page layout | 105 checks across all 21 pages, at widths of 320, 390, 768, 1,024 and 1,440 pixels |
+| Chapter summaries | All 10 summaries appeared at all five widths |
+| Callouts | All 11 blocks appeared at all five widths, with their evidence limits |
 | Navigation | Stage links, Evidence links, keyboard mobile menu, section tracking and source disclosure passed |
 | Contributor navigation | Collapsed on research pages. Keyboard access, contributor-page expansion and return to the overview passed with and without JavaScript. |
 | Interactive figures | Slider, keyboard input, repeat/interpolate comparison, budget selector and architecture switch passed |

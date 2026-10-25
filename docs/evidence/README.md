@@ -53,4 +53,4 @@ Read [04 · The frame-rate goal](../chapters/04-frame-rate.md) for the metric de
 
 A source path in a JSON record refers to the original `ps2-web-recomp` working tree. Its SHA-256 identifies the bytes reviewed. It is not a download link, and the hash alone does not let a reader rerun an unavailable test. No personal browser capture, raw memory dump or disc image is silently included here.
 
-See [Evidence conventions](../EVIDENCE.md) for metric definitions, test conditions and the difference between a build ID, a file hash and a report commit. See [Findings and next steps](../chapters/09-learnings.md) for the experiments still needed.
+See [Evidence conventions](../EVIDENCE.md) for metric definitions, test conditions and the difference between a build ID, a file hash and a report commit. See [Findings and lessons](../chapters/09-learnings.md) for the research summary and [Further work](../chapters/10-further-work.md) for proposed experiments.

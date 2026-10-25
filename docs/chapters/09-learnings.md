@@ -1,14 +1,14 @@
-# 09 · Findings and next steps
+# 09 · Findings and lessons
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/09-learnings.html).
 
 > **At a glance**
 >
-> - **Question:** What is established, and which experiment should come next?
+> - **Question:** What did the experiments establish, and what did the workflow teach us?
 > - **Result:** Recompilation, reverse engineering and runtime tests solved different parts of the problem. Rendering and multiplayer prototypes now have evidence from limited tests.
-> - **Still open:** Prioritize current-phone tests, menu cost, full game journeys and end-to-end multiplayer acceptance before making broader release claims.
+> - **Still open:** Current-phone throughput, complete game flows and end-to-end multiplayer remain unverified.
 
-**Report date: 2026-10-25.** Recompilation made the original game executable in a new environment. Reverse engineering made specific behavior understandable enough to change. The research has produced useful rendering and multiplayer prototypes, alongside clear evidence that a working fixture is not yet a complete game integration.
+**Report date: 2026-10-25.** Recompilation made the original game executable in a new environment. Reverse engineering made specific behavior understandable enough to change. The rendering and multiplayer prototypes have evidence from limited tests.
 
 ## The tools answer different questions
 
@@ -16,9 +16,12 @@
 
 Ghidra with the PS2 extension helped recover those meanings from the original executable. The AI-assisted analysis workflow also supported browser experiments, although its decompilation path did not accept the R5900 target. The runnable translation, static analysis and runtime observations remain complementary. Keeping all three avoids treating plausible pseudocode as a behavioral proof or a passing frame counter as an explanation.
 
-The effective loop was: reproduce a symptom, trace the responsible instructions, make a narrow change, compare controlled behavior, then test ordinary interaction. The failed Start press demonstrated why that final step matters: a successful throughput benchmark still missed a real input defect.
-
 ## What the evidence supports
+
+> [!IMPORTANT]
+> **A working fixture is not yet a complete game integration.**
+>
+> The retained tests support specific rendering and multiplayer results. They do not establish every game mode, current-phone high-refresh performance or a complete online match flow.
 
 | Area | Supported by retained evidence | Not yet established |
 | --- | --- | --- |
@@ -30,29 +33,12 @@ The effective loop was: reproduce a symptom, trace the responsible instructions,
 
 The detailed limits and source hashes are in [rendering findings](../evidence/rendering-findings.json), [network findings](../evidence/network-findings.json) and the preceding chapters. These are curated records of previous work. Assembling this report did not rerun the game.
 
-## What to implement next
+## Lessons from the workflow
 
-> [!TIP]
-> **Test the current phone build in the same scene.**
->
-> Compare fixed 60 and Auto during ordinary boot, menus and battle. Keep audio running at zero output gain. Record the build and stable measurement windows.
->
-> This comparison must precede broader claims about phone performance.
+The useful loop was to reproduce a symptom, trace its instructions, make a narrow change, compare controlled behavior, then test ordinary interaction. The failed Start press showed why the final step matters. A successful throughput benchmark still missed a real input defect.
 
-1. **Validate the current phone build.** Record ordinary boot, menu, selection and battle with stable windows, current browser cadence and running audio. Compare the same scene at fixed 60 and Auto, including fullscreen and a longer warm-device session. Distinguish computation, shown callbacks and physical display evidence.
-2. **Resolve the menu bottleneck.** Capture the command observer on the affected phone before modifying batching. If many small batches are implicated, prove texture and framebuffer dependencies, compare images and VRAM, and retain the conservative fallback. Fast desktop menus cannot demonstrate a phone fix.
-3. **Finish game-flow coverage.** Reach natural results, re-entry and rematch, then extend high refresh one mode/camera lifecycle at a time. Preserve pause, input edges and cue timing. Improve effects or hierarchy-aware pose interpolation only with corresponding visual controls.
-4. **Integrate the two multiplayer routes.** For streaming, complete a host-plus-two-client match and test latency, relay use and disconnects. For independent execution, expose agreed selection/settings and prove battle-to-rematch checkpoints. Investigate the original Network Battle bridge separately before committing to restoration. It is an integration option within the second route, not a completed third mode.
+- **Separate the metrics.** Computed renders, gameplay ticks and browser-shown updates measure different things. See [the rendering goal](04-frame-rate.md).
+- **Keep results with their conditions.** An older phone capture and a bounded PC test cannot establish current-phone performance. See [adaptive results and limits](06-adaptive-rendering.md).
+- **Keep the multiplayer routes distinct.** Streaming shares one runtime. Independent clients must agree on gameplay state. Their integration and validation needs differ.
 
-## Improvements worth proposing upstream
-
-This work suggests five reusable compiler/runtime improvements:
-
-- Preserve mappings from guest addresses to generated functions.
-- Expose narrow, documented hook points.
-- Provide deterministic tests with scripted input.
-- Report simulation, presentation and audio counters separately.
-- Test asynchronous resource completion at fixed guest times.
-These are proposals for review, not published contributions or promises that the generic runtime should absorb game-specific behavior.
-
-Wider-screen presentation, independent camera rendering and new cooperative rules remain separate projects with their own acceptance criteria. The next useful milestone is a complete, repeatable user journey whose evidence survives beyond a successful experiment.
+See [Further work](10-further-work.md) for the proposed checks and integrations.

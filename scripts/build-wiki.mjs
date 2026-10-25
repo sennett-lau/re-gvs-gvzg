@@ -68,7 +68,7 @@ const stageItems = (stage) =>
   stage.items || stage.groups.flatMap((group) => group.items);
 for (const item of [
   ...navigation.stages.flatMap(stageItems),
-  navigation.conclusion,
+  ...navigation.conclusions,
   ...navigation.evidence,
   ...navigation.project,
   ...navigation.contributing,
@@ -232,12 +232,15 @@ for (const page of pages) {
         `<section class="nav-stage${stage === activeStage ? " is-active-stage" : ""}" aria-label="Stage ${stage.number}: ${stage.title}"><h2><span>${stage.number}</span>${escapeHtml(stage.title)}</h2>${stage.items ? stage.items.map((item) => navLink(item)).join("") : stage.groups.map((group) => `<section class="nav-feature" aria-label="${escapeHtml(group.title)}"><h3>${escapeHtml(group.title)}</h3>${group.items.map((item) => navLink(item, group.title === "Multiplayer" ? "route-link" : "")).join("")}</section>`).join("")}</section>`,
     )
     .join("");
+  const activeConclusion = navigation.conclusions.find(
+    (item) => item.source === page.source,
+  );
   const contributorPage = navigation.contributing.some(
     (item) => item.source === page.source,
   );
   const secondaryNav = (items, label) =>
     `<details class="project-links"${items.some((item) => item.source === page.source) ? " open" : ""}><summary>${escapeHtml(label)}</summary><nav aria-label="${escapeHtml(label)}">${items.map((item) => navLink(item)).join("")}</nav></details>`;
-  const nav = `<nav aria-label="Research stages">${navLink({ source: "README.md", label: "Overview" }, "overview-link")}${stageHtml}<div class="nav-conclusion">${navLink(navigation.conclusion)}</div></nav><nav class="evidence-links" aria-label="Evidence"><h2><span class="evidence-symbol" aria-hidden="true">◇</span> Evidence</h2>${navigation.evidence.map((item) => navLink(item)).join("")}</nav>${secondaryNav(navigation.project, "Project reference")}${secondaryNav(navigation.contributing, "Contributing")}`;
+  const nav = `<nav aria-label="Research stages">${navLink({ source: "README.md", label: "Overview" }, "overview-link")}${stageHtml}<div class="nav-conclusion">${navigation.conclusions.map((item) => navLink(item)).join("")}</div></nav><nav class="evidence-links" aria-label="Evidence"><h2><span class="evidence-symbol" aria-hidden="true">◇</span> Evidence</h2>${navigation.evidence.map((item) => navLink(item)).join("")}</nav>${secondaryNav(navigation.project, "Project reference")}${secondaryNav(navigation.contributing, "Contributing")}`;
   const stageMap =
     page.source === "README.md"
       ? `<nav class="stage-map" aria-label="The research journey">${navigation.stages.map((stage) => `<a href="${rel(pageBySource.get(stageItems(stage)[0].source).output)}"><span>${stage.number}</span><strong>${escapeHtml(stage.title)}</strong><i aria-hidden="true">↗</i></a>`).join("")}</nav>`
@@ -293,8 +296,8 @@ for (const page of pages) {
           ? "REVERSE ENGINEERING / A RESEARCH JOURNEY"
           : contributorPage
             ? "CONTRIBUTING / PROJECT WORK"
-            : index === chapters.length - 1
-              ? "LOOKING AHEAD / FINDINGS"
+            : activeConclusion
+              ? `RESEARCH / ${escapeHtml(activeConclusion.label.toUpperCase())}`
               : "PROJECT / REFERENCE",
     BODY: body,
     PAGER: pager,
