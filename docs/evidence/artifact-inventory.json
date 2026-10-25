@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "inspected_on": "2026-10-25",
+  "method": "New filesystem measurement; source paths relative to original working tree. No game artifacts copied. Tree digest hashes sorted relative-path NUL decimal-byte-length NUL file-SHA256 newline records.",
+  "generated": {
+    "source": "generated/gundam-vs-z-gundam",
+    "files": 1186,
+    "bytes": 296865530,
+    "tree_manifest_sha256": "10170dce67f6953b1e5920db21305497365c792942166139d4e878f79b57c687",
+    "largest": {
+      "path": "table.cpp",
+      "bytes": 64222424
+    }
+  },
+  "historical_web_trio": [
+    {
+      "source": "build/web-gundam-vs-z-gundam/ps2web.wasm",
+      "bytes": 95074555,
+      "sha256": "98721b1e5c4c2d96979c94da64fd9cde002f13d39dc442dddc070ad75eb53a2f"
+    },
+    {
+      "source": "build/web-gundam-vs-z-gundam/ps2web.js",
+      "bytes": 151840,
+      "sha256": "97264b4dc52e6f36ff5a6025790b565bb24f6d01771817124b7e40736fbf70fb"
+    },
+    {
+      "source": "build/web-gundam-vs-z-gundam/ps2web.data",
+      "bytes": 6149694,
+      "sha256": "5022376bdf70c8fac649657d3b90bc88b8c5621aa751ba98bd64393e2ba2496b"
+    }
+  ],
+  "limits": [
+    "This is not Git pack size.",
+    "The validation manifest spans later mobile changes; not a pristine first-working baseline.",
+    "No GitHub upload was performed."
+  ]
+}
