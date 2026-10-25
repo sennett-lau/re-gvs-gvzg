@@ -32,3 +32,11 @@ For performance tests, use zero output gain while keeping the AudioContext and r
 ## AI assistance
 
 AI agents assisted code investigation, test preparation and writing. Claims in this report rest on retained code, byte checks, measurements and observed behavior; an agent's explanation alone is not experimental evidence. Agent, model and provider names are intentionally omitted.
+
+## Checks performed while assembling this report
+
+The report's local checker parses the curated JSON, resolves Markdown and generated-reader links/anchors, checks for selected privacy markers and rejects accidental game payloads or oversized ordinary-Git files. It is a bounded check, not an exhaustive anonymization guarantee. Run `npm run check` after building the reader in a Git checkout; `node scripts/check-report.mjs --source-only` defers reader links until a build exists. A private comma-separated `REPORT_FORBIDDEN_TERMS` environment value can add project-specific wording checks without storing those terms in the report.
+
+During assembly, 69 unique original-source SHA-256 fingerprints matched the retained files. The reader passed 44 layout checks across 11 representative pages at widths of 320, 390, 768 and 1,440 pixels. The slider, keyboard input, repeat/interpolate comparison, budget selector and architecture switch were exercised. With JavaScript disabled, the full chapter and static figure remained available. No page exception or failed HTTP response was observed in that reader test. The remaining reference pages were included in static link validation.
+
+These checks validate the report artifact and its reading interface. They do not add a new game, phone, audio or multiplayer performance result to the historical research.

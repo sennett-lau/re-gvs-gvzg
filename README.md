@@ -28,6 +28,7 @@ Requirements: Node.js 20 or newer and Python 3. No game, disc or GPU is needed t
 ```sh
 npm ci --ignore-scripts
 npm run wiki:build
+npm run check
 npm run wiki:serve
 ```
 
