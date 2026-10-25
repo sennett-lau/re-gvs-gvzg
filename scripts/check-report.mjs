@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
+import { marked } from "marked";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const wiki = path.join(root, ".local/wiki");
@@ -258,6 +259,32 @@ function checkHtml(file) {
     checkLink(file, match[2], "HTML link", match[1].toLowerCase() === "src");
 }
 
+function checkChapterBrief(source) {
+  const file = path.join(wiki, path.basename(source, ".md") + ".html");
+  if (!fs.existsSync(file)) {
+    fail(source, "chapter is missing from the generated reader");
+    return;
+  }
+  const brief = /^> \*\*At a glance\*\*\r?\n((?:>[^\n]*(?:\n|$))+)/m.exec(
+    read(source),
+  );
+  if (!brief) {
+    fail(source, "missing chapter summary");
+    return;
+  }
+  const plain = (html) =>
+    decodeEntities(html.replace(/<[^>]*>/g, " "))
+      .replace(/\s+/g, " ")
+      .trim();
+  const output = plain(read(file));
+  // A reader hint and the following summary can merge into one blockquote.
+  // Check the actual sentences so stripping that hint cannot erase the brief.
+  for (const item of brief[1].matchAll(/^> - (.+)$/gm)) {
+    if (!output.includes(plain(marked.parseInline(item[1]))))
+      fail(file, "chapter brief text missing from the generated reader");
+  }
+}
+
 let files = [];
 try {
   files = [
@@ -339,6 +366,10 @@ if (!sourceOnly) {
     fail(wiki, "reader is not built; run npm run wiki:build first");
   for (const file of walk(wiki).filter((file) => /\.html?$/i.test(file)))
     checkHtml(file);
+  for (const source of walk(path.join(root, "docs/chapters")).filter((file) =>
+    file.endsWith(".md"),
+  ))
+    checkChapterBrief(source);
 }
 
 if (errors.length) {
