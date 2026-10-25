@@ -8,21 +8,23 @@
 > - **Result:** The 60-Hz input-sync prototype passed bounded state comparisons after disc-completion timing was corrected.
 > - **Still open:** Selection, results and rematch are not integrated. Restoring the original Network Battle service is an option within this route, not a completed feature.
 
-**Route B runs a copy of the game on each device.** A relay exchanges inputs and state checks; it sends no video. The working prototype uses the original local two-player Arcade challenge fixture. It does **not** restore the main menu's **通信対戦 / Network Battle** service, and it has not completed the selection-to-rematch integration. This chapter reviews the available evidence on 2026-10-25.
+**Route B runs a copy of the game on each device.** A relay exchanges inputs and state checks. It sends no video. The working prototype uses the original local two-player Arcade challenge fixture. It does **not** restore the main menu's **通信対戦 / Network Battle** service, and it has not completed the selection-to-rematch integration. This chapter reviews the available evidence on 2026-10-25.
 
 ## Start with two independently controlled players
 
-Connecting two pad slots was insufficient evidence. Native tests first compared neutral input with P1-only and P2-only movement and firing. Each port changed its assigned human actor, while the other human's position and ammunition matched the neutral run at all 181 sampled boundaries. The fixture places the two human players on opposing sides, each with a CPU partner, using the game's original vertical split screen.
+A fixture is a fixed test setup with known players, state and inputs. Connecting two pad slots alone did not establish independent player control. Native tests first compared neutral input with P1-only and P2-only movement and firing. Each port changed its assigned human actor, while the other human's position and ammunition matched the neutral run at all 181 sampled boundaries. The fixture places the two human players on opposing sides, each with a CPU partner, using the game's original vertical split screen.
 
 Two native processes then executed 300 frames through an HTTP input relay, with one starting three seconds later and irregular 75 ms input delay. All 301 compared boundaries agreed, including final RAM and serialized machine state. A negative control applied the wrong input at tick 40: the first RAM difference appeared at tick 41, and both clients stopped at checkpoint 60. The failure detector was part of the proof.
 
-These tests establish actor ownership and a bounded deterministic baseline. They do not prove browser or cross-device agreement. In the browser prototype, each client still renders the original two-player scene; CSS displays its own half. This provides separate views without a new full-width camera renderer or a reduction to rendering only one player view.
+These tests establish actor ownership and a bounded deterministic baseline. They do not prove browser or cross-device agreement. In the browser prototype, each client still renders the original two-player scene. CSS displays its own half. This provides separate views without a new full-width camera renderer or a reduction to rendering only one player view.
 
 ## Fix startup failures and state mismatches
 
-The transport assigns player slots, agrees on build and initial-state identities, buffers future inputs and waits for the shared input pair before each 60 Hz simulation tick. It periodically compares full-RAM hashes. Missing input pauses progress; mismatches stop the session. There is no rollback or mid-match resynchronization.
+The transport assigns player slots and agrees on build and initial-state identities. It buffers future inputs. Both copies wait for the shared input pair before each 60 Hz simulation tick. This approach is called lockstep.
 
-A generic halt message initially hid whether failure came from transport, an expired lease or differing state. Diagnostics were changed to preserve the precise JavaScript error and checkpoint. An injected-clock test reproduced a 31-second initialization expiring a 30-second lease. Startup recovery now reclaims only the same player's slot before gameplay begins, resumes the initial input window and has a bounded deadline. This reproduced a possible failure; it did not identify the cause of every user's phone report.
+At checkpoints, it compares full-RAM hashes from both copies at the same gameplay tick. Missing input pauses progress. Mismatches stop the session. There is no rollback or mid-match resynchronization.
+
+A generic halt message initially hid whether failure came from transport, an expired lease or differing state. Diagnostics were changed to preserve the precise JavaScript error and checkpoint. An injected-clock test reproduced a 31-second initialization expiring a 30-second lease. Startup recovery now reclaims only the same player's slot before gameplay begins, resumes the initial input window and has a bounded deadline. This reproduced a possible failure. It did not identify the cause of every user's phone report.
 
 A later browser pair still diverged at checkpoint 120 despite matching initial hashes and effectively neutral inputs. Replaying its exact inputs natively ruled out unequal controls. The next hypothesis concerned asynchronous disc loading: a false browser readiness result postponed an emulated CDVD completion by 1,000 guest microseconds. Identical disc bytes could therefore arrive at different **game times**.
 
@@ -32,9 +34,16 @@ The corrected policy waits in host time for required bytes while preserving the 
 
 ## What the longer browser test proves
 
-The later test used the release candidate's unchanged JS/WASM, plus a wrapper selecting delayed disc routes and observing checkpoints. Both Chrome instances matched all **23 checkpoints from 0 through 2,640**, equivalent to 44 guest seconds. One used mobile configuration; both actually ran on the same desktop. Inputs were neutral. There were harmless missing-favicon requests, but no recorded game/page exception.
+> [!IMPORTANT]
+> **23 checkpoints agreed across 44 guest seconds.**
+>
+> Both Chrome instances matched checkpoints **0 through 2,640**. **Both ran on the same desktop with neutral inputs.** One used mobile configuration.
+>
+> This test does not establish physical-phone or full-match behavior. [Evidence: browser release stress](../evidence/network-findings.json).
 
-The selected values, source hashes and limitations are in [network-findings.json](../evidence/network-findings.json). The short native actor-control tests and longer neutral browser test answer different questions. Together they support continuing the prototype; neither is a full-match, physical-phone or internet reliability claim. No new game run was performed while assembling this report.
+The test used the release candidate's unchanged JS/WASM. A wrapper selected delayed disc routes and observed checkpoints. There were harmless missing-favicon requests, but no recorded game/page exception.
+
+The selected values, source hashes and limitations are in [network-findings.json](../evidence/network-findings.json). The short native actor-control tests and longer neutral browser test answer different questions. Together they support continued work on the prototype. Neither establishes full-match completion, physical-phone behavior or internet reliability. No new game run was performed while assembling this report.
 
 ## How the original online mode differs
 
@@ -55,14 +64,14 @@ There are two ways to integrate the game's online menu within route B:
 
 | Integration option | Work needed | Current status |
 | --- | --- | --- |
-| Browser-owned lobby | Intercept the menu handoff, agree on settings, then launch the existing input-sync route | The shorter proposed path; not integrated |
-| Restore the original lobby | Bridge the original network/session calls to a compatible backend | Original behavior has been inspected; no working connection has been demonstrated |
+| Browser-owned lobby | Intercept the menu handoff, agree on settings, then launch the existing input-sync route | The shorter proposed path. It is not integrated. |
+| Restore the original lobby | Bridge the original network/session calls to a compatible backend | Original behavior has been inspected. No working connection has been demonstrated. |
 
 Both belong to the independent-client route. An invitation should identify the chosen server and room, while a short code would only make sense within that server.
 
 ## What Co-op Anything contributes
 
-The pinned [Co-op Anything review target](https://github.com/cranebeaker/coop-anything/tree/5b86e5bb10ce864ab9872f2589651f73ffcae5db) supplied development guidance and candidate testing utilities, not a Gundam multiplayer adapter. It was inspected, not installed or executed. Its trace, pose-comparison and impairment-testing ideas could help diagnose divergence; native bridge and PC-engine detection tools need adaptation for this PS2/browser target.
+The pinned [Co-op Anything review target](https://github.com/cranebeaker/coop-anything/tree/5b86e5bb10ce864ab9872f2589651f73ffcae5db) supplied development guidance and candidate testing utilities, not a Gundam multiplayer adapter. It was inspected, not installed or executed. Its trace, pose-comparison and impairment-testing ideas could help diagnose divergence. Native bridge and PC-engine detection tools need adaptation for this PS2/browser target.
 
 Rendering interpolation is useful observability, but positions alone are not a replication schema. Projectiles, damage, randomness, ownership, timers and transitions must also agree. New cooperative rules would additionally require teams, spawning, AI, camera, HUD and win/loss work. Neither transport makes campaign co-op appear automatically.
 
