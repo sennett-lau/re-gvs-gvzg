@@ -1,13 +1,57 @@
 import { figureSvg, escapeHtml } from "./figures.js";
 const menu = document.querySelector("[data-chapter-menu]");
 if (menu) {
-  const wide = matchMedia("(min-width: 661px)");
+  const wide = matchMedia("(min-width: 981px)");
   const sync = () => {
     menu.open = wide.matches;
   };
   sync();
   wide.addEventListener("change", sync);
 }
+const outlineMenu = document.querySelector("[data-outline-menu]");
+if (outlineMenu) {
+  const wide = matchMedia("(min-width: 1351px)");
+  const sync = () => {
+    outlineMenu.open = wide.matches;
+  };
+  sync();
+  wide.addEventListener("change", sync);
+}
+const outlineLinks = [...document.querySelectorAll(".page-outline a")];
+const headings = outlineLinks
+  .map((link) =>
+    document.getElementById(decodeURIComponent(link.hash.slice(1))),
+  )
+  .filter(Boolean);
+const progress = document.querySelector(".reading-progress span");
+let queued = false;
+function updateReadingPosition() {
+  const offset = innerWidth <= 980 ? 180 : 125;
+  const current = [...headings]
+    .reverse()
+    .find((heading) => heading.getBoundingClientRect().top <= offset);
+  for (const link of outlineLinks) {
+    if (current && link.hash === "#" + current.id)
+      link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  }
+  if (progress) {
+    const available = document.documentElement.scrollHeight - innerHeight;
+    const fraction =
+      available > 0 ? Math.max(0, Math.min(1, scrollY / available)) : 0;
+    progress.style.transform = `scaleX(${fraction})`;
+  }
+  queued = false;
+}
+function scheduleReadingUpdate() {
+  if (!queued) {
+    queued = true;
+    requestAnimationFrame(updateReadingPosition);
+  }
+}
+addEventListener("scroll", scheduleReadingUpdate, { passive: true });
+addEventListener("resize", scheduleReadingUpdate);
+updateReadingPosition();
 for (const figure of document.querySelectorAll("figure[data-interactive]")) {
   try {
     const kind = figure.dataset.interactive;

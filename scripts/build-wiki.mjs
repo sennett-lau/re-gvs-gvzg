@@ -52,15 +52,21 @@ for (const source of markdown) {
   pages.push({ source, text, title, output: pagePath(source) });
 }
 const chapters = pages.filter((p) => p.source.startsWith("docs/chapters/"));
-const references = [
-  "docs/REPOSITORY.md",
-  "docs/VERSIONS.md",
-  "docs/EVIDENCE.md",
-  "docs/DERIVED.md",
-  "docs/GAME_FILES.md",
-  "docs/license/CONTENT_NOTICE.md",
-  "docs/license/THIRD_PARTY_NOTICES.md",
-];
+const navigation = JSON.parse(
+  await fs.readFile(path.join(root, "apps/wiki/navigation.json"), "utf8"),
+);
+const pageBySource = new Map(pages.map((page) => [page.source, page]));
+const stageItems = (stage) =>
+  stage.items || stage.groups.flatMap((group) => group.items);
+for (const item of [
+  ...navigation.stages.flatMap(stageItems),
+  navigation.conclusion,
+  ...navigation.evidence,
+  ...navigation.project,
+]) {
+  if (!pageBySource.has(item.source))
+    throw Error(`Missing navigation source: ${item.source}`);
+}
 // The digest describes the exact content/templates used, independent of commit time.
 const manifest = { schema: 1, source_sha256: {} };
 for (const file of [
@@ -90,6 +96,11 @@ for (const [src, dst] of [
   ["apps/wiki/components/figures.js", "figures.js"],
 ])
   await fs.copyFile(path.join(root, src), path.join(out, "assets", dst));
+await fs.cp(
+  path.join(root, "apps/wiki/fonts"),
+  path.join(out, "assets/fonts"),
+  { recursive: true },
+);
 for (const source of ["README.md", "upstream.lock", ...docs]) {
   const target = path.join(out, "sources", source);
   await fs.mkdir(path.dirname(target), { recursive: true });
@@ -124,6 +135,7 @@ for (const page of pages) {
     return rel(destination) + (fragment ? "#" + fragment : "");
   };
   const ids = new Map();
+  const outline = [];
   const renderer = new marked.Renderer();
   renderer.heading = function ({ tokens, depth, text }) {
     const base = text
@@ -135,6 +147,7 @@ for (const page of pages) {
     const count = ids.get(base) || 0;
     ids.set(base, count + 1);
     const id = base + (count ? `-${count}` : "");
+    if (depth === 2) outline.push({ id, label: text.replace(/[*`]/g, "") });
     return `<h${depth} id="${escapeHtml(id)}">${this.parser.parseInline(tokens)}</h${depth}>\n`;
   };
   renderer.link = function ({ href, title, tokens }) {
@@ -143,10 +156,20 @@ for (const page of pages) {
   renderer.image = function ({ href, text }) {
     return `<img src="${escapeHtml(rewrite(href))}" alt="${escapeHtml(text)}" loading="lazy">`;
   };
-  let body = marked.parse(page.text, { renderer, gfm: true });
+  // Remove only the Markdown reader hint before parsing. Adjacent blockquotes
+  // can merge, so removing the resulting HTML block would also erase a brief.
+  let body = marked.parse(
+    page.text.replace(/^> Prefer the illustrated reader\?.*$/m, ""),
+    { renderer, gfm: true },
+  );
+  body = body.replace(/^<h1[^>]*>[\s\S]*?<\/h1>\s*/, "");
   body = body.replace(
-    /<blockquote>\s*<p>Prefer the illustrated reader\?[\s\S]*?<\/blockquote>\s*/,
-    "",
+    /<blockquote>\s*<p><strong>At a glance<\/strong><\/p>/g,
+    '<blockquote class="chapter-brief" aria-label="At a glance"><p><strong>At a glance</strong></p>',
+  );
+  body = body.replace(
+    /<p><strong>Current snapshot:/g,
+    '<p class="snapshot-note"><strong>Current snapshot:',
   );
   body = body.replace(
     /<!-- interactive: ([a-z-]+) -->\s*<p><img[^>]+><\/p>/g,
@@ -162,28 +185,28 @@ for (const page of pages) {
       '<div class="table-wrap" role="region" aria-label="Research table" tabindex="0"><table>',
     )
     .replace(/<\/table>/g, "</table></div>");
-  const navLink = (p, label, num) =>
-    `<a href="${escapeHtml(rel(p.output))}"${p.source === page.source ? ' aria-current="page"' : ""}><span>${num}</span>${escapeHtml(label)}</a>`;
-  const nav =
-    '<nav aria-label="Chapters">' +
-    navLink(pages[0], "Overview", "—") +
-    chapters
-      .map((p, i) =>
-        navLink(
-          p,
-          p.title.replace(/^\d+\s*[·—-]\s*/, ""),
-          String(i + 1).padStart(2, "0"),
-        ),
-      )
-      .join("") +
-    '</nav><nav class="reference-links" aria-label="Project reference">' +
-    references
-      .map((source) => {
-        const p = pages.find((p) => p.source === source);
-        return p ? navLink(p, p.title, "↗") : "";
-      })
-      .join("") +
-    "</nav>";
+  const navLink = (item, className = "") => {
+    const destination = pageBySource.get(item.source);
+    const active = item.source === page.source;
+    return `<a class="nav-link ${className}" href="${escapeHtml(rel(destination.output))}"${active ? ' aria-current="page"' : ""}><span>${escapeHtml(item.label)}</span>${active ? '<i aria-hidden="true">↗</i>' : ""}</a>`;
+  };
+  const activeStage = navigation.stages.find((stage) =>
+    stageItems(stage).some((item) => item.source === page.source),
+  );
+  const activeGroup = activeStage?.groups?.find((group) =>
+    group.items.some((item) => item.source === page.source),
+  );
+  const stageHtml = navigation.stages
+    .map(
+      (stage) =>
+        `<section class="nav-stage${stage === activeStage ? " is-active-stage" : ""}" aria-label="Stage ${stage.number}: ${stage.title}"><h2><span>${stage.number}</span>${escapeHtml(stage.title)}</h2>${stage.items ? stage.items.map((item) => navLink(item)).join("") : stage.groups.map((group) => `<section class="nav-feature" aria-label="${escapeHtml(group.title)}"><h3>${escapeHtml(group.title)}</h3>${group.items.map((item) => navLink(item, group.title === "Multiplayer" ? "route-link" : "")).join("")}</section>`).join("")}</section>`,
+    )
+    .join("");
+  const nav = `<nav aria-label="Research stages">${navLink({ source: "README.md", label: "Overview" }, "overview-link")}${stageHtml}<div class="nav-conclusion">${navLink(navigation.conclusion)}</div></nav><nav class="evidence-links" aria-label="Evidence"><h2><span class="evidence-symbol" aria-hidden="true">◇</span> Evidence</h2>${navigation.evidence.map((item) => navLink(item)).join("")}</nav><details class="project-links"${navigation.project.some((item) => item.source === page.source) ? " open" : ""}><summary>Project reference</summary><nav aria-label="Project reference">${navigation.project.map((item) => navLink(item)).join("")}</nav></details>`;
+  const stageMap =
+    page.source === "README.md"
+      ? `<nav class="stage-map" aria-label="The research journey">${navigation.stages.map((stage) => `<a href="${rel(pageBySource.get(stageItems(stage)[0].source).output)}"><span>${stage.number}</span><strong>${escapeHtml(stage.title)}</strong><i aria-hidden="true">↗</i></a>`).join("")}</nav>`
+      : "";
   const index = chapters.findIndex((p) => p.source === page.source);
   let pager = "";
   if (page.source === "README.md")
@@ -198,14 +221,38 @@ for (const page of pages) {
   }
   const values = {
     TITLE: escapeHtml(page.title),
+    HEADING: escapeHtml(page.title.replace(/^\d+\s*[·—-]\s*/, "")),
+    PAGE_CLASS:
+      page.source === "README.md"
+        ? "overview-page"
+        : index >= 0
+          ? "chapter-page"
+          : "reference-page",
+    STAGE_MAP: stageMap,
+    OUTLINE: outline
+      .map(
+        (item) =>
+          `<a href="#${escapeHtml(item.id)}">${escapeHtml(item.label)}</a>`,
+      )
+      .join(""),
+    READING_META:
+      index >= 0
+        ? `<span>Chapter ${String(index + 1).padStart(2, "0")}</span><span>${Math.max(1, Math.ceil(page.text.split(/\s+/).length / 220))} min read</span><span>Research record</span>`
+        : `<span>${page.source === "README.md" ? "PS2 → C++ → WebAssembly" : "Project reference"}</span>`,
     ASSETS: rel("assets"),
     HOME: rel("index.html"),
     NAV: nav,
     SOURCE: rel("sources/" + page.source),
-    KICKER:
-      index >= 0
-        ? `CHAPTER ${String(index + 1).padStart(2, "0")} / ${String(chapters.length).padStart(2, "0")}`
-        : "PROJECT RECORD",
+    KICKER: activeStage
+      ? `STAGE ${activeStage.number} / ${escapeHtml(activeStage.title)}${activeGroup ? " / " + escapeHtml(activeGroup.title) : ""}`
+      : page.source.startsWith("docs/evidence/") ||
+          page.source === "docs/EVIDENCE.md"
+        ? "EVIDENCE / RESEARCH NOTES"
+        : page.source === "README.md"
+          ? "REVERSE ENGINEERING / A RESEARCH JOURNEY"
+          : index === chapters.length - 1
+            ? "LOOKING AHEAD / FINDINGS"
+            : "PROJECT / REFERENCE",
     BODY: body,
     PAGER: pager,
     SOURCE_ID: sourceId.slice(0, 12),

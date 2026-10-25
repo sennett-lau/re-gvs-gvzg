@@ -5,42 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="A research record of PS2 recompilation, adaptive rendering and multiplayer experiments."
+      content="A research record of PS2 recompilation, adaptive rendering and two multiplayer approaches."
     />
+    <meta name="theme-color" content="#edf0ef" />
     <title>{{TITLE}} · re-gvs-gvzg</title>
     <link rel="stylesheet" href="{{ASSETS}}/wiki.css" />
     <script type="module" src="{{ASSETS}}/reader.js"></script>
   </head>
-  <body>
+  <body class="{{PAGE_CLASS}}">
     <a class="skip" href="#article">Skip to content</a>
     <header class="masthead">
       <a class="wordmark" href="{{HOME}}"
-        >re-gvs-gvzg<span>RESEARCH NOTEBOOK / 01</span></a
-      ><span class="edition">LOCAL EDITION <b>25 OCT 2026</b></span>
+        ><span class="brand-mark" aria-hidden="true">r/</span
+        ><span>re-gvs-gvzg<small>GUNDAM VS. SERIES</small></span></a
+      >
+      <div class="masthead-note">
+        <span>RESEARCH NOTEBOOK</span
+        ><span class="local-label"><i></i> Local edition</span>
+      </div>
+      <div class="reading-progress" aria-hidden="true"><span></span></div>
     </header>
     <div class="layout">
       <aside class="sidebar" aria-label="Research navigation">
-        <p class="eyebrow">The investigation</p>
         <details class="chapter-menu" data-chapter-menu>
-          <summary>Contents &amp; project notes</summary>
+          <summary>
+            <span>Browse the research</span
+            ><span class="menu-symbol" aria-hidden="true">+</span>
+          </summary>
           {{NAV}}
         </details>
         <div class="side-note">
-          <span class="status-dot"></span> Evidence, not a release<br /><small
-            >Report and reader only.<br />Game packaging remains
-            separate.</small
-          >
+          <span class="eyebrow">ABOUT THIS EDITION</span>
+          <p>Research, experiments<br />and the evidence behind them.</p>
+          <span class="note-date">25 OCT 2026</span>
         </div>
       </aside>
       <main id="article" tabindex="-1">
         <div class="article-meta">
-          <span>{{KICKER}}</span><a href="{{SOURCE}}">View Markdown ↗</a>
+          <span>{{KICKER}}</span
+          ><a href="{{SOURCE}}"
+            >Markdown source <span aria-hidden="true">↗</span></a
+          >
         </div>
-        <article>{{BODY}}</article>
+        <header class="article-heading">
+          <h1>{{HEADING}}</h1>
+          <div class="reading-meta">{{READING_META}}</div>
+        </header>
+        {{STAGE_MAP}}
+        <div class="article-layout">
+          <article>{{BODY}}</article>
+          <aside class="page-outline" aria-label="On this page">
+            <details data-outline-menu>
+              <summary>On this page</summary>
+              <nav>{{OUTLINE}}</nav>
+            </details>
+          </aside>
+        </div>
         <nav class="chapter-pager" aria-label="Continue reading">{{PAGER}}</nav>
         <footer class="article-footer">
-          One source, two ways to read. This page is generated from the linked
-          Markdown. <span>Source set <code>{{SOURCE_ID}}</code></span>
+          <span>One Markdown source. An illustrated reading experience.</span
+          ><a href="{{SOURCE}}">Source set <code>{{SOURCE_ID}}</code></a>
         </footer>
       </main>
     </div>

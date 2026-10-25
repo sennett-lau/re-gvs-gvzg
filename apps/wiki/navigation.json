@@ -1,0 +1,86 @@
+{
+  "stages": [
+    {
+      "number": "01",
+      "title": "Recompile",
+      "id": "recompile",
+      "items": [
+        {
+          "source": "docs/chapters/01-disc-to-code.md",
+          "label": "From a PS2 disc to C++"
+        },
+        {
+          "source": "docs/chapters/02-browser-port.md",
+          "label": "From C++ to the browser"
+        }
+      ]
+    },
+    {
+      "number": "02",
+      "title": "Optimize",
+      "id": "optimize",
+      "items": [
+        {
+          "source": "docs/chapters/03-performance.md",
+          "label": "Performance & usability"
+        }
+      ]
+    },
+    {
+      "number": "03",
+      "title": "Extend",
+      "id": "extend",
+      "groups": [
+        {
+          "title": "High-refresh rendering",
+          "items": [
+            {
+              "source": "docs/chapters/04-frame-rate.md",
+              "label": "Understand the goal"
+            },
+            {
+              "source": "docs/chapters/05-rendering-boundary.md",
+              "label": "Separate gameplay & rendering"
+            },
+            {
+              "source": "docs/chapters/06-adaptive-rendering.md",
+              "label": "Adaptive results & limits"
+            }
+          ]
+        },
+        {
+          "title": "Multiplayer",
+          "items": [
+            {
+              "source": "docs/chapters/07-host-streaming.md",
+              "label": "A · One host, two controllers"
+            },
+            {
+              "source": "docs/chapters/08-independent-clients.md",
+              "label": "B · A game on each device"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "conclusion": {
+    "source": "docs/chapters/09-learnings.md",
+    "label": "Findings & next steps"
+  },
+  "evidence": [
+    { "source": "docs/evidence/README.md", "label": "Evidence index" },
+    { "source": "docs/EVIDENCE.md", "label": "Methods & measurement notes" }
+  ],
+  "project": [
+    { "source": "docs/REPOSITORY.md", "label": "Repository design" },
+    { "source": "docs/VERSIONS.md", "label": "Versions & milestones" },
+    { "source": "docs/DERIVED.md", "label": "Artifacts & file sizes" },
+    { "source": "docs/GAME_FILES.md", "label": "Game inputs & setup" },
+    { "source": "docs/license/CONTENT_NOTICE.md", "label": "Content notice" },
+    {
+      "source": "docs/license/THIRD_PARTY_NOTICES.md",
+      "label": "Third-party notices"
+    }
+  ]
+}
