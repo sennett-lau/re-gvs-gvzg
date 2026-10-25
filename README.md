@@ -1,6 +1,4 @@
-# re-gvs-gvzg
-
-**Reverse Engineering: Gundam VS. Series - Gundam vs. Zeta Gundam**
+# Reverse Engineering: Gundam VS. Series - Gundam vs. Zeta Gundam
 
 This project studies how a PS2 game can run in a browser. It follows the work from recompilation to performance improvements, higher refresh rates and multiplayer experiments.
 

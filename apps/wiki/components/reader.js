@@ -17,7 +17,10 @@ const headings = outlineLinks
 const progress = document.querySelector(".reading-progress span");
 let queued = false;
 function updateReadingPosition() {
-  const offset = innerWidth <= 980 ? 180 : 125;
+  const headerHeight = document
+    .querySelector(".masthead")
+    .getBoundingClientRect().height;
+  const offset = headerHeight + (innerWidth <= 980 ? 110 : 47);
   const current = [...headings]
     .reverse()
     .find((heading) => heading.getBoundingClientRect().top <= offset);

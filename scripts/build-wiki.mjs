@@ -61,6 +61,9 @@ const navigation = JSON.parse(
 );
 const pageBySource = new Map(pages.map((page) => [page.source, page]));
 const projectName = pageBySource.get("README.md").title;
+const repoName = JSON.parse(
+  await fs.readFile(path.join(root, "package.json"), "utf8"),
+).name;
 const stageItems = (stage) =>
   stage.items || stage.groups.flatMap((group) => group.items);
 for (const item of [
@@ -255,9 +258,10 @@ for (const page of pages) {
     TITLE: escapeHtml(
       page.source === "README.md"
         ? projectName
-        : `${page.title} · ${projectName}`,
+        : `${page.title} · ${repoName}`,
     ),
     PROJECT_NAME: escapeHtml(projectName),
+    REPO_NAME: escapeHtml(repoName),
     HEADING: escapeHtml(page.title.replace(/^\d+\s*[·—-]\s*/, "")),
     PAGE_CLASS:
       page.source === "README.md"
@@ -275,7 +279,7 @@ for (const page of pages) {
     READING_META:
       index >= 0
         ? `<span>Chapter ${String(index + 1).padStart(2, "0")}</span><span>${Math.max(1, Math.ceil(page.text.split(/\s+/).length / 220))} min read</span><span>Research record</span>`
-        : `<span>${page.source === "README.md" ? "PS2 → C++ → WebAssembly" : contributorPage ? "Contributor reference" : "Project reference"}</span>`,
+        : `<span>${page.source === "README.md" ? escapeHtml(repoName) : contributorPage ? "Contributor reference" : "Project reference"}</span>`,
     ASSETS: rel("assets"),
     HOME: rel("index.html"),
     NAV: nav,
