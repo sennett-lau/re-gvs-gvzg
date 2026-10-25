@@ -1,12 +1,18 @@
-# 06 · Adaptive rendering, measured honestly
+# 06 · Adaptive rendering: results and limits
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/06-adaptive-rendering.html).
 
-The adaptive route changes how much extra rendering the device attempts while keeping canonical gameplay at 60 updates per emulated second. It addresses a practical failure of fixed 120 rendering: a machine completing only 80 of those intervals per wall second would advance just 40 gameplay updates and produce slow audio. At a correctly scheduled target of 80, the same 80 intervals can contain 60 gameplay updates.
+> **At a glance**
+>
+> - **Question:** Can the amount of extra rendering adapt to the device’s available time?
+> - **Result:** A bounded controller adjusts the target while preserving 60-Hz gameplay. The latest retained PC test reached about 120 render updates at normal speed.
+> - **Still open:** That PC used a 60-Hz display. The current full-game build still needs phone measurements and complete match-flow validation.
+
+**Adaptive rendering adjusts the drawing workload while keeping gameplay at 60 updates per emulated second.** The early fixed-120 schedule advanced gameplay on every second render interval. If a device completed only 80 intervals per wall second, gameplay fell to 40 updates and audio slowed down. At a correctly scheduled target of 80, those 80 intervals can contain all 60 gameplay updates.
 
 That does not accelerate a device unable to sustain the original 60-update workload. The main-menu phone slowdown remains an example of this lower bound. The evidence below was reviewed on 2026-10-25; it records prior experiments, not newly rerun gameplay tests.
 
-## Continuous phase preserves game time
+## Keep game time continuous as the target changes
 
 The native controller accumulates the **previously scheduled** video interval in EE cycles, derives a canonical tick at 60 Hz, and latches the next requested rate once per VBlank. A repeated canonical tick marks an extra rendering interval. The fractional remainder determines interpolation between retained poses.
 
@@ -16,7 +22,7 @@ Fixed native tests at 80, 90, 100 and 120 produced 120 logic ticks and 96,000 au
 
 The implementation accepts 60–120; the policy selects 60, 72, 80, 90, 100, 110 or 120. Integer cycle division gives some rates a small timing approximation. The evidence for bounded runs does not establish arbitrarily long-term exact timing at every possible integer request.
 
-## Feedback and browser scheduling are separate controls
+## Adapt the target and give the browser time to paint
 
 The browser policy samples guest speed, completed video work, audio queue health and software timing estimates. Two sustained slow samples can reduce the target; five healthy samples can try one higher step, followed by a settling period. Invalid, hidden or transitional windows do not justify an increase. This hysteresis avoids chasing every brief fluctuation.
 
@@ -37,9 +43,9 @@ The corrected build identity is `22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c5107
 
 At 120, 9,272 renders accompanied 4,636 gameplay and cue-clock ticks. At 60, the extra-render counters did not grow. Changing combat, damage, respawn and pause overlays were visually checked. The one-frame render/logic endpoint difference in the 60 control is retained in the underlying evidence.
 
-The desktop exposed a 60-Hz display; median browser-shown rates were 55.753 and 55.789 per second. These runs prove neither physical 120-Hz presentation nor latest-build phone throughput. The automatic setups used different suits, CPU choices and stages, so this is a counter-rate and continuation comparison, not a deterministic same-match pixel/RAM A/B. Neither run reached natural results. Exact audio underrun counts were unavailable.
+**The PC completed approximately 120 render updates at normal game speed, but its display was 60 Hz.** Median browser-shown rates were 55.753 and 55.789 per second. Physical 120-Hz presentation and latest-build phone throughput remain unverified. The automatic setups used different suits, CPU choices and stages, so this is a counter-rate and continuation comparison, not a deterministic same-match pixel/RAM A/B. Neither run reached natural results. Exact audio underrun counts were unavailable.
 
-## Coverage is a mode-by-mode property
+## Which game modes can use extra rendering?
 
 | Original menu mode | Current high-refresh boundary |
 | --- | --- |
@@ -55,7 +61,7 @@ The desktop exposed a 60-Hz display; median browser-shown rates were 55.753 and 
 
 A whole-game launcher therefore does not imply whole-game high refresh. The controller keeps the requested target but applies 60 in unsupported scenes. Natural match results/re-entry and the latest build's longer journeys remain acceptance work. [R07](../evidence/rendering-findings.json)
 
-## What the phone captures actually showed
+## What the phone tests showed
 
 An earlier **saved-battle** Auto build, `8b1037f5…`, did demonstrate normal-speed phone play above 60 computed and browser-observed updates per second. Excluding its first three startup samples, a 53.410915-second window measured **78.055 render updates/s, 71.615 callbacks with newly submitted output/s, 60.006 gameplay ticks/s, 99.995% game speed and 47,999.8 produced PCM frames/s**. No fatal error was recorded, and no further pacing fallback occurred in that settled window. The user-supplied capture had a running audio context; its initial seconds had been slow with an empty queue before recovering. [R13](../evidence/rendering-findings.json)
 

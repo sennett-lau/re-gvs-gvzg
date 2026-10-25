@@ -1,12 +1,18 @@
-# 04 · A counter at 120 is not yet 120 FPS
+# 04 · Understanding the frame-rate goal
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/04-frame-rate.html).
+
+> **At a glance**
+>
+> - **Question:** Can we show smoother motion without making the game run too fast?
+> - **Result:** Keep gameplay at 60 updates per second and draw intermediate poses. Simply increasing the video clock accelerated the game.
+> - **Still open:** Rendering 120 images does not prove a screen displayed them. Normal-speed 144 Hz and 120-Hz gameplay simulation remain unproven.
 
 The first high-refresh experiment made the game run faster, not correctly. The later prototype took a different route: retain 60 gameplay updates per emulated second, but render intermediate model and camera poses more often. This distinction explains both the progress and the remaining gap between a counter showing 120 and a phone displaying smooth, normal-speed play.
 
 This chapter summarizes retained experiments, reviewed on 2026-10-25. The compact evidence records are [R01–R03](../evidence/rendering-findings.json); no game benchmark was rerun while writing this report.
 
-## Five measurements answer five different questions
+## Read the five frame-rate measurements
 
 | Measurement | What it establishes | What it does not establish |
 | --- | --- | --- |
@@ -57,12 +63,15 @@ At 60 gameplay updates and 120 render updates, input, collisions and combat deci
 
 The adaptive implementation is bounded to 60–120 video Hz. Normal-speed 144 rendering has not been demonstrated. Its fractional relationship to 60-Hz simulation requires correct phase handling, and the available render budget shrinks from 8.33 ms at 120 to 6.94 ms at 144. Raising a constant would not establish that either the behavior or the hardware meets that budget.
 
-## Acceptance must cover behavior and delivery
+## How to prove that higher refresh works
 
 A defensible result needs normal-speed gameplay, correct controls and transitions, stable audio production and consumption, distinct rendered motion, and measured display delivery on the intended device. These are separate checks. The latest PC result supports approximately 120 computed render updates at normal game speed in a narrow Versus scene. Its desktop exposed 60 Hz and reported about 56 shown updates per second. It cannot establish physical 120-Hz delivery or the performance of the latest build on a phone.
 
 The next chapters explain the recovered rendering boundary and how continuous cadence, input-edge preservation and mode guards turned the initial experiment into a more usable candidate.
 
-## Evidence trail
+<details>
+<summary>Source trail and verification records</summary>
 
 [R01–R03 in the curated evidence file](../evidence/rendering-findings.json) identify the original working-tree sources, their SHA-256 hashes, and the selected measurements. The principal source reports are `docs/gundam-high-fps-research.md` and `docs/gundam-120fps-prototype.md` in the original `ps2-web-recomp` working tree. Raw RAM, save states and image captures remain outside this report repository.
+
+</details>
