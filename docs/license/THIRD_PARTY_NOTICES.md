@@ -12,3 +12,9 @@ These notices distinguish tools used in research, dependencies of this reader, a
 | [coop-anything](https://github.com/cranebeaker/coop-anything) | External approach assessed for multiplayer research | Reference only; not integrated or bundled. See Chapter 08. |
 
 This file is a provenance inventory, not a replacement for dependency license texts. When game code or a third-party source snapshot is actually imported, record its exact revision, scope, license and original notices in the same change. An upstream tool's license does not license the game it translates.
+
+## Reader typeface
+
+The Wiki self-hosts **Manrope** from the [Google Fonts source distribution](https://github.com/google/fonts/tree/main/ofl/manrope). Copyright 2018 The Manrope Project Authors. The unmodified variable TTF is supplied under the SIL Open Font License 1.1, with the complete original license at `apps/wiki/fonts/OFL.txt`; the reader build copies that license alongside the font. No external font service is contacted by readers.
+
+The bundled file SHA-256 is `3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6`. This is a font-specific license, separate from the unselected license for the project's own contributions.
