@@ -60,6 +60,7 @@ const navigation = JSON.parse(
   await fs.readFile(path.join(root, "apps/wiki/navigation.json"), "utf8"),
 );
 const pageBySource = new Map(pages.map((page) => [page.source, page]));
+const projectName = pageBySource.get("README.md").title;
 const stageItems = (stage) =>
   stage.items || stage.groups.flatMap((group) => group.items);
 for (const item of [
@@ -251,7 +252,12 @@ for (const page of pages) {
       pager += `<a href="${rel(chapters[index + 1].output)}">${escapeHtml(chapters[index + 1].title)} →</a>`;
   }
   const values = {
-    TITLE: escapeHtml(page.title),
+    TITLE: escapeHtml(
+      page.source === "README.md"
+        ? projectName
+        : `${page.title} · ${projectName}`,
+    ),
+    PROJECT_NAME: escapeHtml(projectName),
     HEADING: escapeHtml(page.title.replace(/^\d+\s*[·—-]\s*/, "")),
     PAGE_CLASS:
       page.source === "README.md"

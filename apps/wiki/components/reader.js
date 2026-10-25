@@ -8,15 +8,6 @@ if (menu) {
   sync();
   wide.addEventListener("change", sync);
 }
-const outlineMenu = document.querySelector("[data-outline-menu]");
-if (outlineMenu) {
-  const wide = matchMedia("(min-width: 1351px)");
-  const sync = () => {
-    outlineMenu.open = wide.matches;
-  };
-  sync();
-  wide.addEventListener("change", sync);
-}
 const outlineLinks = [...document.querySelectorAll(".page-outline a")];
 const headings = outlineLinks
   .map((link) =>
