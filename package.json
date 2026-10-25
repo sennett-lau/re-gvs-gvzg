@@ -1,0 +1,17 @@
+{
+  "name": "re-gvs-gvzg",
+  "private": true,
+  "description": "Local single-source research reader",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "wiki:build": "node scripts/build-wiki.mjs",
+    "wiki:serve": "python3 -m http.server 8768 --bind 127.0.0.1 --directory .local/wiki",
+    "check": "node scripts/check-report.mjs"
+  },
+  "devDependencies": {
+    "marked": "17.0.5"
+  }
+}

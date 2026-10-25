@@ -1,0 +1,599 @@
+:root {
+  --paper: #f7f4ed;
+  --ink: #223c32;
+  --muted: #637064;
+  --line: #d6d9cb;
+  --accent: #b34f2c;
+  --pale: #e9eddf;
+  --white: #fffef9;
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 18px;
+  line-height: 1.72;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+a:hover {
+  color: var(--accent);
+}
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+.skip {
+  position: fixed;
+  top: -100px;
+  left: 20px;
+  padding: 10px 20px;
+  background: var(--ink);
+  color: white;
+  z-index: 20;
+}
+.skip:focus {
+  top: 10px;
+}
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 5vw 25px;
+  border-bottom: 1px solid var(--ink);
+  gap: 20px;
+}
+.wordmark {
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1.1;
+  text-decoration: none;
+  letter-spacing: -1.1px;
+}
+.wordmark span {
+  display: block;
+  font:
+    10px/1.5 "Courier New",
+    monospace;
+  letter-spacing: 2.1px;
+  margin-top: 10px;
+}
+.edition {
+  font:
+    10px/1.7 "Courier New",
+    monospace;
+  letter-spacing: 1px;
+  text-align: right;
+}
+.edition b {
+  display: block;
+  font-weight: normal;
+  color: var(--muted);
+}
+.layout {
+  max-width: 1440px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 4vw;
+  padding: 0 5vw;
+}
+.sidebar {
+  align-self: start;
+  position: sticky;
+  top: 0;
+  padding: 35px 0;
+  max-height: 100vh;
+  overflow: auto;
+}
+.eyebrow,
+.article-meta,
+.side-note,
+.chapter-pager,
+.article-footer {
+  font-family: "Trebuchet MS", sans-serif;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 10px;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar nav a {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 7px;
+  text-decoration: none;
+  padding: 10px 10px 10px 0;
+  line-height: 1.4;
+  font:
+    13px/1.5 "Trebuchet MS",
+    sans-serif;
+  border-bottom: 1px solid transparent;
+}
+.sidebar nav a span {
+  font:
+    11px/1.8 "Courier New",
+    monospace;
+  color: var(--muted);
+}
+.sidebar nav a[aria-current="page"] {
+  border-bottom-color: var(--ink);
+  font-weight: bold;
+}
+.sidebar .reference-links {
+  border-top: 1px solid var(--line);
+  margin-top: 22px;
+  padding-top: 12px;
+}
+.side-note {
+  font-size: 12px;
+  margin-top: 30px;
+  line-height: 1.6;
+}
+.side-note small {
+  display: block;
+  color: var(--muted);
+  padding-left: 14px;
+  margin-top: 7px;
+  font-size: 11px;
+}
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 100%;
+  background: var(--accent);
+  margin-right: 8px;
+}
+main {
+  min-width: 0;
+  padding: 37px 0 45px;
+  max-width: 900px;
+}
+.article-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 27px;
+  color: var(--muted);
+}
+h1 {
+  font-size: clamp(36px, 4.2vw, 64px);
+  line-height: 1.06;
+  letter-spacing: -2px;
+  font-weight: normal;
+  max-width: 880px;
+  margin: 0 0 32px;
+  text-wrap: balance;
+}
+h2 {
+  font-size: 29px;
+  line-height: 1.2;
+  font-weight: normal;
+  letter-spacing: -0.5px;
+  margin: 52px 0 18px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+h3 {
+  font-size: 22px;
+  line-height: 1.35;
+  margin-top: 30px;
+}
+p {
+  margin: 0 0 21px;
+}
+article > p:first-of-type {
+  font-size: 21px;
+  line-height: 1.6;
+}
+blockquote {
+  font:
+    13px/1.7 "Trebuchet MS",
+    sans-serif;
+  color: var(--muted);
+  border-left: 2px solid var(--accent);
+  margin: 0 0 25px;
+  padding: 7px 16px;
+}
+blockquote p {
+  margin: 0;
+}
+strong {
+  font-weight: bold;
+}
+code {
+  font-family: "Courier New", monospace;
+  font-size: 0.78em;
+  overflow-wrap: anywhere;
+  background: var(--pale);
+  padding: 2px 4px;
+  border-radius: 2px;
+}
+pre {
+  overflow: auto;
+  padding: 20px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14px;
+  line-height: 1.6;
+}
+pre code {
+  font-size: inherit;
+  background: none;
+  padding: 0;
+  overflow-wrap: normal;
+}
+ul,
+ol {
+  padding-left: 25px;
+}
+li {
+  margin-bottom: 10px;
+}
+article a {
+  overflow-wrap: anywhere;
+}
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+.table-wrap {
+  overflow-x: auto;
+  margin: 25px 0 30px;
+  border-top: 2px solid var(--ink);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font:
+    13px/1.6 "Trebuchet MS",
+    sans-serif;
+  min-width: 480px;
+}
+th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  font-weight: bold;
+  background: var(--pale);
+  padding: 14px 13px;
+  border-bottom: 1px solid var(--ink);
+}
+td {
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+  padding: 14px 13px;
+}
+td code {
+  font-size: 12px;
+}
+tr:last-child td {
+  border-bottom: 0;
+}
+figure {
+  margin: 32px 0;
+  padding: 25px;
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+figure .eyebrow {
+  margin-bottom: 10px;
+}
+figure figcaption {
+  font:
+    12px/1.7 "Trebuchet MS",
+    sans-serif;
+  color: var(--muted);
+  margin-top: 16px;
+}
+.interactive-controls {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+  font:
+    13px/1.5 "Trebuchet MS",
+    sans-serif;
+}
+.control-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.control-row label {
+  flex: 1;
+  min-width: 140px;
+}
+.control-row input[type="range"] {
+  width: min(290px, 100%);
+  accent-color: var(--ink);
+}
+button,
+select {
+  font:
+    12px/1.5 "Trebuchet MS",
+    sans-serif;
+  padding: 8px 12px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  cursor: pointer;
+}
+button[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--ink);
+}
+.figure-output {
+  padding: 12px 15px;
+  background: var(--pale);
+  font:
+    13px/1.6 "Courier New",
+    monospace;
+  overflow-wrap: anywhere;
+}
+.concept-warning {
+  color: var(--accent);
+  font:
+    11px/1.6 "Trebuchet MS",
+    sans-serif;
+}
+.chapter-pager {
+  margin-top: 55px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ink);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 13px;
+}
+.chapter-pager a {
+  max-width: 46%;
+}
+.article-footer {
+  margin-top: 35px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.article-footer span {
+  display: block;
+  margin-top: 7px;
+}
+.article-footer code {
+  font-size: 10px;
+}
+.source-note {
+  color: var(--muted);
+}
+@media (min-width: 1600px) {
+  .layout {
+    gap: 75px;
+  }
+}
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: 25px;
+    padding: 0 4vw;
+  }
+  .masthead {
+    padding-inline: 4vw;
+  }
+  .sidebar nav a {
+    font-size: 12px;
+  }
+  h1 {
+    font-size: 43px;
+  }
+  article > p:first-of-type {
+    font-size: 19px;
+  }
+}
+@media (max-width: 660px) {
+  :root {
+    font-size: 17px;
+  }
+  .masthead {
+    padding: 22px 6vw;
+  }
+  .wordmark {
+    font-size: 24px;
+  }
+  .wordmark span {
+    font-size: 8px;
+  }
+  .edition {
+    font-size: 8px;
+  }
+  .layout {
+    display: block;
+    padding: 0 6vw;
+  }
+  .sidebar {
+    position: static;
+    max-height: none;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .sidebar nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 18px;
+  }
+  .sidebar nav a {
+    font-size: 11px;
+    padding: 7px 0;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 3px;
+  }
+  .sidebar .reference-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 15px;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .reference-links a {
+    display: block !important;
+  }
+  .reference-links a span {
+    display: none;
+  }
+  .side-note {
+    display: none;
+  }
+  .eyebrow {
+    margin-bottom: 10px;
+  }
+  .article-meta {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    margin-bottom: 20px;
+  }
+  main {
+    padding-top: 27px;
+  }
+  h1 {
+    font-size: 40px;
+    letter-spacing: -1.5px;
+    margin-bottom: 26px;
+  }
+  h2 {
+    font-size: 26px;
+    margin-top: 38px;
+  }
+  figure {
+    padding: 15px;
+    margin-inline: 0;
+  }
+  pre {
+    font-size: 11px;
+  }
+  .chapter-pager {
+    font-size: 12px;
+  }
+  table {
+    font-size: 12px;
+  }
+  .sidebar nav a[aria-current="page"] {
+    background: var(--pale);
+  }
+  .control-row {
+    display: block;
+  }
+  .control-row label {
+    display: block;
+    margin-bottom: 8px;
+  }
+  .control-row input[type="range"] {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+@media print {
+  .masthead,
+  .sidebar,
+  .article-meta,
+  .chapter-pager,
+  .interactive-controls,
+  .article-footer {
+    display: none;
+  }
+  .layout {
+    display: block;
+    padding: 0;
+  }
+  main {
+    max-width: none;
+    padding: 0;
+  }
+  :root {
+    font-size: 11pt;
+    background: white;
+    color: black;
+  }
+  h1 {
+    font-size: 30pt;
+  }
+  h2 {
+    break-after: avoid;
+  }
+  .table-wrap {
+    overflow: visible;
+  }
+  table {
+    min-width: 0;
+  }
+  figure {
+    break-inside: avoid;
+  }
+  a {
+    color: black;
+  }
+}
+
+.chapter-menu summary {
+  cursor: pointer;
+  font:
+    13px/1.6 "Trebuchet MS",
+    sans-serif;
+  padding: 8px 0;
+}
+.chapter-menu[open] > summary {
+  margin-bottom: 12px;
+}
+@media (min-width: 661px) {
+  .chapter-menu[open] > summary {
+    display: none;
+  }
+}
+@media (max-width: 660px) {
+  .sidebar {
+    padding: 12px 0;
+  }
+  .sidebar > .eyebrow {
+    display: none;
+  }
+  .chapter-menu summary {
+    font-size: 12px;
+  }
+  .chapter-menu[open] .reference-links a {
+    padding: 5px 0;
+  }
+  .chapter-menu[open] .reference-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 14px;
+  }
+}
