@@ -37,7 +37,7 @@ Open **http://127.0.0.1:8768/**. Stop the server with Ctrl+C. The server binds t
 
 The latest retained PC test supports approximately 120 render updates and 60 gameplay updates per second in an eligible battle. Its display was 60 Hz: it does not establish physical 120 Hz presentation or current-build phone performance. The multiplayer experiments are separate from a finished original online-mode integration. The chapters preserve these distinctions and the unsuccessful experiments.
 
-Planned game milestones use [SemVer-style versioning](docs/VERSIONS.md): `v0.1.0` baseline, `v0.2.0` performance, and `v0.3.0-alpha.1` adaptive rendering. These are packaging targets, not existing releases or tags in this repository.
+Planned game milestones use [SemVer-style versioning](docs/VERSIONS.md): `v0.1.0` baseline with subsequent `v0.1.x` compatibility fixes, `v0.2.0` performance, and `v0.3.0-alpha.1` adaptive rendering. These are packaging targets, not existing releases or tags in this repository.
 
 ## Files, attribution and notices
 
