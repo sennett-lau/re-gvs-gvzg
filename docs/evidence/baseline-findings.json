@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "report_date": "2026-10-25",
+  "kind": "curated research summary; historical tests, not reruns",
+  "source_root": "original ps2-web-recomp working tree (retained locally)",
+  "method": "Whitelist selected fields from retained JSON and manually summarize identified prose/source findings. SHA-256 identifies source bytes at report preparation; it does not make unavailable raw logs independently reproducible.",
+  "privacy_scope": "No raw browser captures, screenshots, host addresses, personal directories, credentials, or complete logs are included. Original relative source paths and technical build identifiers are retained.",
+  "sources": [
+    {
+      "id": "baseline-source-01",
+      "original_path": "docs/gundam-vs-z-gundam.md",
+      "sha256": "ebe7ab819772a76f796b6eb7f7c458c6d260fc0f0899a50afc0fbd7b1e4e6bbb"
+    },
+    {
+      "id": "baseline-source-02",
+      "original_path": "docs/gundam-browser-and-netplay-progress.md",
+      "sha256": "41698e2406670087a2e2f9c2fa78cc451f41399e09de197eb19a431000d3879f"
+    },
+    {
+      "id": "baseline-source-03",
+      "original_path": "scripts/mwo.py",
+      "sha256": "d7d9b74658648b17548547408843db9b945c1dedbab8c0be1c026957c2160486"
+    },
+    {
+      "id": "baseline-source-04",
+      "original_path": "scripts/build_gundam.sh",
+      "sha256": "f966067d1126d53d44a7feeea8548f6f670e02d197dc064740959d4ec6330849"
+    },
+    {
+      "id": "baseline-source-05",
+      "original_path": "recomp/main.cpp",
+      "sha256": "87ad3665606fb547a822aca2aa6acb7dc9b19107da02911b42454dc0c55cba9e"
+    },
+    {
+      "id": "baseline-source-06",
+      "original_path": "recomp/elf.cpp",
+      "sha256": "2de4ea8fb2dbb585607e4c94ed208f596f6d6c3fd7ae6027e48c8394af2b3c0f"
+    },
+    {
+      "id": "baseline-source-07",
+      "original_path": "recomp/analysis.cpp",
+      "sha256": "68a05df3b5b54f84a4923a6927e930b096385ddfa4f0e258e2976d38bb2caf6a"
+    },
+    {
+      "id": "baseline-source-08",
+      "original_path": "recomp/codegen.cpp",
+      "sha256": "cd83af9c97119371b99b50d494aeb0f621e07424bfe181ace8cee1ff34e7f4ae"
+    },
+    {
+      "id": "baseline-source-09",
+      "original_path": "runtime/src/iop/kernel.cpp",
+      "sha256": "86bbe17faa6148cb5891d0693cc8bf74a59e69fc129f2fa480b96e8564ed55ca"
+    },
+    {
+      "id": "baseline-source-10",
+      "original_path": "runtime/src/iop/libs.cpp",
+      "sha256": "017510a4a54502e43c46aae6927d77fcb3964d65a547ef34336d3e5710858ecb"
+    },
+    {
+      "id": "baseline-source-11",
+      "original_path": "scripts/build_web.sh",
+      "sha256": "d1bffca4996f6e223104553552cb71778c8d0090d630de8236e406c0c384fe05"
+    },
+    {
+      "id": "baseline-source-12",
+      "original_path": "scripts/serve.py",
+      "sha256": "bac5e3c8a67ca5566c5804fc69eaa6cc8aa290dc9cae00319fb611e9dc8a5d55"
+    },
+    {
+      "id": "baseline-source-13",
+      "original_path": "web/runtime-support.js",
+      "sha256": "02e5b1a9553ff599e673074387081cf72dd24f4abd22568a1d8053bd66a13bc5"
+    },
+    {
+      "id": "baseline-source-14",
+      "original_path": "web/shell.html",
+      "sha256": "c60ca3fcfbd1ea1f4879e1aa05eb722f816fb4bc98f252ef78f9f2f76371d25f"
+    },
+    {
+      "id": "baseline-source-15",
+      "original_path": "games/gundam-vs-z-gundam/port-inputs.json",
+      "sha256": "8197a3c2f7c37db30ef56d1611b55c5c323f8e5dd2a1b627359a328cf250dc1e"
+    },
+    {
+      "id": "baseline-source-16",
+      "original_path": "games/gundam-vs-z-gundam/build-validation.json",
+      "sha256": "2c6ba7612bb4b9d91a31e0abdfe9096bd96149ef55d2b737c52a5aea30fee42c"
+    },
+    {
+      "id": "baseline-source-17",
+      "original_path": "games/gundam-vs-z-gundam/mwo-modules.tsv",
+      "sha256": "e26c0dd3b6e440bbf000089a1b0d494d2829d52799c4655bdf3dbb92aa45fe5f"
+    },
+    {
+      "id": "baseline-source-18",
+      "original_path": "research/gundam-versus-audit/README.md",
+      "sha256": "be4f95a799ee0e5b1f3c4d843cb509de9a9b37ee01369093d933397e04e29229"
+    },
+    {
+      "id": "baseline-source-19",
+      "original_path": "research/gundam-menu-gpu-probe/README.md",
+      "sha256": "81b938eb1f11de3846090baf2236148932b2b625a3e73ceeb7605faf85976dc9"
+    },
+    {
+      "id": "baseline-source-20",
+      "original_path": "research/gundam-menu-gpu-probe/pc-pair-analysis.json",
+      "sha256": "037d04a7c7924df8832f38484dd48240d5c500817f14a2029ed445ef3a372a05"
+    },
+    {
+      "id": "baseline-source-21",
+      "original_path": "research/gundam-fps/mobile-audit/2026-10-24-c816-mode4/README.md",
+      "sha256": "26f3f0d98064f79d96aeb9256c6e3a13fec472d31b85c73a541baa999fe6e3da"
+    },
+    {
+      "id": "baseline-source-22",
+      "original_path": "research/gundam-fps/web-audit/render_cost_findings.md",
+      "sha256": "0898fcc4571e53736bb64d2f441ecc0605f6c64b37bc55c2e2aa30a006ef401b"
+    }
+  ],
+  "target": {
+    "source_id": "baseline-source-15",
+    "serial": "SLPS-25419",
+    "pcsx2_crc": "435D8236",
+    "elf_sha256": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+    "upstream_commit": "6526f4803d98e10de50bea3af104a4d26e9df033",
+    "mwo_module_count": 325
+  },
+  "direct_inventory": {
+    "mwo_index_data_rows": 325,
+    "mwo_index_source_id": "baseline-source-17",
+    "vu_program_images": 116,
+    "vu_image_source_directory": "games/gundam-vs-z-gundam/vu1",
+    "vu_entry_points_reported": 187,
+    "vu_entry_points_source_id": "baseline-source-01",
+    "limit": "Image count and module-row count were checked during report preparation. The entry-point count is reported by the retained port notes, not newly measured runtime coverage."
+  },
+  "historical_browser_manifest": {
+    "source_id": "baseline-source-16",
+    "build_revision": "gundam-mobile-4",
+    "emscripten": "6.0.11",
+    "wasm": {
+      "bytes": 95074555,
+      "sha256": "98721b1e5c4c2d96979c94da64fd9cde002f13d39dc442dddc070ad75eb53a2f"
+    },
+    "data": {
+      "bytes": 6149694,
+      "sha256": "5022376bdf70c8fac649657d3b90bc88b8c5621aa751ba98bd64393e2ba2496b"
+    },
+    "limitation": "Manifest accumulated later mobile work; not a pristine first-working baseline snapshot."
+  },
+  "native_validation": {
+    "source_ids": [
+      "baseline-source-01",
+      "baseline-source-16"
+    ],
+    "extended_match_frame_range": [
+      7990,
+      20000
+    ],
+    "results_screenshot_frame": 19000,
+    "pixel_equality_frames": [
+      9000,
+      10000
+    ],
+    "nonzero_stereo_audio_run_frames": 6000,
+    "limitation": "Reported native journey and selected image equality; not all-mode validation or a quantified phone/browser performance gain."
+  },
+  "phone_menu_observation": {
+    "source_ids": [
+      "baseline-source-02",
+      "baseline-source-21"
+    ],
+    "build_identity_prefix": "c816cfe3",
+    "computed_fps_range": [
+      20,
+      24
+    ],
+    "game_speed_percent_range": [
+      33,
+      40
+    ],
+    "produced_audio_frames_per_second_approx_range": [
+      16000,
+      19000
+    ],
+    "limitation": "Captured build produced no extra renders here. No causal hardware bottleneck identified; not the latest full-game build."
+  },
+  "pc_gpu_observer_windows": {
+    "stable_main_menu_gpu_window": {
+      "source_id": "baseline-source-20",
+      "source_json_pointer": "/enabled/windows/stable_main_menu_gpu_window",
+      "sample_count": 15,
+      "wall_seconds": 14.105824999928474,
+      "computed_frames_per_second": 59.97522300214909,
+      "game_seconds_per_wall_second": 0.9995878538864046,
+      "produced_audio_frames_per_second": 47980.17840171928,
+      "raster_dispatches_per_guest_frame": 1446.0591016548462,
+      "snapshot_dispatches_per_guest_frame": 531.8617021276596,
+      "silent_running_audio": true,
+      "observer_disabled_computed_frames_per_second": 60.06093416028458,
+      "observer_disabled_json_pointer": "/disabled/windows/stable_main_menu_gpu_window"
+    },
+    "stable_versus_setup_gpu_window": {
+      "source_id": "baseline-source-20",
+      "source_json_pointer": "/enabled/windows/stable_versus_setup_gpu_window",
+      "sample_count": 15,
+      "wall_seconds": 14.054485000014305,
+      "computed_frames_per_second": 60.05200475144703,
+      "game_seconds_per_wall_second": 1.0008675299656222,
+      "produced_audio_frames_per_second": 48041.603801157624,
+      "raster_dispatches_per_guest_frame": 69.0,
+      "snapshot_dispatches_per_guest_frame": 31.0,
+      "silent_running_audio": true,
+      "observer_disabled_computed_frames_per_second": 59.91616007137892,
+      "observer_disabled_json_pointer": "/disabled/windows/stable_versus_setup_gpu_window"
+    }
+  },
+  "pc_gpu_observer_limits": [
+    "Sequential short controls, not a repeated statistical benchmark.",
+    "Sampled GPU timestamps are biased toward light passes and omit presentation/compositor work.",
+    "Dispatch counts identify command mix, not total GPU utilization.",
+    "A fast PC result does not identify the phone bottleneck."
+  ],
+  "rejected_renderer_hypotheses": {
+    "source_id": "baseline-source-22",
+    "items": [
+      "Shorter native time slices did not improve presentation.",
+      "1 MiB and 256 KiB upload chunking increased upload cost without an established overall FPS gain.",
+      "Bounded shown-wait deadline yielded no winning early releases or meaningful menu improvement."
+    ],
+    "limit": "These are scoped historical experiments, not a universal statement about every renderer or device."
+  }
+}
