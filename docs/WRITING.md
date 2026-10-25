@@ -2,6 +2,8 @@
 
 Use this guide for the report chapters and Wiki. Keep the English direct, the terminology consistent and each claim tied to its evidence.
 
+Start with [Contributing](../CONTRIBUTING.md) for content placement and duplication checks. Use this guide after choosing the existing section or new topic to edit.
+
 ## Start with the finding
 
 Each chapter starts with a question, a result and unfinished work. The reader should understand these three points before reading addresses or test details.

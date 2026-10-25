@@ -6,6 +6,9 @@ This local repository starts with the report and its reader. The existing game w
 
 | Path | Responsibility | Present in this snapshot |
 | --- | --- | --- |
+| `README.md` | Project introduction and research reading path | Yes |
+| `CONTRIBUTING.md` | Contributor workflow, local setup and content placement | Yes |
+| `AGENTS.md` | Entry point directing coding agents to the contributor guide | Yes |
 | `docs/chapters/` | Complete, canonical English research narrative | Yes |
 | `docs/evidence/` | Small curated measurements and source provenance | Yes |
 | `docs/figures/` | Concept parameters and generated static diagrams | Yes |
@@ -38,6 +41,8 @@ The planned implementation sequence is extraction/regeneration, compiler and mod
 The report commits are separate from that future implementation sequence. No existing game binary is relabelled or moved by writing these chapters.
 
 ## Single-source reading
+
+Read [Contributing](../CONTRIBUTING.md) before adding a page or explanation. It defines how to find related content and keep development procedures separate from the research narrative.
 
 Markdown remains complete with captions, limitations and static figures. The Wiki pre-renders that Markdown; JavaScript adds optional interactions. Measurement files stay in `docs/evidence/`, while conceptual figures have explicitly illustrative parameters in `docs/figures/`. Generated HTML is ignored and rebuilt. Source links point to the exact Markdown copied into that reader build.
 
