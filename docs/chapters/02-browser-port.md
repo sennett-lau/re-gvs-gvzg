@@ -10,7 +10,7 @@
 
 Producing C++ was the beginning of the port. The game still needed compatible module loading, correct control flow, graphics and sound services, and asynchronous disc reads. The browser interface also needed error reporting. The practical milestone was a playable path through boot and a battle, supported by separate native, compiler and browser checks.
 
-The retained [baseline findings](../evidence/baseline-findings.json) distinguish those checks. Later changes updated the original validation manifest through `gundam-mobile-4`. The manifest therefore includes changes made after the first successful build. This matters when reconstructing a future `v0.1.0`: a filename saying “baseline” cannot establish that later optimizations were absent.
+The retained [baseline findings](../evidence/baseline-findings.json) distinguish those checks. Later changes updated the original validation manifest through `gundam-mobile-4`. The manifest therefore includes changes made after the first successful build. This matters when identifying the first browser baseline. A filename saying “baseline” cannot establish that later optimizations were absent.
 
 ## Fix loading and generated control flow
 
@@ -48,8 +48,6 @@ One packaging problem had a simpler cause: macOS gzip timestamp rounding made fr
 ## What counts as a usable baseline
 
 A baseline package should preserve one matched HTML/JS/WASM/data set, the build identity and its limitations. The retained validation record identifies a WASM with SHA-256 beginning `98721b1e5c4c` and a size of 95,074,555 bytes. That is a specific historical artifact, not an interchangeable name for the later adaptive builds.
-
-The [version plan](../VERSIONS.md) reserves a `v0.1.x` maintenance series for distinct mobile, recovery and presentation fixes. These version assignments remain provisional until their actual diffs and matched states are recovered. The mixed manifest does not prove that chronology.
 
 The remaining publication work has three steps:
 

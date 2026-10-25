@@ -33,26 +33,8 @@ For performance tests, use zero output gain while keeping the AudioContext and r
 
 AI agents assisted code investigation, test preparation and writing. Claims in this report rest on retained code, byte checks, measurements and observed behavior; an agent's explanation alone is not experimental evidence. Agent, model and provider names are intentionally omitted.
 
-## Checks performed while assembling this report
+## Checks on this report
 
-The local checker parses the curated JSON and resolves Markdown and reader links, including anchors. It checks selected privacy markers and rejects accidental game payloads or oversized files. It also checks that chapter summaries and callout text survive conversion to HTML. Each callout must retain its evidence limits inside the same block.
+During assembly, 69 unique original-source SHA-256 fingerprints matched the retained files.
 
-These are bounded checks. They do not guarantee exhaustive anonymization. Run `npm run check` after building the reader in a Git checkout. Use `node scripts/check-report.mjs --source-only` to defer reader checks until a build exists. A private comma-separated `REPORT_FORBIDDEN_TERMS` environment value can add wording checks without storing those terms in the report.
-
-During assembly, 69 unique original-source SHA-256 fingerprints matched the retained files. The revised reader passed these checks:
-
-| Reader check | Result |
-| --- | --- |
-| Page layout | 95 checks across all 19 pages, at widths of 320, 390, 768, 1,024 and 1,440 pixels |
-| Chapter summaries | All nine summaries appeared at all five widths |
-| Callouts | All 10 blocks appeared at all five widths, with their evidence limits |
-| Navigation | Stage links, Evidence links, keyboard mobile menu, section tracking and source disclosure passed |
-| Interactive figures | Slider, keyboard input, repeat/interpolate comparison, budget selector and architecture switch passed |
-| JavaScript disabled | Full chapter, summary, callout, static figure and native navigation remained available |
-| Page and HTTP errors | None observed in this reader test |
-
-Negative controls removed a summary and a callout limitation from generated HTML. The checker rejected both missing-content cases. Each test restored the generated file afterward. These checks guard against losing content during conversion, including an earlier bug that removed a summary with its adjacent reader hint.
-
-The wording review preserved the chapters' existing numeric values and code identifiers. It checked descriptive sentence length and paragraph length. The [writing guide](WRITING.md) records the rules for future edits.
-
-These checks validate the report artifact and its reading interface. They do not add a new game, phone, audio or multiplayer performance result to the historical research.
+[Reader validation](../CONTRIBUTING.md#reader-validation) records the Wiki build and interface checks. Those checks do not add evidence about game performance.

@@ -55,4 +55,4 @@ This work suggests five reusable compiler/runtime improvements:
 - Test asynchronous resource completion at fixed guest times.
 These are proposals for review, not published contributions or promises that the generic runtime should absorb game-specific behavior.
 
-Future releases should identify a reproducible baseline, verified performance changes and the adaptive preview as distinct milestones. Small commits can explain each correction without inventing historical certainty. Wider-screen presentation, independent camera rendering and new cooperative rules remain separate projects with their own acceptance criteria. The next useful milestone is a complete, repeatable user journey whose evidence survives beyond a successful experiment.
+Wider-screen presentation, independent camera rendering and new cooperative rules remain separate projects with their own acceptance criteria. The next useful milestone is a complete, repeatable user journey whose evidence survives beyond a successful experiment.
