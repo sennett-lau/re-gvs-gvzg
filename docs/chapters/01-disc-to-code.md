@@ -1,6 +1,12 @@
-# 01 · Start from a disc, not original source
+# 01 · From a PS2 disc to C++
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/01-disc-to-code.html).
+
+> **At a glance**
+>
+> - **Question:** How can we turn the disc’s executable code into something we can build?
+> - **Result:** The recompiler translated the main executable and 325 loaded modules. Two code-discovery fixes were needed.
+> - **Still open:** A clean rebuild package must be assembled. Generated C++ is translated game code; the original developer source was never available.
 
 The starting point was a local disc image of **Kidou Senshi Gundam — Gundam vs. Z Gundam (Japan)**, serial `SLPS-25419`. The executable identifier used by the investigation was CRC `435D8236`. No original developer source tree was available. The first task was to recover executable inputs that an existing PS2 recompiler could translate, while retaining enough provenance to distinguish compiler problems from game-specific behavior.
 
@@ -30,7 +36,7 @@ A second failure appeared during movement or combat at `0x00E2CD40`. Function di
 
 These were distinct defects. One concerned **which bytes count as code**; the other concerned **whether a valid function may leave its local image**. Treating every missing-code halt as an absent entry point would have hidden that distinction.
 
-## A reproducible translation boundary
+## Record the inputs needed to rebuild
 
 The retained `scripts/build_gundam.sh` checks for the local disc and extracted ELF, builds the translation tools, runs compiler regressions, extracts the modules, merges entry lists, invokes `eerecomp` and `vurecomp`, then builds native and browser targets. The native configuration uses `-O1` to shorten iteration; browser output uses the project's Release configuration. The recorded toolchain includes Emscripten `6.0.11`.
 
@@ -38,6 +44,9 @@ The input manifest fixes the ELF SHA-256, disc identifier, module count and upst
 
 The report repository currently records this method. A clean end-user rebuild package still requires selecting and exporting the matching scripts, patches, generated snapshot and dependency setup. The original disc and compressed backup remain outside the intended repository. The next chapter follows the additional compatibility work needed after translation produced compilable code.
 
-## Source trail
+<details>
+<summary>Source trail and verification records</summary>
 
 The original working-tree sources are `scripts/mwo.py`, `scripts/build_gundam.sh`, `recomp/main.cpp`, `recomp/elf.cpp`, `recomp/analysis.cpp`, `tests/analysis_tailcall.py`, `games/gundam-vs-z-gundam/port-inputs.json`, and `games/gundam-vs-z-gundam/mwo-modules.tsv`. Their identifiers in the evidence file refer to that retained tree, not to files already exported into this report repository.
+
+</details>

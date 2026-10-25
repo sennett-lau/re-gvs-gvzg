@@ -10,16 +10,20 @@ A research record of bringing the Japanese PS2 release (`SLPS-25419`) to a brows
 
 The **[illustrated Wiki](.local/wiki/index.html)** is the preferred reading experience after building locally. It uses the same Markdown as the links below, with interactive explanations added to static figures. No separate copy of the article text is maintained.
 
-| Stage | Chapters |
-| --- | --- |
-| Begin | [01 · From a disc to translated code](docs/chapters/01-disc-to-code.md) |
-| Make it run | [02 · The browser port](docs/chapters/02-browser-port.md) |
-| Optimize | [03 · Performance and usability](docs/chapters/03-performance.md) |
-| Investigate higher refresh | [04 · What 120 FPS means](docs/chapters/04-frame-rate.md) · [05 · Recovering the rendering boundary](docs/chapters/05-rendering-boundary.md) · [06 · Adaptive rendering and evidence](docs/chapters/06-adaptive-rendering.md) |
-| Explore multiplayer | [07 · One host, remote controllers](docs/chapters/07-host-streaming.md) · [08 · Independent clients and the original online mode](docs/chapters/08-independent-clients.md) |
-| Continue | [09 · Findings and next experiments](docs/chapters/09-learnings.md) |
+| Stage | What you will learn | Read |
+| --- | --- | --- |
+| **1 · Recompile** | Turn disc executables into C++, then make the game run in a browser | [01 · Disc → C++](docs/chapters/01-disc-to-code.md) · [02 · C++ → browser](docs/chapters/02-browser-port.md) |
+| **2 · Optimize** | Improve the working port and identify the remaining performance problems | [03 · Performance](docs/chapters/03-performance.md) |
+| **3 · Extend — high refresh** | Separate gameplay from rendering, then adapt rendering to the device | [04 · The goal](docs/chapters/04-frame-rate.md) · [05 · The game hooks](docs/chapters/05-rendering-boundary.md) · [06 · Results and limits](docs/chapters/06-adaptive-rendering.md) |
+| **3 · Extend — multiplayer, route A** | One host runs the game; both players receive a stream and send controller input | [07 · One host, two controllers](docs/chapters/07-host-streaming.md) |
+| **3 · Extend — multiplayer, route B** | Each device runs the game; both copies exchange inputs and compare state | [08 · A game on each device](docs/chapters/08-independent-clients.md) |
+| **Next steps** | Understand what is proven and what needs another experiment | [09 · Findings and next steps](docs/chapters/09-learnings.md) |
 
-The report is an evidence-based reconstruction written on 2026-10-25. Historical test results are attributed to their retained records; writing the report does not rerun or extend those tests. See [Evidence conventions](docs/EVIDENCE.md).
+**For a quick read:** scan each chapter’s **At a glance** box, then read the results in chapters [06](docs/chapters/06-adaptive-rendering.md), [07](docs/chapters/07-host-streaming.md) and [08](docs/chapters/08-independent-clients.md). Follow the full order above for the technical journey.
+
+**To check a claim:** use the [Evidence index](docs/evidence/README.md). It connects the main findings to the relevant chapter and selected records. [Evidence conventions](docs/EVIDENCE.md) explain what each kind of test can establish.
+
+The report is an evidence-based reconstruction written on 2026-10-25. Historical test results are attributed to their retained records; writing the report does not rerun or extend those tests.
 
 ## Run the reader locally
 

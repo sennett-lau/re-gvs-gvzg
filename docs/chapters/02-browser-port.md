@@ -1,12 +1,18 @@
-# 02 · Make the translated game run in a browser
+# 02 · From C++ to a browser game
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/02-browser-port.html).
+
+> **At a glance**
+>
+> - **Question:** What else does the translated game need to run in a browser?
+> - **Result:** Module-loading and compiler fixes, browser services and a matched web package made the tested paths work.
+> - **Still open:** The earliest native tests and later browser tests belong to different stages. The first release still needs a clean, verified reconstruction.
 
 Producing C++ was the beginning of the port. The game still needed compatible module loading, correct generated control flow, graphics and sound services, asynchronous disc reads, and a browser interface that could report failures. The practical milestone was a playable path through boot and a battle, supported by separate native, compiler and browser checks.
 
 The retained [baseline findings](../evidence/baseline-findings.json) distinguish those checks. The original validation manifest was later updated through `gundam-mobile-4`; it is not an untouched record of the very first successful build. This matters when reconstructing a future `v0.1.0`: a filename saying “baseline” cannot establish that later optimizations were absent.
 
-## Repair the runtime contract
+## Fix loading and generated control flow
 
 The game's `LOADHIGH.IRX` path required IOP module operations that the runtime did not yet implement in the necessary form. The IOP is the PS2's input/output processor, used for services such as loading modules and accessing devices. Its `LoadModuleWithOption` operation loads a module with an allocation preference; `StartModule` starts a previously loaded module. Combining both actions unconditionally would change the game's expected ordering.
 
@@ -16,13 +22,13 @@ The compiler also emitted an invalid fallthrough in a particular delay-slot case
 
 Together with the module-boundary and external-tail-call changes from chapter 01, these repairs turned a booting but incomplete translation into one that could continue through the observed battle path. Small compiler/runtime fixes are useful upstream candidates because their tests can describe the general defect without requiring commercial game data.
 
-## Keep native validation separate from browser proof
+## What the native and browser tests each showed
 
 The retained native runner reached the animated opening, Arcade menus, stage selection and pilot-name entry, then rendered a battlefield, mobile suit, HUD and running timer. After the external-tail-call correction, an extended run continued from frame 7,990 to frame 20,000 without missing-code errors and showed the results screen at frame 19,000. An earlier 6,000-frame run produced nonzero stereo audio.
 
 That establishes a specific native game journey. It does not prove every mode, browser compatibility or network play. At the earliest documented browser stage, interactive automation was unavailable. The checks instead established that the WebAssembly compiled with the required JSPI and exception-reference features, browser support code passed its regressions, and served artifacts and disc ranges matched expectations. Later interactive PC and phone evidence belongs to later builds and is identified accordingly throughout this report.
 
-## The browser package has several responsibilities
+## What the browser package needs
 
 The WebAssembly module contains compiled game translation and runtime work. JavaScript initializes it and connects browser services. The generated data package contains the original ELF needed by the current boot arrangement; it must not be described as an empty loader. The complete disc remains a separate runtime input, served locally through the existing disc route. A standalone WASM file is therefore not a complete playable package.
 
@@ -40,6 +46,9 @@ The [version plan](../VERSIONS.md) reserves a `v0.1.x` maintenance series for di
 
 The remaining publication work is to reconstruct the intended baseline from retained inputs, verify a clean setup with a user-supplied disc, and repeat the declared boot/selection/battle/exit flow. This report does not silently replace those acceptance checks with a successful native screenshot. It supplies the evidence needed to decide what a future package can honestly promise.
 
-## Source trail
+<details>
+<summary>Source trail and verification records</summary>
 
 Original sources include `runtime/src/iop/kernel.cpp`, `runtime/src/iop/libs.cpp`, `recomp/codegen.cpp`, `tests/codegen_fallthrough.py`, `scripts/build_web.sh`, `scripts/serve.py`, `web/runtime-support.js`, and `games/gundam-vs-z-gundam/build-validation.json`. Source fingerprints and selected manifest fields are retained in the evidence file; raw execution logs and personal browser diagnostics are not copied here.
+
+</details>
