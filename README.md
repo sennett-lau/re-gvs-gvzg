@@ -1,6 +1,6 @@
 # Reverse Engineering: Gundam VS. Series - Gundam vs. Zeta Gundam
 
-This project studies how a PS2 game can run in a browser. It follows the work from recompilation to performance improvements, higher refresh rates and multiplayer experiments.
+This project studies how [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en.wikipedia.org/wiki/Mobile_Suit_Gundam:_Gundam_vs._Zeta_Gundam) can run in a browser. It follows the work from recompilation to performance improvements, higher refresh rates and multiplayer experiments.
 
 > Prefer the illustrated reader? [Open the Wiki](.local/wiki/index.html).
 

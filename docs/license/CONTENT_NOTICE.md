@@ -1,6 +1,6 @@
 # Content notice
 
-This is an independent technical research project about the Japanese PS2 release of Gundam vs. Z Gundam. It is not affiliated with or endorsed by the game's developers, publishers or other rights holders. Game names and trademarks identify the research target; they remain associated with their respective owners.
+This independent technical research project studies the Japanese PS2 release of [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en.wikipedia.org/wiki/Mobile_Suit_Gundam:_Gundam_vs._Zeta_Gundam). It is not affiliated with or endorsed by the game's developers, publishers or other rights holders. Game names and trademarks identify the research target; they remain associated with their respective owners.
 
 No original ISO, ROM or compressed disc backup is included. Future game packages are intended for use with a user's own supported disc image. A user-supplied disc requirement does not change the origin of generated code or bundled data: translated C++, executable-derived exports and a `.data` package containing the original ELF must be identified as game-derived material.
 

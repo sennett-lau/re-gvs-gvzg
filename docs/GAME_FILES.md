@@ -1,6 +1,6 @@
 # Game inputs and eventual setup
 
-The research target is the Japanese PS2 release **Kidou Senshi Gundam — Gundam vs. Z Gundam**, serial `SLPS-25419`, executable CRC `435D8236`. The retained main executable SHA-256 is recorded in `upstream.lock`.
+The research target is the Japanese PS2 release of [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en.wikipedia.org/wiki/Mobile_Suit_Gundam:_Gundam_vs._Zeta_Gundam). Its serial is `SLPS-25419`, and its executable CRC is `435D8236`. The retained main executable SHA-256 is recorded in `upstream.lock`.
 
 The current game workspace uses an extracted main ELF, 325 MWo3 modules from `AFS_DATA.AFS`, recorded VU programs, and a full local disc image. These are different inputs; generated C++ or the small data package does not replace all runtime disc access.
 
