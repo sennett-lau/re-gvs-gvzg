@@ -1,0 +1,51 @@
+{
+  "reviewed": "2026-10-26",
+  "method": "Read source and retained release configuration; no game execution or deployment. Paths refer to the original workspace.",
+  "source_sha256": {
+    "runtime/src/gs/gpu/gpu.cpp": "1ee1f815ff5b60459a1bc7f9103445a5caca1c5b8725718baf3f7934443c5079",
+    "web/remote-host.js": "cd2fc57c350b16e4e8c2cdf53f1c1d12cd778533fee6ed5d725104f9f1e34f66",
+    "web/remote-client.js": "1ae9777e87fd9e047917dda07559e33b8e9c72e5595813cbf95e7adc5e5afaa7",
+    "web/netplay-game.js": "1fdea5e068a2e24b1b5c932a533e6f97713638ebd3af7372207bba56f14b4019",
+    "web/netplay-transport.js": "103a6be3aa03e53525aa784c1c258e7362e3d449b583fdb6cc10064cba4d8577",
+    "web/gundam-netplay-lobby.js": "7f64e57c31f5d4a84aa51c1464a364abe7a6842b935151920d011cd5953bd7ef",
+    "scripts/netplay.py": "35dc89fa9c0caf9d5867bef4aba28defb9b69b56809b3d3002e4b2c51511e00a",
+    "build/web-gundam-pvp-disc-release/netplay-manifest.json": "75bcf8a7d41cbf4d3b46d454654dbb216b24a0217e5875b9addb63a7df098f2c"
+  },
+  "renderer": {
+    "status": "inspected",
+    "present": [
+      "Batch key comparison before appending primitives",
+      "Consecutive setup deduplication",
+      "Texture/framebuffer/depth overlap checks",
+      "Overlapping-read snapshot path",
+      "Upload and CLUT ordering guards"
+    ],
+    "symbols": [
+      "g_batch",
+      "g_batch_reads",
+      "snapshot_batch",
+      "flush_batch",
+      "batch_conflict",
+      "emit_all"
+    ],
+    "next": "Measure why batches flush on the affected phone; preserve image and VRAM agreement."
+  },
+  "streaming": {
+    "status": "inspected",
+    "ice_transport_policy": "relay on host and client",
+    "capture_fps_request": 60,
+    "max_video_bitrate_request": 3000000,
+    "motion_hint_present": false,
+    "degradation_preference_present": false,
+    "receiver_buffer_hint_present": false,
+    "next": "Controlled all/relay and media-hint comparison; no settings changed in this review."
+  },
+  "lockstep": {
+    "status": "inspected",
+    "retained_release_input_delay_frames": 3,
+    "simulation_hz": 60,
+    "intentional_lead_ms": 50,
+    "rollback_present": false,
+    "next": "Measure jitter and full-match behavior with the existing delay. Snapshot/replay correctness precedes dirty-page optimization."
+  }
+}

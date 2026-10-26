@@ -1,0 +1,16 @@
+--- generated/gundam-vs-z-gundam/unit_0047.cpp
++++ research/gundam-full-game-sound-clock/unit_0047.cpp
+@@ -1,3 +1,4 @@
++#include "render_hooks.hpp"
+ #include "units.hpp"
+ 
+ namespace gen {
+@@ -897,7 +898,7 @@
+     set32(c.r[4], ld32((c.r[28].w[0] - 23780u)));
+     set32(c.r[3], ld32((c.r[4].w[0] + 88u)));
+     set32(c.r[3], c.r[3].w[0] + 1u);
+-    st32((c.r[4].w[0] + 88u), c.r[3].w[0]);
++    if (!research_render_only()) st32((c.r[4].w[0] + 88u), c.r[3].w[0]);
+     c.r[3].sd[0] = static_cast<std::int16_t>(ld16((c.r[5].w[0] + 822u)));
+     c.budget -= 14;
+     { const bool t = c.r[3].d[0] == 0ull;  if (t) { goto L_0021C6C0; } }

@@ -1,0 +1,10 @@
+--- baseline_unit_0049.cpp
++++ unit_0049.cpp
+@@ -3824,6 +3824,7 @@
+     c.budget -= 2;
+     { const std::uint32_t t = c.r[31].w[0];  c.pc = t; return; }
+ L_00226D30:
++    if (research_render_only()) { c.pc = c.r[31].w[0]; return; }
+     set32(c.r[29], c.r[29].w[0] - 208u);
+     c.r[2].sd[0] = static_cast<std::int32_t>(0x006F0000u);
+     st64((c.r[29].w[0] + 144u), c.r[31].d[0]);

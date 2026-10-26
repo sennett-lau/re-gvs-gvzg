@@ -1,0 +1,55 @@
+{
+  "reviewed": "2026-10-26",
+  "source_sha256": {
+    "research/gundam-versus-audit/pc-versus-cue-clock120-22ac/journey-clock_long_observation_40s.png": "49180816d0b7bad9310c6f8f5927f06415e7d23a3c3efe101d2e1c7cefe7f938",
+    "research/gundam-versus-audit/pc-versus-cue-clock60-22ac/analysis-summary.json": "fae743b12a968e5835649fd9e2fa7ca34b949d7d1b6afb906256594aec9f8e13",
+    "research/gundam-versus-audit/pc-versus-cue-clock60-22ac/all-observed-samples.json": "a4f380cb8e6faa9f0eca6085db7478ccaf0db1f6520370fda514b0b8105e229f",
+    "research/gundam-versus-audit/pc-versus-cue-clock120-22ac/analysis-summary.json": "27f09f11c161171c65a34d0605b31dc6ac0b3bc3f89206a74aa26d25aff002a6",
+    "research/gundam-versus-audit/pc-versus-cue-clock120-22ac/all-observed-samples.json": "e022683d15f17534197890b6289023987c9219b767010bdb27c3121de7c6bb47",
+    "games/gundam-vs-z-gundam/disc/SLPS_254.19": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+    "research/gundam-full-game-input-gate/baseline_unit_0049.cpp": "33e38c0cf733c6a03ced03adea416d2cb595d3edc43365aff400cd559fcc2afa",
+    "research/gundam-full-game-input-gate/unit_0049.cpp": "c6dab555d8722dcbffb7de386c82bb268fe6c9ae18d4d57141bb8034816c1ecf",
+    "research/gundam-full-game-input-gate/test_input_gate.py": "bd3343dac59b2002d259843ffe5cb663818831cdbcbcb13bcec302947edbe8c4",
+    "research/gundam-full-game-input-gate/input-gate.diff": "832415f3d43048fe3d34119eb8550689d4cef3cdaefcb67df32383738e1629c1",
+    "research/gundam-full-game-sound-clock/unit_0047.diff": "1b318c5a96f68be50291f1292290bfa4b26c6392046faebfb44ad406f9b6b2e3",
+    "games/gundam-vs-z-gundam/fps-research/render-split-static/002124f0.txt": "9da0e347122787cfa65cf44dcd53edba90d1ebd4a499afc648a2d9d0d3bad177",
+    "games/gundam-vs-z-gundam/fps-research/static/00224af0.txt": "050cca5628a39ad7430b996cbe868412ebfa7f26c34e443477b72d524d3b9fd7",
+    "research/gundam-full-game-mode-coverage/static/0021c660.txt": "656c96a1e688b25b07fbf752ca0330b6d703eeec306a85abdb439dabb886eedb",
+    "scripts/gundam_render_hooks.py": "be85446d7900b3adae407cf61a5a992702ff6afe7b0e5d0314a8fcf90050c36a",
+    "generated/gundam-vs-z-gundam/unit_0044.cpp": "16d92a6d4b29e6a84adbc6028119053fe267f9fa360d12ff3a18d6d0c1c3322e",
+    "games/gundam-vs-z-gundam/fps-research/render-validated-final/results.json": "fad58c934e992276500dc2f3d7899431f52d9205f64e2bdd3a502faa99e828d0",
+    "research/gundam-full-game-adaptive/static/00226d30.txt": "af88d30d412f56396c0e7f8996dc8c9db9fc32a5312c796b88d12637a6831bfd"
+  },
+  "media": {
+    "pc_screenshot": "Copied unchanged, test overlay retained. No browser chrome, address, personal name or connection credential is visible.",
+    "comparison": "Left: repeat120. Right: movement120. Same frame indices, both sequences sampled at 120 per emulated second, encoded side by side at 30 FPS, four-times slower. Initial capture included. No audio.",
+    "command": "ffmpeg -framerate 30 -i repeat120/frame_%05d.ppm -framerate 30 -i movement120/frame_%05d.ppm -filter_complex hstack -frames:v 241 -c:v libx264 -crf 22 -pix_fmt yuv420p -an -map_metadata -1 -movflags +faststart comparison.mp4",
+    "sequences": {
+      "repeat120": {
+        "frames": 241,
+        "ordered_name_sha256_list_sha256": "ca36c7d69b6e078ac9698d2c4aa30079cd9c2388356c4d1128665160916c705e",
+        "first_sha256": "6d1c10c27df6eaf2d31056aa6707467941948a3439ccad69f51bf729c0ee9f76",
+        "last_sha256": "f085c21f6c7107c7767384b1cf84e3226c34649aa0949ddee03f69cacec4e34a"
+      },
+      "movement120": {
+        "frames": 241,
+        "ordered_name_sha256_list_sha256": "0536eba37c2c29a86541161b135ec6f207cfbe8527d2c6867d6a00c39e57f807",
+        "first_sha256": "6d1c10c27df6eaf2d31056aa6707467941948a3439ccad69f51bf729c0ee9f76",
+        "last_sha256": "5b5b31816994027e640cd9a65b4310b05f1910d6a5bc924cd6c3a70ed8955816"
+      }
+    },
+    "poster": "Frame extracted at playback second4 from the comparison video; no content edits.",
+    "encoder_version": "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers",
+    "encoding_note": "H.264 is a lossy viewing derivative. Unique-image counts refer to the original PPM captures, not the encoded video."
+  },
+  "export_sha256": {
+    "docs/media/pc-versus-120-request.png": "49180816d0b7bad9310c6f8f5927f06415e7d23a3c3efe101d2e1c7cefe7f938",
+    "docs/media/repeat-vs-interpolate-quarter-speed.mp4": "1a925470c03274417222d0a175f84446f814a2673446ac2ba7c66f6a71906c39",
+    "docs/evidence/code/cue-clock.diff": "1b318c5a96f68be50291f1292290bfa4b26c6392046faebfb44ad406f9b6b2e3",
+    "docs/evidence/code/hook-instructions.txt": "a7d6674da2d8ed872310b44c01005accf03fab713ffb3439f444bd2d5c031600",
+    "docs/evidence/code/input-gate.diff": "832415f3d43048fe3d34119eb8550689d4cef3cdaefcb67df32383738e1629c1",
+    "docs/evidence/code/render-boundary.diff": "281c243aa0946b2501818f4575b6aab30be4a21301515f22e1fafc3eeaa4415c",
+    "docs/media/repeat-vs-interpolate-poster.png": "4ba51829401698b0a048c4cd74922584bd8aabd0d30db7516a0596a04d67b415",
+    "docs/evidence/pc-cadence-samples.json": "84beda31d84dfd9f7ab0b69f19a566321456e47fcf8ab08a829b2bf8095961aa"
+  }
+}

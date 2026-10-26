@@ -1,0 +1,5 @@
+--- original branch expression (unit_0044.cpp, 0x212500)
++++ render hook expression (gundam_render_hooks.py)
+@@
+-const bool t = c.r[2].d[0] != 0ull;
++const bool t = c.r[2].d[0] != 0ull || research_render_only();
