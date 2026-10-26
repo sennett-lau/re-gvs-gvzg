@@ -17,7 +17,7 @@ This local repository starts with the report and its reader. The existing game w
 | `apps/game/` | Game UI, input, diagnostics and one matched `prebuilt/` set | Future export |
 | `generated/` | Selected readable generated C++ and translation tables | Future export |
 | `src/hooks/`, `patches/runtime/` | Our game-specific hooks and runtime/compiler changes | Future export |
-| `research/source/` | Selected RE scripts, address maps and useful exports | Portable input regression exported; wider source export pending |
+| `research/source/` | Selected RE scripts, address maps and useful exports | Input regression and partial render-hook layer exported |
 | `docs/media/` | Selected real captures with provenance captions | Early mobile demo, native comparison and PC screenshot |
 | `poc/streaming/`, `poc/lockstep/` | Independently reproducible multiplayer experiments | Future export |
 | `scripts/release/` | Packaging profiles, manifests and checksum generation | Future export |
@@ -35,7 +35,7 @@ The large raw diagnostic JSON captures are not required for a normal checkout. C
 
 ## Rebuild acceptance
 
-The existing workspace and this checkout have different scopes. Game builds and prototypes exist locally; their complete sources and inputs have not yet been exported here. The portable input regression is the first executable research export. It is not the full game engine.
+The existing workspace and this checkout have different scopes. Game builds and prototypes exist locally; their complete sources and inputs have not yet been exported here. The portable input regression and [render-hook patch package](../research/source/render-hooks/README.md) are reproducible subsets. The latter exposes the interface, patch generator and address mapping; it still needs the controller, interpolation implementation and runtime to link a game.
 
 A complete rebuild package needs:
 
@@ -62,3 +62,9 @@ Read [Contributing](../CONTRIBUTING.md) before adding a page or explanation. It 
 Markdown remains complete with captions, limitations and static figures. The Wiki pre-renders that Markdown; JavaScript adds optional interactions. Measurement files stay in `docs/evidence/`, while conceptual figures have explicitly illustrative parameters in `docs/figures/`. Generated HTML is ignored and rebuilt. Source links point to the exact Markdown copied into that reader build.
 
 An interactive figure marker is a project convention, not native Markdown functionality. If JavaScript fails or is disabled, readers still receive the article and static figure. A future hosted URL can replace the local reader link after a real deployment is approved.
+
+## Stable Wiki hosting
+
+The current quick tunnel is a temporary review link. A restart can change its address. For a stable public Wiki, build `.local/wiki/` and deploy that static output to an approved GitHub Pages project. [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages) serves static HTML, CSS and JavaScript from a repository.
+
+The reader uses relative asset links. Before deployment, check it under the intended repository subpath as well as at `/`. Keep game hosting and its cross-origin isolation requirements separate from this static report. The research-check workflow only validates content; it contains no deployment step. Selecting the account, repository and public URL remains a publication decision.

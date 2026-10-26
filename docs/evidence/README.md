@@ -1,6 +1,6 @@
 # Evidence index
 
-Start with the claim you want to check. Each record links to selected measurements and original source fingerprints. This checkout now includes selected visuals, code excerpts, numeric samples and one runnable regression. Complete game captures remain in the working archive.
+Start with the claim you want to check. Each record links to selected measurements and original source fingerprints. This checkout now includes selected visuals, code excerpts, numeric samples and a runnable regression and hook-generation export. Complete game captures remain in the working archive.
 
 > **How to read this page**
 >
@@ -19,6 +19,10 @@ The separate ✅ / 🟡 / ⬜ [result labels](../EVIDENCE.md#result-labels) stat
 
 Run `python3 research/source/input-gate/verify.py` from the repository root. Expected: **1,265 cases, 369 old failures, zero corrected failures**. The [test package](../../research/source/input-gate/README.md) includes the restricted interpreter, 356 original instruction bytes and generated entry excerpts. It runs without the game or GPU.
 
+### Render-hook export · inspectable and repeatable patches
+
+The [hook package](../../research/source/render-hooks/README.md) contains `render_hooks.hpp`, the shared patch helper, a wrapper with the final input/cue fixes, and a 13-site guest-address map. Run `python3 research/source/render-hooks/verify.py` without game files. With the matching generated inputs, the wrapper reproduces five retained unit hashes. This partial export does not include the complete controller/runtime or game build.
+
 ### PC rate plot · repeatable analysis
 
 Run `python3 scripts/plot-pc-cadence.py`. The [plot script](../../scripts/plot-pc-cadence.py) regenerates [the chart](../figures/pc-cadence.svg) from [142 selected numeric observations](pc-cadence-samples.json), 71 per run. It prints the window duration and render/gameplay/shown rates. These roughly 70-second windows are the longest eligible post-pause segments, not the aggregate R06 windows. This redoes the analysis; it does not rerun the historical game.
@@ -26,10 +30,12 @@ Run `python3 scripts/plot-pc-cadence.py`. The [plot script](../../scripts/plot-p
 ### Visuals and patch excerpts · inspectable artifacts
 
 - [Early mobile gameplay](../media/early-mobile-gameplay.mp4): a user-recorded showcase from an early optimized phone build. [Clip provenance](mobile-demo-provenance.json) records the trim and crop. Its exact build is unidentified.
-- [Four-times slower native comparison](../media/repeat-vs-interpolate-quarter-speed.mp4): repeat control on the left, interpolation on the right.
+- [Labeled native comparison](../media/repeat-vs-interpolate-quarter-speed.mp4) and [four-sample filmstrip](../media/repeat-vs-interpolate-filmstrip.png): repeat control on the left, interpolation on the right. Labels and cumulative unique counts remain visible when downloaded.
 - [Unedited PC screenshot](../media/pc-versus-120-request.png): the actual Versus scene and test overlay.
 - [Disassembly](code/hook-instructions.txt), [render branch](code/render-boundary.diff), [input gate](code/input-gate.diff) and [cue-clock diff](code/cue-clock.diff).
 - [Provenance](review-provenance.json): source/output hashes, selected frame-sequence fingerprints and the video encoding command.
+
+The [media generator](../../scripts/build-comparison-media.py) verifies all 241 source hashes per sequence before adding labels and making the filmstrip. It requires the retained PPM capture archive; the original images are not reconstructed from the compressed video.
 
 ### Full game rebuild · still to export
 
@@ -72,7 +78,7 @@ Read [04 · The frame-rate goal](../chapters/04-frame-rate.md) for the metric de
 
 ## Multiplayer: two different routes
 
-The [current implementation review](implementation-review.json) checks three suggestions against actual source: existing GPU batching, relay-only streaming and the retained three-frame lockstep delay. It records source inspection, not a new performance result.
+The [current implementation review](implementation-review.json) checks suggestions against actual source: GPU/CLUT batching, relay-only streaming, configurable lockstep delay and the live FNV-1a hash/wait path. It records source inspection, not a new performance result.
 
 | Route / question | Selected record | What it supports | What it leaves open |
 | --- | --- | --- | --- |

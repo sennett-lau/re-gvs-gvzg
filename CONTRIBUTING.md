@@ -75,6 +75,14 @@ Git ignores generated output in `.local/wiki/`. Rebuild after changing the Markd
 
 Reader checks do not establish new game-performance results. Keep game tests silent without changing system volume. Keep audio processing active during timing tests, as described in [Evidence conventions](docs/EVIDENCE.md).
 
+## Repeatable research checks
+
+Run `npm run verify:research` to execute the input-edge regression, verify the render-hook export and regenerate the PC rate plot. The plot should leave no diff after regeneration. These checks need Python 3, but no disc, GPU or original capture archive.
+
+The local `.github/workflows/research.yml` recipe runs these checks, builds the Wiki and checks its links on pushes and pull requests once published. Actions are pinned to commit hashes, permissions are read-only, and the workflow does not deploy. Its commands were checked locally; a hosted CI run remains pending publication.
+
+Regenerating the video is a separate FFmpeg task that requires the original capture archive. Preserve the source fingerprints and cumulative-image-count checks in `scripts/build-comparison-media.py`.
+
 ## Reader validation
 
 The local checker parses the curated JSON and resolves Markdown and reader links, including anchors. It checks selected privacy markers and rejects accidental game payloads or oversized files. It also checks that chapter summaries and callout text survive conversion to HTML. Each callout must retain its evidence limits inside the same block.
@@ -85,14 +93,14 @@ The revised reader passed these checks:
 
 | Reader check | Result |
 | --- | --- |
-| Page layout | 110 checks across all 22 pages, at widths of 320, 390, 768, 1,024 and 1,440 pixels |
+| Page layout | 115 checks across all 23 pages, at widths of 320, 390, 768, 1,024 and 1,440 pixels |
 | Chapter summaries | All 10 summaries appeared at all five widths |
 | Callouts | All 11 blocks appeared at all five widths, with their evidence limits |
 | Navigation | Stage links, Evidence links, keyboard mobile menu, section tracking and source disclosure passed |
 | Theme switching | Dark by default. Saved choices, keyboard switching, navigation, reload, cross-tab updates and blocked-storage fallback passed. Both themes fit seven widths from 320 to 1,440 pixels. |
 | Contributor navigation | Collapsed on research pages. Keyboard access, contributor-page expansion and return to the overview passed with and without JavaScript. |
 | Interactive figures | Slider, keyboard input, repeat/interpolate comparison, budget selector and architecture switch passed |
-| Retained game evidence | Comparison video decoded and played silently in eight theme/width cases. Four code excerpts rendered with and without JavaScript. Public media and selected pages matched the local build. |
+| Retained game evidence | Labeled comparison decoded and played silently in eight theme/width cases. Mobile showcase autoplay, mute, hidden controls and looping passed at 320, 390 and 1,440 pixels. The filmstrip fit those widths. Four code excerpts rendered with and without JavaScript. Public media and selected pages matched the local build. |
 | JavaScript disabled | Full chapter, summary, callout, static figure and native navigation remained available |
 | Page and HTTP errors | None observed in this reader test |
 
