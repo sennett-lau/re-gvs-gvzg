@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,8 +7,9 @@
       name="description"
       content="A research record of PS2 recompilation, adaptive rendering and two multiplayer approaches."
     />
-    <meta name="theme-color" content="#edf0ef" />
+    <meta name="theme-color" content="#141b22" />
     <title>{{TITLE}}</title>
+    <script src="{{ASSETS}}/theme.js"></script>
     <link rel="stylesheet" href="{{ASSETS}}/wiki.css" />
     <script type="module" src="{{ASSETS}}/reader.js"></script>
   </head>
@@ -18,9 +19,22 @@
       <a class="wordmark" href="{{HOME}}"
         ><span>{{PROJECT_NAME}}<small>{{REPO_NAME}}</small></span></a
       >
-      <div class="masthead-note">
-        <span>RESEARCH NOTEBOOK</span
-        ><span class="local-label"><i></i> Local edition</span>
+      <div class="masthead-actions">
+        <div class="masthead-note">
+          <span>RESEARCH NOTEBOOK</span
+          ><span class="local-label"><i></i> Local edition</span>
+        </div>
+        <button type="button" class="theme-toggle" data-theme-toggle
+          aria-label="Switch to light mode" title="Switch to light mode" hidden>
+          <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+          </svg>
+          <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path d="M20.5 14A8.5 8.5 0 0 1 10 3.5 8.5 8.5 0 1 0 20.5 14Z" />
+          </svg>
+          <span data-theme-label>Light mode</span>
+        </button>
       </div>
       <div class="reading-progress" aria-hidden="true"><span></span></div>
     </header>

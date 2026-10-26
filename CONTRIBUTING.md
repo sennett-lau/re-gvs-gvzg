@@ -89,6 +89,7 @@ The revised reader passed these checks:
 | Chapter summaries | All 10 summaries appeared at all five widths |
 | Callouts | All 11 blocks appeared at all five widths, with their evidence limits |
 | Navigation | Stage links, Evidence links, keyboard mobile menu, section tracking and source disclosure passed |
+| Theme switching | Dark by default. Saved choices, keyboard switching, navigation, reload, cross-tab updates and blocked-storage fallback passed. Both themes fit seven widths from 320 to 1,440 pixels. |
 | Contributor navigation | Collapsed on research pages. Keyboard access, contributor-page expansion and return to the overview passed with and without JavaScript. |
 | Interactive figures | Slider, keyboard input, repeat/interpolate comparison, budget selector and architecture switch passed |
 | JavaScript disabled | Full chapter, summary, callout, static figure and native navigation remained available |

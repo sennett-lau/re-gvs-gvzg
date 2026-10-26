@@ -102,6 +102,7 @@ await fs.mkdir(path.join(out, "assets"), { recursive: true });
 for (const [src, dst] of [
   ["apps/wiki/wiki.css", "wiki.css"],
   ["apps/wiki/components/reader.js", "reader.js"],
+  ["apps/wiki/components/theme.js", "theme.js"],
   ["apps/wiki/components/figures.js", "figures.js"],
 ])
   await fs.copyFile(path.join(root, src), path.join(out, "assets", dst));
