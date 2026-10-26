@@ -1,0 +1,38 @@
+{
+  "scope": "Partial hook interface and patch generator, including the final input and cue gates. Not a standalone runtime or complete game build.",
+  "elf_sha256": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+  "source_sha256": {
+    "scripts/gundam_render_hooks.py": "be85446d7900b3adae407cf61a5a992702ff6afe7b0e5d0314a8fcf90050c36a",
+    "research/gundam-fps/render_hooks.hpp": "64c7b9f83aea4912789bf882a67a58fa913796b1b2a332b728639c6e3d4cead9",
+    "research/gundam-full-game-input-gate/prepare.py": "91a5039146a237f9ab6a44447faa8fdb4dd0bd37a21e8862a6ca0ab300a677ce",
+    "research/gundam-full-game-sound-clock/prepare.py": "f8c5c8ada433ba93887d53136e505d242fb8623e23cb2591c8b750ced1ea4960",
+    "build/web-gundam-full-game-sound-clock/manifest.json": "2ae0862dad6deda9c6720501c5e673d64aa958cb8048b16b2da865e9b35cdd25"
+  },
+  "inputs_sha256": {
+    "unit_0039.cpp": "fadef783f10f8a807f7b080e5e0d9c6a8ea106add3969e21425ad4abcee2d722",
+    "unit_0044.cpp": "16d92a6d4b29e6a84adbc6028119053fe267f9fa360d12ff3a18d6d0c1c3322e",
+    "unit_0047.cpp": "7f30d37af54c4c425afdb87a4a6568321b238cb08173ec55f78b4d88400d764c",
+    "unit_0049.cpp": "293891c6544cb91ded899450da05add27737c1744785ff8fa47a18e386935757",
+    "unit_004D.cpp": "8154f5d802060ede9c550061acddfc56b50a1a2f326de215501dcdab55ac12ca"
+  },
+  "outputs_sha256": {
+    "unit_0039.cpp": "c1d4f85ef3743626e0658d1bb8a62dd1dffddc03fcd4f2edbaae81ebe74e4aaa",
+    "unit_0044.cpp": "aec5b156eeb38fdea0865461b7f5448c93e1405ade3c9bc8f2ff64629f652fe3",
+    "unit_004D.cpp": "7a37a0c88b1273d96a03df57a57926b16cf293ab31f4fa3f8ae06f4ea3303fa1",
+    "unit_0049.cpp": "c6dab555d8722dcbffb7de386c82bb268fe6c9ae18d4d57141bb8034816c1ecf",
+    "unit_0047.cpp": "17cc87fc8a7003d7c861a29632503db7abe43401002a9d0e4d4f16985899dbbc"
+  },
+  "export_sha256": {
+    "gundam_render_hooks.py": "be85446d7900b3adae407cf61a5a992702ff6afe7b0e5d0314a8fcf90050c36a",
+    "render_hooks.hpp": "64c7b9f83aea4912789bf882a67a58fa913796b1b2a332b728639c6e3d4cead9",
+    "prepare.py": "567cfa76b9cb14d373e19e4b521f996809047d337043757d1e4b37ba419270d4",
+    "address-map.json": "57bd0979a2bbeb6f47ab2706626cd920da82b95f8d27f9501b92fa49f5f2b52e"
+  },
+  "output_reference_sources": {
+    "unit_0039.cpp": "build/gundam-render-research-release/unit_0039.cpp",
+    "unit_0044.cpp": "build/gundam-render-research-release/unit_0044.cpp",
+    "unit_004D.cpp": "build/gundam-render-research-release/unit_004D.cpp",
+    "unit_0049.cpp": "research/gundam-full-game-input-gate/unit_0049.cpp",
+    "unit_0047.cpp": "research/gundam-full-game-sound-clock/unit_0047.cpp"
+  }
+}

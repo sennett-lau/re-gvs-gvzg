@@ -1,0 +1,96 @@
+{
+  "scope": "Guest instruction addresses and containing generated labels for the supported executable; generated labels are not necessarily instruction addresses.",
+  "hooks": [
+    {
+      "guest_address": "0x001E4370",
+      "generated_unit": "unit_0039.cpp",
+      "generated_anchor": "L_001E4370",
+      "purpose": "Model transform copy",
+      "hook_symbol": "research_model_copy"
+    },
+    {
+      "guest_address": "0x001E4750",
+      "generated_unit": "unit_0039.cpp",
+      "generated_anchor": "L_001E4730",
+      "purpose": "Attachment transform source +0x940",
+      "hook_symbol": "research_attachment_source"
+    },
+    {
+      "guest_address": "0x001E47C0",
+      "generated_unit": "unit_0039.cpp",
+      "generated_anchor": "L_001E47A0",
+      "purpose": "Attachment transform source +0xA40",
+      "hook_symbol": "research_attachment_source"
+    },
+    {
+      "guest_address": "0x002120D8",
+      "generated_unit": "unit_0044.cpp",
+      "generated_anchor": "L_002120D8",
+      "purpose": "Mode completion / canonical pose epoch",
+      "hook_symbol": "research_mode_complete"
+    },
+    {
+      "guest_address": "0x002124D8",
+      "generated_unit": "unit_0044.cpp",
+      "generated_anchor": "L_002124D8",
+      "purpose": "Render completion / camera restoration",
+      "hook_symbol": "research_render_complete"
+    },
+    {
+      "guest_address": "0x00212500",
+      "generated_unit": "unit_0044.cpp",
+      "generated_anchor": "L_002124F0",
+      "purpose": "Skip mode gameplay dispatch on an extra render",
+      "hook_symbol": "research_render_only"
+    },
+    {
+      "guest_address": "0x00212538",
+      "generated_unit": "unit_0044.cpp",
+      "generated_anchor": "L_00212538",
+      "purpose": "Prepare interpolated camera",
+      "hook_symbol": "research_camera_begin"
+    },
+    {
+      "guest_address": "0x00224B48",
+      "generated_unit": "unit_0049.cpp",
+      "generated_anchor": "L_00224B38",
+      "purpose": "Gate application counter +832",
+      "hook_symbol": "research_render_only"
+    },
+    {
+      "guest_address": "0x00224B5C",
+      "generated_unit": "unit_0049.cpp",
+      "generated_anchor": "L_00224B38",
+      "purpose": "Gate application counter gp-23920",
+      "hook_symbol": "research_render_only"
+    },
+    {
+      "guest_address": "0x00224B68",
+      "generated_unit": "unit_0049.cpp",
+      "generated_anchor": "L_00224B68",
+      "purpose": "Skip game-facing input copy on extra render",
+      "hook_symbol": "research_render_only"
+    },
+    {
+      "guest_address": "0x00226D30",
+      "generated_unit": "unit_0049.cpp",
+      "generated_anchor": "L_00226D30",
+      "purpose": "Return before pad polling / history mutation; corrected input gate",
+      "hook_symbol": "research_render_only"
+    },
+    {
+      "guest_address": "0x002357E0",
+      "generated_unit": "unit_004D.cpp",
+      "generated_anchor": "L_002357E0",
+      "purpose": "Skip screen-effect update on extra render",
+      "hook_symbol": "research_render_only"
+    },
+    {
+      "guest_address": "0x0021C688",
+      "generated_unit": "unit_0047.cpp",
+      "generated_anchor": "L_0021C660",
+      "purpose": "Gate cue-clock store at context+0x58",
+      "hook_symbol": "research_render_only"
+    }
+  ]
+}

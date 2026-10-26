@@ -40,7 +40,7 @@ The generated branch gains one extra condition. It preserves the game's original
 
 A separate review found that the queue-reset function starts DMA for the previous buffer. A later function waits for that transfer. Skipping submissions while retaining their waits could deadlock. No general packet-dropping shortcut was accepted.
 
-The hook experiments modified copies of generated C++ units and linked those objects ahead of the existing archive. Writing an instruction into guest RAM would not automatically rewrite C++ already emitted by static recompilation. The recovered guest address therefore had to map to a generated function and a rebuilt unit.
+The hook experiments modified copies of generated C++ units and linked those objects ahead of the existing archive. Writing an instruction into guest RAM would not automatically rewrite C++ already emitted by static recompilation. The recovered guest address therefore had to map to a generated function and a rebuilt unit. The [exported hook interface and address map](../../research/source/render-hooks/README.md) now make that connection inspectable and reproduce the five patched units from matching inputs.
 
 ## Draw intermediate poses without changing gameplay
 
