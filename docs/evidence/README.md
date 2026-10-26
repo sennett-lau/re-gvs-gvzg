@@ -13,6 +13,12 @@ Start with the claim you want to check. Each record links the report to selected
 
 ## Recompilation and performance
 
+The linked `baseline-findings.json` collects records from several development stages. Its filename does not mean every result came from the first playable build.
+
+For example, `native_validation` describes an early match run outside the browser. `historical_browser_manifest` identifies saved build files and the later `gundam-mobile-4` revision described in [chapter 02](../chapters/02-browser-port.md). `phone_menu_observation` records a separate, later phone capture. Each group states the limits of its evidence.
+
+Use the chapters for explanations and the JSON fields to check their source records.
+
 | Question | Where to read the finding | Selected record | Boundary of the evidence |
 | --- | --- | --- | --- |
 | What was extracted and translated? | [01 · Disc → C++](../chapters/01-disc-to-code.md) | [Baseline findings](baseline-findings.json): `target`, `direct_inventory`, source fingerprints | The 325-module inventory was checked; no developer source was recovered |

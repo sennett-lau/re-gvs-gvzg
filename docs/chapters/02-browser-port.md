@@ -10,7 +10,9 @@
 
 Producing C++ was the beginning of the port. The game still needed compatible module loading, correct control flow, graphics and sound services, and asynchronous disc reads. The browser interface also needed error reporting. The practical milestone was a playable path through boot and a battle, supported by separate native, compiler and browser checks.
 
-The retained [baseline findings](../evidence/baseline-findings.json) distinguish those checks. Later changes updated the original validation manifest through `gundam-mobile-4`. The manifest therefore includes changes made after the first successful build. This matters when identifying the first browser baseline. A filename saying “baseline” cannot establish that later optimizations were absent.
+The [test-record guide](../evidence/README.md#recompilation-and-performance) explains the records behind this chapter. It links to `baseline-findings.json`, a structured summary of earlier test results, build-file details and their sources.
+
+The original validation manifest is a file list and test checklist. It was updated during development, including later mobile fixes labelled `gundam-mobile-4`. This is an internal build name used to identify a mobile compatibility revision. **The saved checklist does not tell us exactly which fixes were present in the first playable browser build.**
 
 ## Fix loading and generated control flow
 
@@ -54,6 +56,7 @@ The remaining publication work has three steps:
 1. Reconstruct the intended baseline from retained inputs.
 2. Check a clean setup with a user-supplied disc.
 3. Repeat the declared boot, selection, battle and exit flow.
+
 This report does not silently replace those acceptance checks with a successful native screenshot. It supplies the evidence needed to decide what a future package can honestly promise.
 
 <details>
