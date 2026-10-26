@@ -22,7 +22,7 @@ These tests establish actor ownership and a bounded deterministic baseline. They
 
 The transport assigns player slots and agrees on build and initial-state identities. It buffers future inputs. Both copies wait for the shared input pair before each 60 Hz simulation tick. This approach is called lockstep.
 
-**The retained release already uses a three-frame input delay.** Its `netplay-manifest.json` sets `runtime_config.input_delay` to `3`, matching the transport defaults. This is about 50 ms of intentional scheduling lead at 60 Hz, not a measured end-to-end latency. The first delayed ticks are primed with neutral input. The next experiment should compare delay settings under network jitter, rather than add a duplicate delay layer. [Inspected source and manifest](../evidence/implementation-review.json)
+**The retained release already uses a three-frame input delay.** Its `netplay-manifest.json` sets `runtime_config.input_delay` to `3`, matching the transport defaults. This is about 50 ms of intentional scheduling lead at 60 Hz, not a measured end-to-end latency. The first delayed ticks are primed with neutral input. The server accepts a session delay from 0 to 30 frames; three is the retained default, not the only supported setting. [Inspected source and manifest](../evidence/implementation-review.json)
 
 At checkpoints, it compares full-RAM hashes from both copies at the same gameplay tick. Missing input pauses progress. Mismatches stop the session. There is no rollback or mid-match resynchronization.
 
@@ -46,6 +46,14 @@ The corrected policy waits in host time for required bytes while preserving the 
 The test used the release candidate's unchanged JS/WASM. A wrapper selected delayed disc routes and observed checkpoints. There were harmless missing-favicon requests, but no recorded game/page exception.
 
 The selected values and source hashes are in [network-findings.json](../evidence/network-findings.json). Actor-control checks cover movement and firing; the longer browser run covers continued checkpoint agreement. The remaining acceptance target is an active full match across separate devices.
+
+### Measure checkpoint cost and input waiting
+
+**The live checkpoint hash is FNV-1a 64-bit, not SHA-256.** `web_netplay.cpp` scans all 32 MiB of RAM every 120 ticks, before requesting the shared input pair. The release identifies this scheme as `fnv1a64-full-ram-before-input-v1`. Its cost on a phone has not been measured separately.
+
+The existing `waitMs` counter starts **after hashing**. It combines browser dispatch, checkpoint agreement and input waiting; it cannot attribute a stall to one of them. Add separate hash durations, input-wait counts/durations and checkpoint-barrier timings, retaining median and tail latency. Only then compare another hash such as XXH3. Both peers must agree on the algorithm and version, and the deliberately wrong-input test must still detect divergence. File-audit SHA-256 hashes have a separate purpose.
+
+Choose delay during session setup from measured relay-path round trips and jitter, then agree one value before priming neutral ticks. Compare a small range around that estimate using the input-wait distribution. RTT alone does not describe asymmetric arrivals or browser scheduling, so it should seed the experiment rather than dictate a universal formula. Keep the agreed delay fixed during a match until a synchronized change protocol exists. [Inspected implementation](../evidence/implementation-review.json)
 
 ### Rollback needs more than a RAM copy
 

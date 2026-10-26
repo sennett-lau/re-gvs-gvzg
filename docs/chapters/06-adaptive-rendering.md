@@ -24,7 +24,7 @@ A longer controlled run made 45 rate changes over 30 emulated seconds. It includ
 
 These comparisons used matched game-facing input-cache replay. A separate strict comparison with ordinary asynchronous input failed. They are not proof of network determinism across adaptive clients. [R03](../evidence/rendering-findings.json)
 
-The implementation accepts 60–120. The policy selects 60, 72, 80, 90, 100, 110 or 120. Integer cycle division gives some rates a small timing approximation. The evidence for bounded runs does not establish arbitrarily long-term exact timing at every possible integer request.
+The implementation accepts 60–120. The policy selects 60, 72, 80, 90, 100, 110 or 120. Integer cycle division gives some rates a small timing approximation. Long-duration drift at arbitrary integer requests remains a timing test.
 
 ## Adapt the target and give the browser time to paint
 
@@ -34,9 +34,9 @@ A second problem was browser scheduling. Resolving a suspended WASM continuation
 
 In the same-package PC comparison, this allowance increased the computed rate from 112.43 to 120.03 updates per wall second. Gameplay increased from 56.21 to 60.01 ticks per wall second. The measured window used 224 extra presentation slots and no new timer fallback. Shown cadence stayed around 56. The cadence-only candidate was nevertheless withheld after the missed-Start test described in Chapter 05: throughput and ordinary controls were separate acceptance gates. [R11](../evidence/rendering-findings.json)
 
-Other hypotheses failed. Splitting uploads into 1 MiB or 256 KiB writes increased measured upload time. Shorter native slices did not establish better presentation. A bounded menu-wait deadline produced no winning escapes.
+Other hypotheses failed. Splitting uploads into 1 MiB or 256 KiB writes increased measured upload time. Shorter native slices produced no demonstrated presentation gain. A bounded menu-wait deadline produced no winning escapes.
 
-These variants stayed excluded. Arbitrary packet dropping was not established safe. [R12](../evidence/rendering-findings.json)
+These variants stayed excluded. Packet ordering and completeness remain part of rendering correctness. [R12](../evidence/rendering-findings.json)
 
 ## The latest paired PC result
 
@@ -54,7 +54,7 @@ At 120, 9,272 renders accompanied 4,636 gameplay and cue-clock ticks. At 60, the
 >
 > The eligible PC battle ran at normal game speed. **The captured browser cadence was near 60 Hz.** Median browser-shown rates were 55.753 and 55.789 per second. These measurements do not identify the panel's maximum refresh rate.
 >
-> Physical 120-Hz presentation and latest-build phone throughput remain unverified. [Evidence: R06](../evidence/rendering-findings.json).
+> [Evidence: R06](../evidence/rendering-findings.json).
 
 The automatic setups used different suits, CPU choices and stages, so this is a counter-rate and continuation comparison, not a deterministic same-match pixel/RAM A/B. Neither run reached natural results. Exact audio underrun counts were unavailable.
 
@@ -64,7 +64,7 @@ The automatic setups used different suits, CPU choices and stages, so this is a 
 
 [Open the full-size chart](../figures/pc-cadence.svg) · [Selected numeric samples](../evidence/pc-cadence-samples.json) · [Regenerate the chart](../evidence/README.md#what-you-can-reproduce-from-this-checkout)
 
-These are roughly one-second rate observations, **not individual frame times**. The fixed-60 control also shows the presentation gap. Capture per-callback intervals, new-submission counts and GPU timings before attributing that gap to the panel or game renderer.
+These are roughly one-second observations. In the plotted fixed-60 window, **60.02 renders/s** is a counter-delta mean; **55.76 shown/s** is the median of sampled rates. Their **4.26/s difference is a diagnostic lead**, not a count of dropped frames. The [presentation experiment](10-further-work.md#1-resolve-the-presentation-gap) will align per-frame browser timestamps with OS display events.
 
 ![Actual fullscreen Versus capture from the retained PC 120-target run](../media/pc-versus-120-request.png)
 
@@ -100,9 +100,9 @@ An earlier **saved-battle** Auto build, `8b1037f5…`, did demonstrate normal-sp
 
 No fatal error was recorded, and no further pacing fallback occurred in that settled window. The user-supplied capture had a running audio context. During startup, the game ran slowly and the audio queue emptied. Both recovered afterward. [R13](../evidence/rendering-findings.json)
 
-Auto moved through 80 → 60 → 72 → 80 → 90. Browser callbacks ran near 120 Hz for much of the session, then near 60 in the last four samples while game speed stayed normal. The startup label of approximately 60 Hz therefore did not describe a permanent browser ceiling. This is useful above-60 phone evidence, but not sustained 120 FPS or direct physical scanout measurement. Different target groups covered different scenes and cannot establish that 80 is always better than 90.
+Auto moved through 80 → 60 → 72 → 80 → 90. Browser callbacks ran near 120 Hz for much of the session, then near 60 in the last four samples while game speed stayed normal. The startup label of approximately 60 Hz therefore did not describe a permanent browser ceiling. This is above-60 phone evidence for that saved-battle build. The target groups covered different scenes, so they cannot rank 80 against 90 fairly.
 
-It also predates the full-game allocation, input and cue-clock changes. It cannot validate their phone performance retrospectively.
+The current phone comparison must include the later full-game allocation, input and cue-clock changes.
 
 A separate, later **full-game** phone capture used `c816cfe3…`. All 219 samples were ineligible for extra rendering. Its Versus battle averaged 59.94 computed FPS under an explicit 60-Hz mode guard. A brief 63.07 reading was not a high-refresh result.
 
@@ -114,6 +114,8 @@ A subsequent PC observer found roughly 1,446 raster dispatches per main-menu fra
 
 The inspected WebGPU backend already queues compatible primitives and dispatches them in batches. `batch_conflict`, `g_batch_reads` and `snapshot_batch` handle texture, framebuffer and depth overlap. Matching texture, blend and scissor alone is insufficient: queued uploads, CLUT changes and read-after-write dependencies also matter.
 
-The next useful change is **flush-reason instrumentation**, not removal of these guards. Count state changes, texture feedback, uploads and capacity limits separately. Then compare a same-scene phone capture, output pixels and VRAM with the conservative renderer. The [source audit](../evidence/implementation-review.json) identifies the inspected functions.
+The next useful change is **flush-reason instrumentation**. Count state changes, texture feedback, uploads and capacity limits separately. **CLUT needs its own counters:** load requests, actual load dispatches, palette-slot exhaustion and source overlap with pending framebuffer/depth writes. The code already keeps versioned palette slots and groups adjacent CLUT loads; a palette change does not automatically end every raster batch.
 
-Pose-buffer reuse already removed six warmed allocations per model-copy call, with 63/63 actual RGB captures, full 32 MiB RAM and traces matching its control. That establishes reduced allocation work, not an isolated phone FPS improvement. The next acceptance target is a same-scene phone A/B plus physical high-refresh delivery, followed by full-match and mode-transition coverage. [R10](../evidence/rendering-findings.json)
+Adding the palette base address (`CBP`) alone is not a safe cache fix. The same address can contain newly written palette bytes, and format/offset fields also affect palette identity. Adding it to the batch key could instead split more batches. Measure the dominant cause first, then compare same-scene phone timing, pixels and VRAM against the conservative renderer. The [source audit](../evidence/implementation-review.json) records the relevant functions.
+
+Pose-buffer reuse already removed six warmed allocations per model-copy call, with 63/63 actual RGB captures, full 32 MiB RAM and traces matching its control. This removes allocation work; its isolated phone speedup still needs a same-scene A/B. Full-match and mode-transition coverage follow. [R10](../evidence/rendering-findings.json)

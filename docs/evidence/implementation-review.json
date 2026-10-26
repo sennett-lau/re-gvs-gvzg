@@ -9,7 +9,8 @@
     "web/netplay-transport.js": "103a6be3aa03e53525aa784c1c258e7362e3d449b583fdb6cc10064cba4d8577",
     "web/gundam-netplay-lobby.js": "7f64e57c31f5d4a84aa51c1464a364abe7a6842b935151920d011cd5953bd7ef",
     "scripts/netplay.py": "35dc89fa9c0caf9d5867bef4aba28defb9b69b56809b3d3002e4b2c51511e00a",
-    "build/web-gundam-pvp-disc-release/netplay-manifest.json": "75bcf8a7d41cbf4d3b46d454654dbb216b24a0217e5875b9addb63a7df098f2c"
+    "build/web-gundam-pvp-disc-release/netplay-manifest.json": "75bcf8a7d41cbf4d3b46d454654dbb216b24a0217e5875b9addb63a7df098f2c",
+    "research/gundam-netplay/web_netplay.cpp": "c5e360b0c54f1c86479a8721294a37617ad0043357ab1bbac813052792056ed8"
   },
   "renderer": {
     "status": "inspected",
@@ -28,7 +29,19 @@
       "batch_conflict",
       "emit_all"
     ],
-    "next": "Measure why batches flush on the affected phone; preserve image and VRAM agreement."
+    "next": "Measure why batches flush on the affected phone; preserve image and VRAM agreement.",
+    "clut": {
+      "palette_identity": "Versioned palette slot carried in setup; CBP alone does not identify contents.",
+      "adjacent_loads": "emit_pre groups consecutive CLUT operations into one dispatch.",
+      "flush_conditions": "load_clut first flushes a pending image; slot exhaustion emits/submits; queue_pre emits on CLUT source overlap with queued framebuffer/depth writes.",
+      "proposed_counters": [
+        "load requests",
+        "actual CLUT dispatches",
+        "palette-slot exhaustion",
+        "CLUT source overlap",
+        "pending-image flush"
+      ]
+    }
   },
   "streaming": {
     "status": "inspected",
@@ -46,6 +59,16 @@
     "simulation_hz": 60,
     "intentional_lead_ms": 50,
     "rollback_present": false,
-    "next": "Measure jitter and full-match behavior with the existing delay. Snapshot/replay correctness precedes dirty-page optimization."
+    "next": "Separate hash and wait distributions; negotiate one startup delay from relay-path timing and jitter; test full-match behavior. Hash changes must version peer compatibility.",
+    "accepted_delay_frames": [
+      0,
+      30
+    ],
+    "delay_selection": "Agreed at room creation; no RTT negotiation implemented.",
+    "checkpoint_hash": "fnv1a64-full-ram-before-input-v1",
+    "checkpoint_interval_ticks": 120,
+    "checkpoint_bytes": 33554432,
+    "hash_implementation": "Scalar byte loop; cost not separately measured.",
+    "wait_counter": "Cumulative waitMs starts after hashing. Includes JS dispatch/checkpoint agreement/input waiting. Does not separate their causes."
   }
 }
