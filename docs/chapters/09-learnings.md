@@ -8,7 +8,7 @@
 > - **Result:** Recompilation, reverse engineering and runtime tests solved different parts of the problem. Rendering and multiplayer prototypes now have evidence from limited tests.
 > - **Still open:** Current-phone throughput, complete game flows and end-to-end multiplayer remain unverified.
 
-**Report date: 2026-10-25.** Recompilation made the original game executable in a new environment. Reverse engineering made specific behavior understandable enough to change. The rendering and multiplayer prototypes have evidence from limited tests.
+Recompilation made the original game executable in a new environment. Reverse engineering made specific behavior understandable enough to change. The rendering and multiplayer prototypes have evidence from limited tests.
 
 ## The tools answer different questions
 
@@ -23,15 +23,15 @@ Ghidra with the PS2 extension helped recover those meanings from the original ex
 >
 > The retained tests support specific rendering and multiplayer results. They do not establish every game mode, current-phone high-refresh performance or a complete online match flow.
 
-| Area | Supported by retained evidence | Not yet established |
+| Area · partially verified | Supported by retained evidence | Not yet established |
 | --- | --- | --- |
-| Browser port | Executable game paths, ordinary controls and tested save persistence | Every mode and a portable clean setup for every reader |
-| Rendering | Distinct native intermediate images. Approximately 120 computed updates at normal speed in bounded PC combat. | Physical 120-Hz delivery, normal-speed 144, or 120-Hz gameplay simulation |
-| Phone | Earlier saved-battle Auto capture: about 78 computed and 72 browser-observed updates/s at normal speed | Latest full-game high-refresh throughput or a fixed main-menu slowdown |
-| Streaming | Implemented two-controller/media transport and a user's two-device observation | A retained full match with separate host and two clients, measured latency and recovery |
-| Independent clients | Actor ownership, bounded deterministic trials and 2,640-tick browser agreement with delayed disc delivery | Full selection-to-rematch integration, adaptive cross-rate agreement or restored original online service |
+| 🟡 [Browser port](02-browser-port.md) | Executable game paths, ordinary controls and tested save persistence | Every mode and a portable clean setup for every reader |
+| 🟡 [Rendering](06-adaptive-rendering.md) | Distinct native intermediate images. Approximately 120 computed updates at normal speed in bounded PC combat. | Physical 120-Hz delivery, normal-speed 144, or 120-Hz gameplay simulation |
+| 🟡 [Phone](06-adaptive-rendering.md) | Earlier saved-battle Auto capture: about 78 computed and 72 browser-observed updates/s at normal speed | Latest full-game high-refresh throughput or a fixed main-menu slowdown |
+| 🟡 [Streaming](07-host-streaming.md) | Implemented two-controller/media transport and a user's two-device observation | A retained full match with separate host and two clients, measured latency and recovery |
+| 🟡 [Independent clients](08-independent-clients.md) | Actor ownership, bounded deterministic trials and 2,640-tick browser agreement with delayed disc delivery | Full selection-to-rematch integration, adaptive cross-rate agreement or restored original online service |
 
-The detailed limits and source hashes are in [rendering findings](../evidence/rendering-findings.json), [network findings](../evidence/network-findings.json) and the preceding chapters. These are curated records of previous work. Assembling this report did not rerun the game.
+The chapter links above explain each result. [Evidence conventions](../EVIDENCE.md) define the labels; the [evidence index](../evidence/README.md) lists records and runnable exports.
 
 ## Lessons from the workflow
 

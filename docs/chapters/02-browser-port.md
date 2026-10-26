@@ -14,6 +14,8 @@ The [test-record guide](../evidence/README.md#recompilation-and-performance) exp
 
 The original validation manifest is a file list and test checklist. It was updated during development, including later mobile fixes labelled `gundam-mobile-4`. This is an internal build name used to identify a mobile compatibility revision. **The saved checklist does not tell us exactly which fixes were present in the first playable browser build.**
 
+**🟡 Partially verified · Tested browser paths; clean baseline reconstruction pending.**
+
 ## Fix loading and generated control flow
 
 The game's `LOADHIGH.IRX` path required IOP module operations that the runtime did not yet implement in the necessary form. The IOP is the PS2's input/output processor, used for services such as loading modules and accessing devices. Its `LoadModuleWithOption` operation loads a module with an allocation preference. `StartModule` starts a previously loaded module. Combining both actions unconditionally would change the game's expected ordering.

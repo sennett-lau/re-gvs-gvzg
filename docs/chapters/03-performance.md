@@ -10,7 +10,7 @@
 
 The first playable port was not consistently comfortable on a phone. The user reported freezes, occasional white screens, slower fullscreen play and lagging audio. Those symptoms did not identify one common cause. The optimization work therefore combined better diagnostics, bounded presentation work and targeted compilation, followed by experiments that could reject plausible explanations.
 
-The [baseline findings](../evidence/baseline-findings.json) preserve selected measurements and their original sources. This chapter describes retained results. Preparing the report did not rerun those game tests.
+**🟡 Partially verified · Specific fixes and controlled comparisons.** The [baseline findings](../evidence/baseline-findings.json) preserve the measurements and original sources.
 
 ## Show why a device freezes or slows down
 

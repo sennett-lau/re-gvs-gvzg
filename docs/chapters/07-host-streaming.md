@@ -8,7 +8,7 @@
 > - **Result:** The host streams one game’s picture and sound. Clients send input to separate controller ports. Two-device control was reported working.
 > - **Still open:** A complete host-plus-two-client match, latency measurements and reconnect tests have not been retained. The current connection path requires TURN.
 
-**Route A puts all game computation on one host.** Two other devices receive its picture and sound and send controller input. The implementation exists in the research working tree, and a user reported that two devices controlled the same screen. A complete host-plus-two-client match, measured latency and disconnect recovery still need a retained test record. This chapter reviews the available evidence on 2026-10-25.
+**🟡 Partially verified · Implemented transport, reported two-device control.** Route A puts all game computation on one host. Two other devices receive its picture and sound and send controller input. The implementation exists in the research working tree. Full-match latency and recovery remain unmeasured.
 
 ## Move game computation to a host
 
@@ -52,7 +52,17 @@ Input release also matters. The client sends neutral input when focus is lost or
 
 Both WebRTC endpoints currently force `iceTransportPolicy: 'relay'`. This implementation therefore needs a working TURN relay. A signaling endpoint alone does not relay the media, and this configuration does not fall back to a direct connection. Online serving requires HTTPS. These requirements belong in future setup instructions, with deployment credentials kept out of the repository.
 
-The source references and an explicitly selected implementation summary are retained in [network-findings.json](../evidence/network-findings.json). They describe inspected code. They contain no new runtime benchmark.
+The source references and implementation summary are retained in [network-findings.json](../evidence/network-findings.json).
+
+## Reduce streaming latency: the proposed experiment
+
+**⬜ Untested · These settings are proposed, not applied to the running prototype.** The [2026-10-26 source audit](../evidence/implementation-review.json) confirms relay-only ICE and no explicit motion or receiver-buffer hints.
+
+1. Make ICE policy selectable. Try `all` with STUN and TURN configured, and retain `relay` for comparison. Inspect the selected candidate pair. `all` allows direct and relay candidates; it does not promise a direct route or a strict STUN-then-TURN sequence. See the [WebRTC ICE policy specification](https://www.w3.org/TR/webrtc/#rtcicetransportpolicy-enum).
+2. Request `contentHint = 'motion'` and `degradationPreference = 'maintain-framerate'` where supported. Test whether lower resolution preserves motion under load. These are encoder preferences, not delivery guarantees. See [MediaStreamTrack content hints](https://www.w3.org/TR/mst-content-hint/).
+3. Test supported receiver-buffer hints against the default. A lower `jitterBufferTarget` can trade resilience for latency. Do not assume zero is best, or treat the browser-specific `playoutDelayHint` as a portable replacement. See the [receiver API](https://www.w3.org/TR/webrtc/#dom-rtcrtpreceiver-jitterbuffertarget).
+
+Compare the same scene and network conditions. Record input-to-visible-response latency, selected candidate type, RTT, encoded/decoded/dropped frames and receiver-buffer delay. Keep the current path as a control. This work can start with synthetic media, but a game-session comparison is required before claiming a latency improvement.
 
 ## What has been tested
 
@@ -74,4 +84,4 @@ Use one host and two actual client devices for the next acceptance run:
 4. Return through the normal menus.
 Measure input-to-visible-response latency and dropped video frames. Repeat with a disconnected controller, a hidden client page and a return to the session. Record actual TURN use and negotiated video behavior.
 
-Tests should remain silent while the audio engine continues consuming its ring buffer through a zero-gain output. Suspending audio would change the workload and invalidate a timing comparison. Until these checks are retained, describe streaming as an implemented research route with user observation, rather than a finished low-latency multiplayer release.
+Use the shared [silent timing-test procedure](../EVIDENCE.md#repeatable-tests-to-retain-with-future-code-exports).

@@ -10,7 +10,7 @@
 
 A high-refresh patch needs to know which instructions advance the game and which only prepare a picture. The recompiler supplied executable experiments. Reverse engineering explained the behavior that those experiments needed to change. Neither tool automatically found a safe, whole-game 120-Hz switch.
 
-This account was reviewed on 2026-10-25. [Evidence records R02, R04 and R05](../evidence/rendering-findings.json) distinguish original-byte analysis, targeted regressions and actual browser continuation tests.
+**✅ Verified · Bounded instruction, state and input checks.** [R02, R04 and R05](../evidence/rendering-findings.json) identify each experiment.
 
 ## What each tool contributed
 
@@ -25,6 +25,18 @@ The early static investigation checked 2,738 retained instruction rows across 38
 The main worker combines mode updates, object preparation, graphics callbacks and rendering. Skipping the whole worker would skip the desired drawing as well. The useful boundary was the original branch at `0x212500`: it bypasses the main mode update while preserving drawing callbacks. The prototype uses this path for extra rendering intervals.
 
 That branch alone was insufficient. Input polling/history, application counters and a screen-effect update also needed canonical 60-Hz handling. The graphics packet and DMA pipeline remained active.
+
+The following original instructions show the three relevant sites: the mode-update branch, the unconditional pad call and the cue-counter store. Their bytes were rechecked against the identified executable during export.
+
+<!-- evidence-code: ../evidence/code/hook-instructions.txt -->
+
+[Download the disassembly excerpt](../evidence/code/hook-instructions.txt).
+
+The generated branch gains one extra condition. It preserves the game's original skip condition and also takes that path on a render-only interval.
+
+<!-- evidence-code: ../evidence/code/render-boundary.diff -->
+
+[Download the branch-expression diff](../evidence/code/render-boundary.diff). This excerpt isolates the condition; camera hooks and other guards remain separate parts of the implementation.
 
 A separate review found that the queue-reset function starts DMA for the previous buffer. A later function waits for that transfer. Skipping submissions while retaining their waits could deadlock. No general packet-dropping shortcut was accepted.
 
@@ -46,12 +58,18 @@ An earlier browser candidate sustained high-rate rendering but missed an ordinar
 
 The correction returns from the pad routine before its prologue on render-only intervals. Ordinary host input and asynchronous IOP polling remain in use.
 
+<!-- evidence-code: ../evidence/code/input-gate.diff -->
+
+[Download the generated-C++ input diff](../evidence/code/input-gate.diff).
+
 > [!IMPORTANT]
 > **The input correction passed all 1,265 tested arrival phases.**
 >
 > A restricted interpreter executed the original edge and pause instructions. The previous arrangement failed **369** cases. The corrected gate failed **zero** cases.
 >
 > This was a targeted regression test. Subsequent PC journeys visibly paused, resumed and exited with ordinary controls.
+
+**Reproduce this check:** the [portable input regression](../../research/source/input-gate/README.md) now runs from this checkout with Python 3. It includes bounded instruction bytes, the interpreter and C++ entry excerpts. A local rerun on 2026-10-26 reproduced **369 old failures and zero corrected failures across 1,265 cases**. It needs no game build or GPU.
 
 This solves a lost edge, not all input latency variation. An earlier dynamic-rate comparison still saw asynchronous IOP arrival shift by one logical update. Replaying matched game-facing input records made controlled state comparisons pass. This replay was a diagnostic. It did not test ordinary interaction or establish adaptive lockstep networking.
 
@@ -60,6 +78,10 @@ This solves a lost edge, not all input latency variation. An earlier dynamic-rat
 The VBlank interrupt increments a field at context offset `0x58`. An outer callback uses it to advance sound-associated time/marker records. At 120 video intervals this counter advanced twice as fast even when battle logic stayed at 60. A synthetic active record with a 60-tick terminal marker ended after approximately 0.508 seconds instead of 1.017 seconds.
 
 The correction gates only the generated store corresponding to original instruction `0x21C688` during an extra render. The remaining interrupt instructions, physical VBlank counter, GS wait behavior and outer callback continue. A bounded original-instruction regression and later paired PC tests verify that the cue counter follows canonical ticks while extra rendering survives.
+
+<!-- evidence-code: ../evidence/code/cue-clock.diff -->
+
+[Download the generated-C++ cue-clock diff](../evidence/code/cue-clock.diff). [Export provenance](../evidence/review-provenance.json) identifies the original files and exported bytes.
 
 An earlier “volume envelope/fade” interpretation was withdrawn. The verified description is a sound-associated cue/marker clock. A voice or portrait animation role remains an inference. Counter-rate correctness does not prove a particular audible fade, PCM pitch change, or every audio effect.
 

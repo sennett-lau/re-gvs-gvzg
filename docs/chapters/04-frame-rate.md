@@ -10,7 +10,7 @@
 
 The first high-refresh experiment made the game run faster, not correctly. The later prototype took a different route: retain 60 gameplay updates per emulated second, but render intermediate model and camera poses more often. This distinction explains both the progress and the remaining gap between a counter showing 120 and a phone displaying smooth, normal-speed play.
 
-This chapter summarizes retained experiments, reviewed on 2026-10-25. The compact evidence records are [R01–R03](../evidence/rendering-findings.json). No game benchmark was rerun while writing this report.
+**✅ Verified · Native timing and image comparisons.** See [R01–R03](../evidence/rendering-findings.json) for the retained controls.
 
 ## Read the five frame-rate measurements
 
@@ -76,13 +76,23 @@ A defensible result needs separate checks on the intended device:
 - Stable audio production and consumption.
 - Distinct rendered motion.
 - Measured display delivery.
-The latest PC result supports approximately 120 computed render updates at normal game speed in a narrow Versus scene. Its desktop exposed 60 Hz and reported about 56 shown updates per second. It cannot establish physical 120-Hz delivery or the performance of the latest build on a phone.
+The latest PC result supports approximately 120 computed render updates at normal game speed in a narrow Versus scene. Its captured browser cadence was near 60 Hz, with about 56 shown updates per second. Physical 120-Hz delivery and current-build phone performance remain open tests.
 
 The next chapters explain the recovered rendering boundary. They cover continuous timing, button-press detection and the conditions that permit extra rendering.
 
 <details>
 <summary>Source trail and verification records</summary>
 
-[R01–R03 in the curated evidence file](../evidence/rendering-findings.json) identify the original working-tree sources, their SHA-256 hashes, and the selected measurements. The principal source reports are `docs/gundam-high-fps-research.md` and `docs/gundam-120fps-prototype.md` in the original `ps2-web-recomp` working tree. Raw RAM, save states and image captures remain outside this report repository.
+[R01–R03 in the curated evidence file](../evidence/rendering-findings.json) identify the original working-tree sources, their SHA-256 hashes, and the selected measurements. The principal source reports are `docs/gundam-high-fps-research.md` and `docs/gundam-120fps-prototype.md` in the original `ps2-web-recomp` working tree. Selected visuals are included below. Raw RAM and save states remain outside this report repository.
 
 </details>
+
+## See repeated frames and interpolated motion
+
+**Left: the repeat control. Right: interpolated model and camera poses.** Both sequences contain 241 native captures from the same two-second movement fixture, including the initial image. The control has 122 unique images; interpolation has 241.
+
+<video controls muted playsinline preload="none" poster="../media/repeat-vs-interpolate-poster.png" aria-label="Four-times slower comparison: repeated frames on the left, interpolation on the right" src="../media/repeat-vs-interpolate-quarter-speed.mp4"></video>
+
+*Playback is four times slower: 120 captured samples per emulated second are encoded at 30 FPS. This makes intermediate poses visible on an ordinary display. It is an offline visual comparison, not a browser performance recording.*
+
+[Download the silent comparison](../media/repeat-vs-interpolate-quarter-speed.mp4) · [Capture and encoding provenance](../evidence/review-provenance.json)

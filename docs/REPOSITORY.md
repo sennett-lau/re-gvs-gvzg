@@ -17,7 +17,8 @@ This local repository starts with the report and its reader. The existing game w
 | `apps/game/` | Game UI, input, diagnostics and one matched `prebuilt/` set | Future export |
 | `generated/` | Selected readable generated C++ and translation tables | Future export |
 | `src/hooks/`, `patches/runtime/` | Our game-specific hooks and runtime/compiler changes | Future export |
-| `research/source/` | Selected RE scripts, address maps and useful exports | Future export |
+| `research/source/` | Selected RE scripts, address maps and useful exports | Portable input regression exported; wider source export pending |
+| `docs/media/` | Selected real captures with evidence captions | Native comparison and PC screenshot |
 | `poc/streaming/`, `poc/lockstep/` | Independently reproducible multiplayer experiments | Future export |
 | `scripts/release/` | Packaging profiles, manifests and checksum generation | Future export |
 | `.local/release-builds/` | Ignored temporary packaging output | Created only when needed |
@@ -31,6 +32,20 @@ The agreed future export includes generated C++, selected reverse-engineered sou
 A `.data` package containing the executable is still game-derived content. Generated files must retain their provenance; the project does not describe them as independently written original game source. Our third-party notices and content notice have distinct jobs.
 
 The large raw diagnostic JSON captures are not required for a normal checkout. Curated, sanitized excerpts support the report. Optional complete evidence exports should be prepared only when needed to reproduce a result. Arbitrary binary splitting would retain all the storage cost while making the package harder to use.
+
+## Rebuild acceptance
+
+The existing workspace and this checkout have different scopes. Game builds and prototypes exist locally; their complete sources and inputs have not yet been exported here. The portable input regression is the first executable research export. It is not the full game engine.
+
+A complete rebuild package needs:
+
+1. Pinned upstream runtime, compiler and toolchain versions, including local patches.
+2. A supported input fingerprint and extraction commands for the user's own disc.
+3. Generated-unit mappings, hook sources and exact link order.
+4. One matched JS/WASM/data package with file hashes and build options.
+5. An empty-checkout rebuild and a silent boot, input, pause/resume and match-flow test.
+
+Retain the commands, output hashes and failures from that clean test. Keep performance results tied to their measured build. If a rebuilt binary differs, explain the difference and rerun the corresponding acceptance checks before relabelling it as a historical milestone.
 
 ## Honest, small commits
 

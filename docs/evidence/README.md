@@ -1,6 +1,6 @@
 # Evidence index
 
-Start with the claim you want to check. Each record links the report to selected measurements and the original source fingerprints. The records are small summaries; complete game captures remain in the private working archive.
+Start with the claim you want to check. Each record links to selected measurements and original source fingerprints. This checkout now includes selected visuals, code excerpts, numeric samples and one runnable regression. Complete game captures remain in the working archive.
 
 > **How to read this page**
 >
@@ -10,6 +10,29 @@ Start with the claim you want to check. Each record links the report to selected
 > - **Proposed:** the work remains to be implemented or tested.
 >
 > These labels describe the type of support. They are not confidence scores or claims that every device behaves the same way.
+
+The separate ✅ / 🟡 / ⬜ [result labels](../EVIDENCE.md#result-labels) state whether the described check or journey is verified, partial or untested.
+
+## What you can reproduce from this checkout
+
+### Input-edge regression · executable check
+
+Run `python3 research/source/input-gate/verify.py` from the repository root. Expected: **1,265 cases, 369 old failures, zero corrected failures**. The [test package](../../research/source/input-gate/README.md) includes the restricted interpreter, 356 original instruction bytes and generated entry excerpts. It runs without the game or GPU.
+
+### PC rate plot · repeatable analysis
+
+Run `python3 scripts/plot-pc-cadence.py`. The [plot script](../../scripts/plot-pc-cadence.py) regenerates [the chart](../figures/pc-cadence.svg) from [142 selected numeric observations](pc-cadence-samples.json), 71 per run. It prints the window duration and render/gameplay/shown rates. These roughly 70-second windows are the longest eligible post-pause segments, not the aggregate R06 windows. This redoes the analysis; it does not rerun the historical game.
+
+### Visuals and patch excerpts · inspectable artifacts
+
+- [Four-times slower native comparison](../media/repeat-vs-interpolate-quarter-speed.mp4): repeat control on the left, interpolation on the right.
+- [Unedited PC screenshot](../media/pc-versus-120-request.png): the actual Versus scene and test overlay.
+- [Disassembly](code/hook-instructions.txt), [render branch](code/render-boundary.diff), [input gate](code/input-gate.diff) and [cue-clock diff](code/cue-clock.diff).
+- [Provenance](review-provenance.json): source/output hashes, selected frame-sequence fingerprints and the video encoding command.
+
+### Full game rebuild · still to export
+
+The original workspace contains generated C++, runtime changes, web packages and multiplayer prototypes. This report checkout contains the small exports listed above, not that complete workspace. A reader cannot yet rebuild or launch the complete game from it. See the [export inventory and acceptance criteria](../REPOSITORY.md#rebuild-acceptance).
 
 ## Recompilation and performance
 
@@ -36,7 +59,7 @@ The numbered records below are in [rendering-findings.json](rendering-findings.j
 | Are the extra images different? | `R02`–`R03` | Native image comparisons, controlled state checks and the scope of input replay |
 | Why did Start sometimes fail? | `R04` | The input-edge failure, the original-instruction test and ordinary-control continuation |
 | Which additional clock needed repair? | `R05` | Cue/marker timing; the earlier audible-fade interpretation was withdrawn |
-| What does the latest PC test prove? | `R06` | Fullscreen measurement windows, gameplay/render/cue rates, the 60-Hz screen and unmatched setups |
+| What does the latest PC test prove? | `R06` | Fullscreen windows, gameplay/render/cue rates, captured browser cadence and unmatched setups; panel maximum refresh was not measured |
 | Which modes are eligible? | `R07` | Active-battle guards and the unverified or excluded mode/camera lifecycles |
 | Why did the later phone build stay around 60? | `R08` | The explicit Versus guard in that build, separately from its slow main menu |
 | What could reduce the menu cost? | `R09` | PC dispatch counts and why they do not establish the phone’s GPU bottleneck |
@@ -47,6 +70,8 @@ The numbered records below are in [rendering-findings.json](rendering-findings.j
 Read [04 · The frame-rate goal](../chapters/04-frame-rate.md) for the metric definitions, [05 · Game hooks](../chapters/05-rendering-boundary.md) for the mechanism, and [06 · Results and limits](../chapters/06-adaptive-rendering.md) for the device and mode boundaries.
 
 ## Multiplayer: two different routes
+
+The [current implementation review](implementation-review.json) checks three suggestions against actual source: existing GPU batching, relay-only streaming and the retained three-frame lockstep delay. It records source inspection, not a new performance result.
 
 | Route / question | Selected record | What it supports | What it leaves open |
 | --- | --- | --- | --- |

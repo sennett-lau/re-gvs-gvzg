@@ -10,7 +10,7 @@
 
 The starting point was a local disc image of [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en.wikipedia.org/wiki/Mobile_Suit_Gundam:_Gundam_vs._Zeta_Gundam). The investigation used the Japanese PS2 release, serial `SLPS-25419`, with executable CRC `435D8236`. No original developer source tree was available. The first task was to extract executable inputs for the PS2 recompiler. Source records helped separate compiler defects from game behavior.
 
-This chapter reconstructs that work from retained source, manifests and validation notes. It does not describe a new game build performed while writing this report. The selected facts and source fingerprints are in [baseline findings](../evidence/baseline-findings.json).
+**✅ Verified · Translation inventory and inspected fixes.** The selected facts and source fingerprints are in [baseline findings](../evidence/baseline-findings.json).
 
 ## What the tools contribute
 

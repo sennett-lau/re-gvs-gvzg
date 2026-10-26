@@ -6,11 +6,11 @@
 >
 > - **Question:** Can the amount of extra rendering adapt to the device’s available time?
 > - **Result:** A bounded controller adjusts the target while preserving 60-Hz gameplay. The latest retained PC test reached about 120 render updates at normal speed.
-> - **Still open:** That PC used a 60-Hz display. The current full-game build still needs phone measurements and complete match-flow validation.
+> - **Still open:** Physical 120-Hz presentation, current-build phone measurements and complete match flows still need validation.
 
 **Adaptive rendering adjusts the drawing workload while keeping gameplay at 60 updates per emulated second.** The early fixed-120 schedule advanced gameplay on every second render interval. If a device completed only 80 intervals per wall second, gameplay fell to 40 updates and audio slowed down. At a correctly scheduled target of 80, those 80 intervals can contain all 60 gameplay updates.
 
-That does not accelerate a device unable to sustain the original 60-update workload. The main-menu phone slowdown remains an example of this lower bound. The evidence review took place on 2026-10-25. It records prior experiments. No gameplay test was rerun for this report.
+**🟡 Partially verified · Normal-speed rendering works in tested scenes.** Extra rendering cannot help a device that already misses the original 60-update workload. The phone's slow main menu remains a separate problem.
 
 ## Keep game time continuous as the target changes
 
@@ -52,11 +52,23 @@ At 120, 9,272 renders accompanied 4,636 gameplay and cue-clock ticks. At 60, the
 > [!IMPORTANT]
 > **About 120 render updates/s, with gameplay near 60 updates/s.**
 >
-> The eligible PC battle ran at normal game speed. **The display was 60 Hz.** Median browser-shown rates were 55.753 and 55.789 per second.
+> The eligible PC battle ran at normal game speed. **The captured browser cadence was near 60 Hz.** Median browser-shown rates were 55.753 and 55.789 per second. These measurements do not identify the panel's maximum refresh rate.
 >
 > Physical 120-Hz presentation and latest-build phone throughput remain unverified. [Evidence: R06](../evidence/rendering-findings.json).
 
 The automatic setups used different suits, CPU choices and stages, so this is a counter-rate and continuation comparison, not a deterministic same-match pixel/RAM A/B. Neither run reached natural results. Exact audio underrun counts were unavailable.
+
+![Historical PC rates: fixed 120 produces about 120 render updates and 60 gameplay updates per second, while browser-shown output stays near 56 in both runs](../figures/pc-cadence.svg)
+
+*Each panel shows the longest stable post-pause window, about 70 seconds. The table above combines all strict fullscreen intervals, so its measurement window is different.*
+
+[Open the full-size chart](../figures/pc-cadence.svg) · [Selected numeric samples](../evidence/pc-cadence-samples.json) · [Regenerate the chart](../evidence/README.md#what-you-can-reproduce-from-this-checkout)
+
+These are roughly one-second rate observations, **not individual frame times**. The fixed-60 control also shows the presentation gap. Capture per-callback intervals, new-submission counts and GPU timings before attributing that gap to the panel or game renderer.
+
+![Actual fullscreen Versus capture from the retained PC 120-target run](../media/pc-versus-120-request.png)
+
+*The test overlay and browser FPS label are retained unchanged. The screenshot documents the scene; the chart documents its sampled rates.*
 
 ## Which game modes can use extra rendering?
 
@@ -97,5 +109,11 @@ A separate, later **full-game** phone capture used `c816cfe3…`. All 219 sample
 The same capture's main menu averaged 23.92 FPS on its first visit and about 20 on return, with insufficient audio production. That is a separate performance problem. [R08](../evidence/rendering-findings.json)
 
 A subsequent PC observer found roughly 1,446 raster dispatches per main-menu frame versus 69 in Versus setup. This identifies many small graphics batches as an investigation lead. The PC itself stayed near 60 and did not reproduce the phone slowdown. Existing timestamp samples favored light passes, so extrapolating them into total GPU utilization would be misleading. A phone-side controlled capture and proven texture/read-write dependencies are needed before changing batching. [R09](../evidence/rendering-findings.json)
+
+### Batching already exists; find what ends each batch
+
+The inspected WebGPU backend already queues compatible primitives and dispatches them in batches. `batch_conflict`, `g_batch_reads` and `snapshot_batch` handle texture, framebuffer and depth overlap. Matching texture, blend and scissor alone is insufficient: queued uploads, CLUT changes and read-after-write dependencies also matter.
+
+The next useful change is **flush-reason instrumentation**, not removal of these guards. Count state changes, texture feedback, uploads and capacity limits separately. Then compare a same-scene phone capture, output pixels and VRAM with the conservative renderer. The [source audit](../evidence/implementation-review.json) identifies the inspected functions.
 
 Pose-buffer reuse already removed six warmed allocations per model-copy call, with 63/63 actual RGB captures, full 32 MiB RAM and traces matching its control. That establishes reduced allocation work, not an isolated phone FPS improvement. The next acceptance target is a same-scene phone A/B plus physical high-refresh delivery, followed by full-match and mode-transition coverage. [R10](../evidence/rendering-findings.json)

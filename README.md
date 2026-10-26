@@ -4,10 +4,39 @@ This project studies how [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en
 
 > Prefer the illustrated reader? [Open the Wiki](.local/wiki/index.html).
 
-> [!NOTE]
-> **A research record with working prototypes.**
->
-> This repository contains the report and Wiki. The game builds remain in the original research workspace. Each chapter explains what worked, what was tested and what remains unfinished.
+## Results at a glance
+
+<!-- results:start -->
+
+### ~120 renders · ~60 gameplay updates/s
+
+**✅ Verified · PC counter rates**
+
+A retained fullscreen battle ran at normal game speed. Browser-shown cadence was about **56/s**; physical 120-Hz delivery is still untested.
+
+[See the measured rates and game capture](docs/chapters/06-adaptive-rendering.md#the-latest-paired-pc-result).
+
+### 23 matching checkpoints · through tick 2,640
+
+**✅ Verified · Two-browser fixture**
+
+Two instances on one PC agreed across **44 guest seconds**, with neutral inputs. Full matches between separate devices remain to be tested.
+
+[Read the lockstep experiment](docs/chapters/08-independent-clients.md#what-the-longer-browser-test-proves).
+
+### 0 failures · 1,265 input phases
+
+**✅ Verified · Instruction regression**
+
+The old input gate failed **369** cases. The corrected gate passed every tested arrival phase. A small test now runs from this checkout.
+
+[Inspect the fix and reproduce the test](docs/chapters/05-rendering-boundary.md#preserve-button-presses-between-renders).
+
+<!-- results:end -->
+
+![Retained browser capture of the single-camera Versus battle, with the test controls and 56 FPS browser overlay visible](docs/media/pc-versus-120-request.png)
+
+*Actual retained PC capture from the 120-target experiment. The image shows the game and test overlay; refresh-rate evidence comes from counters and measurements.*
 
 ## Explore the research
 
@@ -61,7 +90,12 @@ Use the [Evidence index](docs/evidence/README.md) to trace a finding to its sele
 
 ## About this record
 
-The chapters reconstruct retained research, reviewed on 2026-10-25. Writing this report did not rerun the game tests. [Evidence conventions](docs/EVIDENCE.md) explain how to interpret the results.
+> [!NOTE]
+> **A research record with working prototypes.**
+>
+> This repository contains the report, Wiki and selected reproducible experiments. Complete game builds remain in the original research workspace. Each chapter explains what worked, what was tested and what remains unfinished.
+
+The chapters reconstruct retained research. [Evidence conventions](docs/EVIDENCE.md) define the result labels, review dates and measurement limits.
 
 This project builds on [ps2-web-recomp](https://github.com/snuri00/ps2-web-recomp). No original ISO, ROM or compressed disc backup is included.
 

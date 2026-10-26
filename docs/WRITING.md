@@ -10,6 +10,8 @@ Each chapter starts with a question, a result and unfinished work. The reader sh
 
 State the main finding before explaining the mechanism. Place the test conditions and evidence limits beside that finding. Keep detailed source trails available below.
 
+Use the [result labels](EVIDENCE.md#result-labels) with an explicit scope. Keep general review limitations in Evidence conventions instead of repeating “no game test was rerun” in each chapter. Preserve result-specific conditions, such as same-PC clients, neutral inputs or an offline renderer.
+
 ## Write one idea at a time
 
 - Keep descriptive sentences within 25 words. Keep instructions within 20 words.

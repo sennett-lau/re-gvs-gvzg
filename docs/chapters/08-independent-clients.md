@@ -8,7 +8,7 @@
 > - **Result:** The 60-Hz input-sync prototype passed bounded state comparisons after disc-completion timing was corrected.
 > - **Still open:** Selection, results and rematch are not integrated. Restoring the original Network Battle service is an option within this route, not a completed feature.
 
-**Route B runs a copy of the game on each device.** A relay exchanges inputs and state checks. It sends no video. The working prototype uses the original local two-player Arcade challenge fixture. It does **not** restore the main menu's **通信対戦 / Network Battle** service, and it has not completed the selection-to-rematch integration. This chapter reviews the available evidence on 2026-10-25.
+**🟡 Partially verified · A synchronized battle fixture works; the full game flow is unfinished.** Route B runs a copy of the game on each device. A relay exchanges inputs and state checks. It sends no video. The prototype uses the original local two-player Arcade challenge fixture. The main menu's **通信対戦 / Network Battle** service remains separate.
 
 ## Start with two independently controlled players
 
@@ -21,6 +21,8 @@ These tests establish actor ownership and a bounded deterministic baseline. They
 ## Fix startup failures and state mismatches
 
 The transport assigns player slots and agrees on build and initial-state identities. It buffers future inputs. Both copies wait for the shared input pair before each 60 Hz simulation tick. This approach is called lockstep.
+
+**The retained release already uses a three-frame input delay.** Its `netplay-manifest.json` sets `runtime_config.input_delay` to `3`, matching the transport defaults. This is about 50 ms of intentional scheduling lead at 60 Hz, not a measured end-to-end latency. The first delayed ticks are primed with neutral input. The next experiment should compare delay settings under network jitter, rather than add a duplicate delay layer. [Inspected source and manifest](../evidence/implementation-review.json)
 
 At checkpoints, it compares full-RAM hashes from both copies at the same gameplay tick. Missing input pauses progress. Mismatches stop the session. There is no rollback or mid-match resynchronization.
 
@@ -39,11 +41,17 @@ The corrected policy waits in host time for required bytes while preserving the 
 >
 > Both Chrome instances matched checkpoints **0 through 2,640**. **Both ran on the same desktop with neutral inputs.** One used mobile configuration.
 >
-> This test does not establish physical-phone or full-match behavior. [Evidence: browser release stress](../evidence/network-findings.json).
+> Scope: a same-PC, neutral-input fixture. [Evidence: browser release stress](../evidence/network-findings.json).
 
 The test used the release candidate's unchanged JS/WASM. A wrapper selected delayed disc routes and observed checkpoints. There were harmless missing-favicon requests, but no recorded game/page exception.
 
-The selected values, source hashes and limitations are in [network-findings.json](../evidence/network-findings.json). The short native actor-control tests and longer neutral browser test answer different questions. Together they support continued work on the prototype. Neither establishes full-match completion, physical-phone behavior or internet reliability. No new game run was performed while assembling this report.
+The selected values and source hashes are in [network-findings.json](../evidence/network-findings.json). Actor-control checks cover movement and firing; the longer browser run covers continued checkpoint agreement. The remaining acceptance target is an active full match across separate devices.
+
+### Rollback needs more than a RAM copy
+
+**⬜ Untested · Rollback is future work.** Restoring a tick requires RAM, CPU/IOP state, pending events, device state and deterministic external inputs. Dirty-page snapshots could reduce RAM-copy work, but they do not capture those other components automatically.
+
+First measure snapshot size, save/restore time and a replay checksum in the existing fixed-60 fixture. Retain a full-state reference snapshot before testing incremental pages. A correct rollback design must also handle speculative audio and presentation. The current lockstep implementation waits for missing input instead of predicting it.
 
 ## How the original online mode differs
 

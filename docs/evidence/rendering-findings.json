@@ -370,9 +370,10 @@
           "60": 55.753,
           "120": 55.789
         },
-        "display_exposed_hz": 60,
         "audio": "Running engine and ring consumption, output gain0.",
-        "guard": "Single-human active Versus, single camera, stable scene generation, native fullscreen1280x720, scale1."
+        "guard": "Single-human active Versus, single camera, stable scene generation, native fullscreen1280x720, scale1.",
+        "browser_pacing_budget_hz": 60,
+        "physical_panel_maximum_hz": "Not measured by the retained browser record"
       },
       "limits": [
         "No physical120-Hz scanout proof",
@@ -560,7 +561,7 @@
         "new_timer_fallbacks_in_window": 0
       },
       "limits": [
-        "60-Hz desktop with approximately56 shown updates/s.",
+        "Captured browser cadence near60 Hz with approximately56 shown updates/s; panel maximum refresh was not measured.",
         "Historical cadence-only candidate subsequently failed Start/pause; not promoted until input correction.",
         "Not a demonstrated phone improvement at70\u201390Hz."
       ]

@@ -1,10 +1,22 @@
 # Evidence conventions
 
-This report separates a measured result, a user observation, a hypothesis and a proposed implementation. A successful fixture test is not full-game acceptance; a native test is not a browser or phone benchmark. A compiled artifact is not proof that its interactive game paths work.
+Each result names its test scope. A fixture, a native test, a browser session and a physical-phone capture answer different questions.
+
+## Result labels
+
+| Label | Meaning |
+| --- | --- |
+| ✅ Verified | The stated, bounded check has supporting code or measurements. Read the scope beside the label. |
+| 🟡 Partially verified | Some parts work or have evidence; the described user journey still has missing checks. |
+| ⬜ Untested | A proposal or acceptance target with no retained test result. |
+
+These labels apply to a claim, not to the entire game. The evidence index also identifies the support type: measured, reported, inspected or proposed.
+
+The historical game records were reviewed on 2026-10-25. The 2026-10-26 revision checked source code, exported selected visuals and reran the portable input regression. It did not run a new game, phone or PC-display benchmark. Chapter-specific test conditions remain beside their results; this shared review scope applies throughout.
 
 ## What the records mean
 
-The JSON files in `docs/evidence/` contain deliberately selected metrics and provenance from the original research workspace. Their source paths are relative to the original `ps2-web-recomp` working tree. Those source files are retained locally, not silently bundled with this report. Source hashes identify the records reviewed; they do not authenticate a result independently or make unavailable raw captures reproducible for a reader.
+The JSON files in `docs/evidence/` contain selected metrics and provenance from the original research workspace. Their source paths are relative to the original `ps2-web-recomp` working tree. A path in a provenance record identifies an archive file; it is not a download link. The [reproduction inventory](evidence/README.md#what-you-can-reproduce-from-this-checkout) lists the exported material and remaining gaps.
 
 Each curated record states its extraction or review method and limitations. Where a number is copied from an earlier written analysis rather than recalculated from raw samples, it is identified as a reported historical measurement. A source hash refers to the source bytes; a build ID, WASM hash and report commit are different identities.
 
@@ -21,7 +33,9 @@ Raw captures can include screenshots, browser state, device characteristics, con
 | Game speed | Guest-time progress per wall-clock time | Low input or streaming latency |
 | PCM frames per second | Audio production rate | Audible equivalence, absence of every glitch |
 
-An early saved-fight phone capture, a later full-game phone capture and the latest PC build are separate experiments. Their rates cannot be treated as a single device comparison or proof that one code change caused a gain.
+An early saved-fight phone capture, a later full-game phone capture and the latest PC build are separate experiments. Their rates are not a matched device comparison.
+
+The historical PC capture calibrated a browser scheduling budget near 60 Hz. It did **not** measure the panel's maximum refresh capability. The owner reports a higher-refresh monitor; a session with confirmed 120/144-Hz display settings remains pending. The earlier wording “the PC used a 60-Hz display” was too strong and has been corrected.
 
 ## Repeatable tests to retain with future code exports
 

@@ -85,13 +85,14 @@ The revised reader passed these checks:
 
 | Reader check | Result |
 | --- | --- |
-| Page layout | 105 checks across all 21 pages, at widths of 320, 390, 768, 1,024 and 1,440 pixels |
+| Page layout | 110 checks across all 22 pages, at widths of 320, 390, 768, 1,024 and 1,440 pixels |
 | Chapter summaries | All 10 summaries appeared at all five widths |
 | Callouts | All 11 blocks appeared at all five widths, with their evidence limits |
 | Navigation | Stage links, Evidence links, keyboard mobile menu, section tracking and source disclosure passed |
 | Theme switching | Dark by default. Saved choices, keyboard switching, navigation, reload, cross-tab updates and blocked-storage fallback passed. Both themes fit seven widths from 320 to 1,440 pixels. |
 | Contributor navigation | Collapsed on research pages. Keyboard access, contributor-page expansion and return to the overview passed with and without JavaScript. |
 | Interactive figures | Slider, keyboard input, repeat/interpolate comparison, budget selector and architecture switch passed |
+| Retained game evidence | Comparison video decoded and played silently in eight theme/width cases. Four code excerpts rendered with and without JavaScript. Public media and selected pages matched the local build. |
 | JavaScript disabled | Full chapter, summary, callout, static figure and native navigation remained available |
 | Page and HTTP errors | None observed in this reader test |
 
