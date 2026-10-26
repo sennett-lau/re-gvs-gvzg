@@ -24,23 +24,25 @@
       "width": 524,
       "height": 392
     },
-    "description": "One continuous excerpt. Remove side margins and the fullscreen-exit overlay outside the game image. No montage, frame interpolation or speed change. Preserve variable frame timing and strip metadata.",
+    "description": "One continuous excerpt. Remove side margins and the fullscreen-exit overlay outside the game image. No montage, optical interpolation or speed change. Resample source timestamps to constant 60 FPS for decoder compatibility; this may duplicate or drop frames. Strip metadata.",
     "poster_offset_seconds": 5,
     "audio": "Silent source; output contains only video.",
-    "command": "ffmpeg -ss 28 -i INPUT.mp4 -t 14 -map 0:v:0 -vf trim=start=0:end=14,crop=524:392:162:0,setsar=1,setpts=PTS-STARTPTS -c:v libx264 -threads 2 -preset medium -crf 20 -pix_fmt yuv420p -fps_mode vfr -an -sn -dn -map_metadata -1 -map_chapters -1 -movflags +faststart OUTPUT.mp4",
+    "command": "ffmpeg -ss 28 -i INPUT.mp4 -t 14 -map 0:v:0 -vf trim=start=0:end=14,crop=524:392:162:0,setsar=1,setpts=PTS-STARTPTS,fps=60 -c:v libx264 -threads 2 -preset medium -crf 20 -level:v 4.1 -pix_fmt yuv420p -an -sn -dn -map_metadata -1 -map_chapters -1 -movflags +faststart OUTPUT.mp4",
     "encoder_version": "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers"
   },
   "validation": {
     "selected_source_frames": 839,
-    "output_frames": 839,
-    "duration_seconds": 13.977178,
-    "max_normalized_frame_timestamp_error_seconds": 1.00000000458067e-06,
-    "review": "Selected gameplay and poster inspected; menus and the recording ending are excluded."
+    "output_frames": 840,
+    "duration_seconds": 14.0,
+    "codec": "H.264 High, Level 4.1",
+    "frame_rate": "60/1",
+    "timing": "Constant-rate viewing derivative; not a source frame-timing measurement.",
+    "review": "Same continuous gameplay interval and crop; menus and the recording ending excluded. Decoded successfully."
   },
   "exports": {
     "docs/media/early-mobile-gameplay.mp4": {
-      "sha256": "9e2362326acf4af8be4047c2daaf42d9266fe9110f483e19423bc3bb12bd2e71",
-      "bytes": 2135648
+      "sha256": "e07c8de692cde398c032e27e3e9f0c24400a8dbd14d969f4e98dda79930fec5a",
+      "bytes": 2000631
     },
     "docs/media/early-mobile-gameplay-poster.jpg": {
       "sha256": "2e2899b7e15e03435ec8504e7f706ff7b1be0c483458c2a3c1f288aaf37d2d0a",
