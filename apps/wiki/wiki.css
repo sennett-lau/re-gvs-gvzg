@@ -794,12 +794,11 @@ td strong {
   grid-template-columns: 1fr auto;
   gap: 5px;
   text-decoration: none;
-  padding: 21px 20px 20px 0;
+  padding: 21px 20px 20px 22px;
   position: relative;
 }
 .stage-map a + a {
   border-left: 1px solid var(--line);
-  padding-left: 22px;
 }
 .stage-map span {
   grid-column: 1/-1;
@@ -1306,10 +1305,7 @@ button[aria-pressed="true"] {
     padding: 12px;
   }
   .stage-map a {
-    padding: 15px 11px 15px 0;
-  }
-  .stage-map a + a {
-    padding-left: 13px;
+    padding: 15px 11px 15px 13px;
   }
   .stage-map strong {
     font-size: 16px;
@@ -1364,7 +1360,7 @@ button[aria-pressed="true"] {
   .stage-map a + a {
     grid-template-columns: 24px 1fr auto;
     align-items: center;
-    padding: 12px 0;
+    padding: 12px 13px;
     border-left: 0;
   }
   .stage-map a + a {
