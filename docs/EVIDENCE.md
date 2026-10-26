@@ -12,11 +12,11 @@ Each result names its test scope. A fixture, a native test, a browser session an
 
 These labels apply to a claim, not to the entire game. The evidence index also identifies the support type: measured, reported, inspected or proposed.
 
-The historical game records were reviewed on 2026-10-25. The 2026-10-26 revision checked source code, exported selected visuals and reran the portable input regression. It did not run a new game, phone or PC-display benchmark. Chapter-specific test conditions remain beside their results; this shared review scope applies throughout.
+The historical game records were reviewed on 2026-10-25. The initial 2026-10-26 revision checked source code, exported visuals and reran the portable input regression. A later session on October 26 UTC, ending October 27 local time, added **new PC game tests, desktop video and aligned OS presentation traces**. It did not rerun phone or multiplayer tests. Chapter-specific conditions remain beside each result.
 
 ## What the records mean
 
-The JSON files in `docs/evidence/` contain selected metrics and provenance from the original research workspace. Their source paths are relative to the original `ps2-web-recomp` working tree. A path in a provenance record identifies an archive file; it is not a download link. The [reproduction inventory](evidence/README.md#what-you-can-reproduce-from-this-checkout) lists the exported material and remaining gaps.
+The JSON files in `docs/evidence/` contain selected metrics and provenance. Historical source paths are relative to the original `ps2-web-recomp` working tree. The new PC display record names its separate private test archive. A provenance path identifies an archive file; it is not a download link. The [reproduction inventory](evidence/README.md#what-you-can-reproduce-from-this-checkout) lists exported material and remaining gaps.
 
 Each curated record states its extraction or review method and limitations. Where a number is copied from an earlier written analysis rather than recalculated from raw samples, it is identified as a reported historical measurement. A source hash refers to the source bytes; a build ID, WASM hash and report commit are different identities.
 
@@ -29,13 +29,18 @@ Raw captures can include screenshots, browser state, device characteristics, con
 | Gameplay updates per second | Progress of the game's canonical simulation | Smooth display presentation |
 | Render updates per second | Completed guest render iterations | Distinct frames scanned out by the screen |
 | Shown updates per second | Browser callbacks observing new game output | A photometric measurement of physical refresh |
+| OS display updates per second | PresentMon display events for the selected game swapchain | Unique image content or the panel's pixel response |
 | Browser callback frequency | Current scheduling cadence | A permanent panel capability |
 | Game speed | Guest-time progress per wall-clock time | Low input or streaming latency |
 | PCM frames per second | Audio production rate | Audible equivalence, absence of every glitch |
 
 An early saved-fight phone capture, a later full-game phone capture and the latest PC build are separate experiments. Their rates are not a matched device comparison.
 
-The historical PC capture calibrated a browser scheduling budget near 60 Hz. It did **not** measure the panel's maximum refresh capability. The owner reports a higher-refresh monitor; a session with confirmed 120/144-Hz display settings remains pending. The earlier wording “the PC used a 60-Hz display” was too strong and has been corrected.
+The historical PC capture calibrated browser scheduling near 60 Hz; it did not measure the panel's maximum capability. The new session confirmed three active 180-Hz displays and approximately 180 idle browser callbacks/s. Its matched trace supports **about 120 OS display updates/s**, with normal-speed gameplay. Neither session tested 144-Hz rendering.
+
+The accepted PresentMon 2.6.0 runs used QPC timestamps and one selected GPU-process swapchain per run. Display rates use the first-to-last displayed-event interval. Counter rates use the browser's before/after interval. A boundary-frame difference between these counts is not automatically a lost frame. The selected rows and endpoint counters are exported, while process IDs, swapchain addresses and absolute timestamps remain private.
+
+The desktop video is a separate showcase. Its variable-rate capture did not maintain the requested 180 FPS, and encoding corrected some timestamps. The 60- and 120-fps viewing copies can duplicate or drop source frames. Use the OS trace for timing and the native repeat/interpolate comparison for distinct intermediate-image evidence.
 
 ## Repeatable tests to retain with future code exports
 

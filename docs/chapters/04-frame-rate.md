@@ -6,7 +6,7 @@
 >
 > - **Question:** Can we show smoother motion without making the game run too fast?
 > - **Result:** Keep gameplay at 60 updates per second and draw intermediate poses. Simply increasing the video clock accelerated the game.
-> - **Still open:** Rendering 120 images does not prove a screen displayed them. Normal-speed 144 Hz and 120-Hz gameplay simulation remain unproven.
+> - **Still open:** Normal-speed 144 Hz and 120-Hz gameplay simulation remain unproven. Chapter 06 now adds OS display evidence for the 120-render path.
 
 The first high-refresh experiment made the game run faster, not correctly. The later prototype took a different route: retain 60 gameplay updates per emulated second, but render intermediate model and camera poses more often. This distinction explains both the progress and the remaining gap between a counter showing 120 and a phone displaying smooth, normal-speed play.
 

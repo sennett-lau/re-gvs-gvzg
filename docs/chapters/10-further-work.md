@@ -13,35 +13,37 @@
 ## What to implement next
 
 > [!TIP]
-> **Measure what reaches the display.**
+> **Improve frame spacing, then broaden device coverage.**
 >
-> Start with the **fixed-60 presentation gap**, then test a confirmed 120/144-Hz session. The retained PC run reported about 56 shown updates/s at both fixed targets.
+> The new 180-Hz desktop session reached about **60 and 120 OS display updates/s** at the corresponding targets. Average delivery now has evidence; the interval tails remain uneven.
 >
-> Keep current-phone throughput as a separate comparison. Neither result substitutes for the other.
+> Keep current-phone throughput as a separate comparison. [Latest PC result](06-adaptive-rendering.md#the-latest-paired-pc-result).
 
-### 1 · Resolve the presentation gap
+### 1 · Improve frame pacing
 
-Record the selected monitor, OS refresh setting, browser version, window placement, fullscreen state and internal/display size. A panel specification alone does not identify the active session's cadence.
+The historical 56/s reading did not recur on the confirmed 180-Hz desktop. The next experiment should explain frame spacing rather than assume a persistent four-frame-per-second loss.
 
-First capture an idle `requestAnimationFrame` baseline. Then compare fixed 60, fixed 120 and Auto using the same build, scene and scripted input. Use at least 60 stable seconds per condition after warm-up. Repeat windowed and fullscreen, keeping the window wholly on the selected display. With multiple monitors, record which display owns that window.
+At fixed 120, p95 display spacing was 16.67 ms and p99 was 22.24 ms. Fixed 60 also varied, with p99 at 27.79 ms. Preserve these traces as the control before changing the scheduler.
 
-#### Align browser work with presentation events
+Compare fixed 60, fixed 120 and Auto in the same scene with the same input sequence. Keep at least 60 stable seconds after warm-up. Repeat windowed and fullscreen, with the window wholly on the recorded display. An observer-off control should measure instrumentation cost.
 
-Log a frame ID and `performance.now()` at each GPU submission, plus the scheduled `requestAnimationFrame` timestamp, callback entry time and task-yield resume time. Store these in a bounded in-memory buffer; export after the run. Keep an observer-off control and avoid per-frame console output. GPU completion is a work-completion timestamp, not a display timestamp.
+#### Align individual submissions with display changes
 
-Use Windows **PresentMon** to capture Chrome presentation events. Identify the game's GPU/compositor process and swapchain; recording every Chrome process is only a discovery step. Keep non-displayed rows. `DisplayedTime` reports display duration (`NA` for a frame that was not displayed), while `DisplayLatency` measures CPU-start-to-display latency. Save the tool version, command, CSV and display metadata. [PresentMon console documentation](https://github.com/GameTechDev/PresentMon/blob/main/README-ConsoleApplication.md)
+The accepted session aligns whole measurement windows. Next, assign frame IDs and log `performance.now()` at GPU submission, scheduled `requestAnimationFrame` time, callback entry and task-yield resumption. Keep a bounded memory buffer and export after the run. Avoid per-frame console output.
 
-For example, after verifying the installed version's options:
+Use **PresentMon** in the interactive desktop session, starting before the browser. Select the game's GPU process and swapchain after capture. Save the version, options and diagnostics, and reject overflowed traces. The completed experiment used **2.6.0**, whose CSV fields include `TimeInQPC`, `MsUntilDisplayed` and `MsBetweenDisplayChange`. An `NA` field is not enough to label a frame dropped. [Versioned CSV implementation](https://github.com/GameTechDev/PresentMon/blob/v2.6.0/PresentMon/CsvOutput.cpp)
+
+A capture command for that version is:
 
 ```powershell
-PresentMon.exe --process_name chrome.exe --timed 70 --terminate_after_timed --write_display_metadata --output_file presentation.csv
+PresentMon.exe --process_name chrome.exe --qpc_time --write_display_metadata --no_track_gpu --set_circular_buffer_size 32768 --timed 180 --terminate_after_timed --output_file presentation.csv
 ```
 
-Correlate browser frame IDs and their timing with the relevant swapchain. Report display-interval distributions and non-displayed presents. PresentMon measures OS presentation events; it does not identify whether two game images contain distinct motion or measure a panel's pixel response. Keep the native image comparison and any high-speed filming as separate checks.
+Use a unique session name when coordinating multiple captures. Keep QPC alignment, endpoint counters and excluded attempts with the accepted record. The [exported sample analysis](../evidence/README.md#180-hz-desktop-session-repeatable-display-analysis) now reproduces rates and interval distributions without the game.
 
-Finally run a paired **diagnostic-only** trial in an isolated browser profile with `--disable-frame-rate-limit`. Chromium documents that it also implies `--disable-gpu-vsync`. Compare the same workload against the default flags; never ship this as the pacing fix. [Chromium display switches](https://github.com/chromium/chromium/blob/main/components/viz/common/switches.cc)
+A later controlled comparison at a **120-Hz display setting** would separate 180-Hz refresh-slot quantization from scheduling jitter. Record the active setting and restore it afterward. The completed session kept all three monitors at 180 Hz.
 
-The existing one-second observations cannot reconstruct individual missed frames. The aligned trace will distinguish late game submissions, browser scheduling and compositor presentation before changing the scheduler. See [the historical rate plot](06-adaptive-rendering.md#the-latest-paired-pc-result).
+If late submissions remain unexplained, compare an isolated **diagnostic-only** browser with `--disable-frame-rate-limit`. Chromium states that it also implies `--disable-gpu-vsync`. This flag was not used in the accepted tests and is not a shipping fix. [Chromium display switches](https://github.com/chromium/chromium/blob/main/components/viz/common/switches.cc)
 
 ### 2 · Validate the current phone build
 

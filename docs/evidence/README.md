@@ -27,8 +27,17 @@ The [hook package](../../research/source/render-hooks/README.md) contains `rende
 
 Run `python3 scripts/plot-pc-cadence.py`. The [plot script](../../scripts/plot-pc-cadence.py) regenerates [the chart](../figures/pc-cadence.svg) from [142 selected numeric observations](pc-cadence-samples.json), 71 per run. It prints the window duration and render/gameplay/shown rates. These roughly 70-second windows are the longest eligible post-pause segments, not the aggregate R06 windows. This redoes the analysis; it does not rerun the historical game.
 
+### 180-Hz desktop session · repeatable display analysis
+
+Run `python3 scripts/plot-pc-display.py`. The [script](../../scripts/plot-pc-display.py) checks endpoint counters, active silent audio, chronological presentation samples and interval agreement. It regenerates the [new figure](../figures/pc-display-180hz.svg) from **11,704 selected display-tracked presents** in [the curated record](pc-display-180hz.json).
+
+The two approximately 65-second windows contain 3,901 fixed-60 and 7,803 fixed-120 presents. Expected mean display rates are **60.00/s** and **120.02/s**. The JSON retains relative presentation/display times and intervals, with build and source fingerprints. Absolute times, process IDs, swapchain addresses and personal browser state are excluded.
+
+This reproduces the numeric analysis. Rerunning the game still requires the matched build and test environment described in Chapter 06.
+
 ### Visuals and patch excerpts · inspectable artifacts
 
+- [New PC gameplay: 60-fps preview](../media/pc-180hz-gameplay-60.mp4) and [120-fps viewing copy](../media/pc-180hz-gameplay-120.mp4): actual desktop recording from the tested build. [Provenance](pc-display-video-provenance.json) explains the variable-rate source and timestamp resampling.
 - [Early mobile gameplay](../media/early-mobile-gameplay.mp4): a user-recorded showcase from an early optimized phone build. [Clip provenance](mobile-demo-provenance.json) records the trim and crop. Its exact build is unidentified.
 - [Labeled native comparison](../media/repeat-vs-interpolate-quarter-speed.mp4) and [four-sample filmstrip](../media/repeat-vs-interpolate-filmstrip.png): repeat control on the left, interpolation on the right. Labels and cumulative unique counts remain visible when downloaded.
 - [Unedited PC screenshot](../media/pc-versus-120-request.png): the actual Versus scene and test overlay.
@@ -66,7 +75,8 @@ The numbered records below are in [rendering-findings.json](rendering-findings.j
 | Are the extra images different? | `R02`–`R03` | Native image comparisons, controlled state checks and the scope of input replay |
 | Why did Start sometimes fail? | `R04` | The input-edge failure, the original-instruction test and ordinary-control continuation |
 | Which additional clock needed repair? | `R05` | Cue/marker timing; the earlier audible-fade interpretation was withdrawn |
-| What does the latest PC test prove? | `R06` | Fullscreen windows, gameplay/render/cue rates, captured browser cadence and unmatched setups; panel maximum refresh was not measured |
+| What did the historical PC pair prove? | `R06` | Fullscreen counter rates and a captured browser cadence near 60; panel maximum refresh was not measured |
+| Does 120 rendering reach a higher-refresh desktop? | [New display record](pc-display-180hz.json) | Confirmed 180-Hz session, matched counter windows and OS display events; uneven frame spacing remains |
 | Which modes are eligible? | `R07` | Active-battle guards and the unverified or excluded mode/camera lifecycles |
 | Why did the later phone build stay around 60? | `R08` | The explicit Versus guard in that build, separately from its slow main menu |
 | What could reduce the menu cost? | `R09` | PC dispatch counts and why they do not establish the phone’s GPU bottleneck |
@@ -89,6 +99,6 @@ The [current implementation review](implementation-review.json) checks suggestio
 
 ## Finding the original record
 
-A source path in a JSON record refers to the original `ps2-web-recomp` working tree. Its SHA-256 identifies the bytes reviewed. It is not a download link, and the hash alone does not let a reader rerun an unavailable test. No personal browser capture, raw memory dump or disc image is silently included here.
+A historical source path refers to the original `ps2-web-recomp` working tree. New records identify their own archive root. A SHA-256 identifies reviewed bytes; it is not a download link or a substitute for missing test inputs. Personal browser state, raw memory dumps and disc images are excluded.
 
 See [Evidence conventions](../EVIDENCE.md) for metric definitions, test conditions and the difference between a build ID, a file hash and a report commit. See [Findings and lessons](../chapters/09-learnings.md) for the research summary and [Further work](../chapters/10-further-work.md) for proposed experiments.

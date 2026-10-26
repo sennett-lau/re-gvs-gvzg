@@ -12,6 +12,14 @@ The first playable port was not consistently comfortable on a phone. The user re
 
 **🟡 Partially verified · Specific fixes and controlled comparisons.** The [baseline findings](../evidence/baseline-findings.json) preserve the measurements and original sources.
 
+## Early mobile gameplay
+
+<video controls muted playsinline preload="none" poster="../media/early-mobile-gameplay-poster.jpg" aria-label="Early optimized phone build: movement, boosting and firing during a space battle" src="../media/early-mobile-gameplay.mp4"></video>
+
+*The project author's phone recording after the early optimizations. This 14-second excerpt shows working gameplay; its exact build is unidentified.*
+
+[Clip provenance](../evidence/mobile-demo-provenance.json) records the crop and compatible 60-fps encoding. The later [phone diagnostics](06-adaptive-rendering.md#what-the-phone-tests-showed) supply measured rates.
+
 ## Show why a device freezes or slows down
 
 The page gained visible game/GPU errors and downloadable diagnostics recording build identity, browser capabilities, dimensions, mode, frame counters and audio behavior. A phone can advertise a desktop-style user agent, so relying only on that string could miss a mobile device. Detection and explicit override tests were added to make the chosen presentation policy inspectable.

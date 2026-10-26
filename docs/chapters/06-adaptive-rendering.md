@@ -5,8 +5,8 @@
 > **At a glance**
 >
 > - **Question:** Can the amount of extra rendering adapt to the device’s available time?
-> - **Result:** A bounded controller adjusts the target while preserving 60-Hz gameplay. The latest retained PC test reached about 120 render updates at normal speed.
-> - **Still open:** Physical 120-Hz presentation, current-build phone measurements and complete match flows still need validation.
+> - **Result:** The latest PC run reached 120.02 renders and OS display updates/s, with 60.01 gameplay updates/s on a confirmed 180-Hz desktop.
+> - **Still open:** Frame pacing varies. Current-build phone measurements and complete match flows still need validation.
 
 **Adaptive rendering adjusts the drawing workload while keeping gameplay at 60 updates per emulated second.** The early fixed-120 schedule advanced gameplay on every second render interval. If a device completed only 80 intervals per wall second, gameplay fell to 40 updates and audio slowed down. At a correctly scheduled target of 80, those 80 intervals can contain all 60 gameplay updates.
 
@@ -40,7 +40,49 @@ These variants stayed excluded. Packet ordering and completeness remain part of 
 
 ## The latest paired PC result
 
-The corrected build identity is `22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c51075c4464f8a56c8252f`. Two sequential hardware-browser runs used normal boot, original single-human Versus setup, two pause/Resume cycles and a further 70-second combat observation. Audio gain stayed zero while its engine and ring-buffer consumption remained active. Strict measurement windows required stable scene identity, fullscreen at both endpoints and monotonic counters. [R06](../evidence/rendering-findings.json)
+> [!IMPORTANT]
+> **Normal-speed 120 rendering reaches the desktop display.**
+>
+> In a **65.02-second fullscreen battle**, the game completed **120.02 renders/s** and **60.01 gameplay updates/s**. PresentMon recorded **7,803 display-tracked presents**, about **120.02/s**, on a confirmed 180-Hz desktop.
+>
+> This is an average delivery result. Frame spacing remains uneven. [Selected measurements and provenance](../evidence/pc-display-180hz.json).
+
+**✅ Verified · PC counters and OS presentation events.** The new session used the same corrected build, `22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c51075c4464f8a56c8252f`. No runtime patch was needed for this test.
+
+Windows reported three active **2560 × 1440, 180-Hz displays**. The game filled the primary display on an RTX 3080 Ti with Chrome 155. Idle browser callbacks measured approximately 180/s. The output canvas was 2560 × 1440; this is not a claim of higher native PS2 rendering resolution.
+
+| Fixed target | Combat window | Render updates/s | Gameplay and cue ticks/s | OS display updates/s | Guest speed |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 60 | 65.00579 s | 60.0100 | 60.0100 | 60.0006 | 100.0168% |
+| 120 | 65.021375 s | 120.0221 | 60.0110 | 120.0215 | 100.0186% |
+
+Both runs followed normal boot and the original single-human Versus menus. Scripted keyboard events moved, boosted and fired through the ordinary input path. These were sequential automatic match setups, not a deterministic same-match image comparison. Audio output gain stayed zero while its engine and ring-buffer consumption continued. Production stayed near 48,000 PCM frames/s.
+
+### Average delivery is confirmed; frame pacing still varies
+
+PresentMon 2.6.0 started before each test browser. A precise clock anchor aligned its QPC timestamps with the browser measurement window. The selected GPU-process swapchain used **Hardware: Independent Flip**. Every selected present had display timing: **3,901 at fixed 60**, **7,803 at fixed 120**. Neither accepted trace reported overflow or lost events.
+
+The earlier **approximately 56/s reading did not recur** in this session. That does not identify its historical cause. The previous capture had a different browser cadence, and its one-second summaries cannot reconstruct individual missed frames.
+
+![Matched PC counter and OS display rates, with interval distributions showing uneven spacing at both targets](../figures/pc-display-180hz.svg)
+
+[Open the full-size figure](../figures/pc-display-180hz.svg) · [Numeric samples](../evidence/pc-display-180hz.json) · [Regenerate the analysis](../evidence/README.md#180-hz-desktop-session-repeatable-display-analysis)
+
+At fixed 120, the median display interval was **5.58 ms**, p95 **16.67 ms**, and p99 **22.24 ms**. At fixed 60, p95 was **22.25 ms** and p99 **27.79 ms**. Neither target delivered evenly spaced frames throughout the run.
+
+A fixed 180-Hz schedule has refresh slots of about 5.56 ms. A 120-update stream cannot occupy equal whole-refresh slots at that cadence. The longer tails still merit [scheduler investigation](10-further-work.md#1-improve-frame-pacing). These measurements establish OS presentation; [Evidence conventions](../EVIDENCE.md#how-to-interpret-frame-rates) explain its boundary.
+
+### Watch the measured build
+
+<video controls muted playsinline preload="none" poster="../media/pc-180hz-gameplay-poster.jpg" aria-label="120-fps viewing copy of actual desktop browser gameplay from the measured build" src="../media/pc-180hz-gameplay-120.mp4"></video>
+
+*A 12-second desktop recording from the same session, before the measurement window. This 120-fps viewing copy resamples variable-rate capture; it is not the timing evidence.*
+
+[Compatible 60-fps copy](../media/pc-180hz-gameplay-60.mp4) · [Recording and encoding details](../evidence/pc-display-video-provenance.json)
+
+### Historical capture: the earlier 56/s reading
+
+The earlier R06 pair used the same corrected build. Two sequential hardware-browser runs used normal boot, original single-human Versus setup, two pause/Resume cycles and a further 70-second combat observation. Audio gain stayed zero while its engine and ring-buffer consumption remained active. Strict measurement windows required stable scene identity, fullscreen at both endpoints and monotonic counters. [R06](../evidence/rendering-findings.json)
 
 | Fixed target | Stable fullscreen seconds | Render updates/s | Gameplay ticks/s | Cue-clock ticks/s | Guest speed | Produced PCM frames/s |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -49,12 +91,7 @@ The corrected build identity is `22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c5107
 
 At 120, 9,272 renders accompanied 4,636 gameplay and cue-clock ticks. At 60, the extra-render counters did not grow. Changing combat, damage, respawn and pause overlays were visually checked. The one-frame render/logic endpoint difference in the 60 control is retained in the underlying evidence.
 
-> [!IMPORTANT]
-> **About 120 render updates/s, with gameplay near 60 updates/s.**
->
-> The eligible PC battle ran at normal game speed. **The captured browser cadence was near 60 Hz.** Median browser-shown rates were 55.753 and 55.789 per second. These measurements do not identify the panel's maximum refresh rate.
->
-> [Evidence: R06](../evidence/rendering-findings.json).
+The eligible battle ran at normal game speed, but the captured browser cadence was near 60 Hz. Median browser-shown rates were 55.753 and 55.789 per second. These historical measurements did not identify the panel's maximum refresh rate.
 
 The automatic setups used different suits, CPU choices and stages, so this is a counter-rate and continuation comparison, not a deterministic same-match pixel/RAM A/B. Neither run reached natural results. Exact audio underrun counts were unavailable.
 
@@ -64,7 +101,7 @@ The automatic setups used different suits, CPU choices and stages, so this is a 
 
 [Open the full-size chart](../figures/pc-cadence.svg) · [Selected numeric samples](../evidence/pc-cadence-samples.json) · [Regenerate the chart](../evidence/README.md#what-you-can-reproduce-from-this-checkout)
 
-These are roughly one-second observations. In the plotted fixed-60 window, **60.02 renders/s** is a counter-delta mean; **55.76 shown/s** is the median of sampled rates. Their **4.26/s difference is a diagnostic lead**, not a count of dropped frames. The [presentation experiment](10-further-work.md#1-resolve-the-presentation-gap) will align per-frame browser timestamps with OS display events.
+These are roughly one-second observations. In the plotted fixed-60 window, **60.02 renders/s** is a counter-delta mean; **55.76 shown/s** is the median of sampled rates. Their **4.26/s difference is a diagnostic lead**, not a count of dropped frames. The new session above adds per-frame OS evidence without rewriting these earlier measurements.
 
 ![Actual fullscreen Versus capture from the retained PC 120-target run](../media/pc-versus-120-request.png)
 

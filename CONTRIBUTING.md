@@ -77,7 +77,7 @@ Reader checks do not establish new game-performance results. Keep game tests sil
 
 ## Repeatable research checks
 
-Run `npm run verify:research` to execute the input-edge regression, verify the render-hook export and regenerate the PC rate plot. The plot should leave no diff after regeneration. These checks need Python 3, but no disc, GPU or original capture archive.
+Run `npm run verify:research` to execute the input-edge regression, verify the render-hook export and regenerate both PC figures. The display analysis also checks selected per-frame intervals and endpoint counters. The figures should leave no diff after regeneration. These checks need Python 3, but no disc, GPU or original capture archive.
 
 The local `.github/workflows/research.yml` recipe runs these checks, builds the Wiki and checks its links on pushes and pull requests once published. Actions are pinned to commit hashes, permissions are read-only, and the workflow does not deploy. Its commands were checked locally; a hosted CI run remains pending publication.
 
@@ -107,6 +107,8 @@ The revised reader passed these checks:
 Negative controls removed a summary and a callout limitation from generated HTML. The checker rejected both missing-content cases. Each test restored the generated file afterward. These checks guard against losing content during conversion, including an earlier bug that removed a summary with its adjacent reader hint.
 
 The wording review preserved the chapters' existing numeric values and code identifiers. It checked descriptive sentence length and paragraph length. The [writing guide](docs/WRITING.md) records the rules for future edits.
+
+The later 180-Hz evidence update passed 48 layout checks across eight affected pages, two themes and widths of 320, 390 and 1,440 pixels. Both new viewing copies decoded without errors. Overview autoplay, mute, hidden controls and looping passed; the chapter video remained opt-in. The new measurements remained readable without JavaScript. No page or HTTP errors appeared in that reader check.
 
 These checks validate the report artifact and its reading interface. They do not add a new game, phone, audio or multiplayer performance result to the historical research.
 

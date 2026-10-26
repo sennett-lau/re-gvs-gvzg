@@ -8,11 +8,11 @@ This project studies how [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en
 
 <!-- results:start -->
 
-### ~120 renders · ~60 gameplay updates/s
+### ~120 displayed updates · ~60 gameplay updates/s
 
-**✅ Verified · PC counter rates**
+**✅ Verified · PC counters + OS display events**
 
-A retained fullscreen battle ran at normal game speed. Browser-shown cadence was about **56/s**; physical 120-Hz delivery is still untested.
+A **65-second fullscreen battle** on a confirmed 180-Hz desktop reached **120.02 OS-reported display updates/s**, with normal-speed gameplay. Frame spacing still varies.
 
 [See the measured rates and game capture](docs/chapters/06-adaptive-rendering.md#the-latest-paired-pc-result).
 
@@ -34,15 +34,15 @@ The old input gate failed **369** cases. The corrected gate passed every tested 
 
 <!-- results:end -->
 
-## Early mobile gameplay
+## Browser gameplay on a 180-Hz desktop
 
-<video autoplay loop muted playsinline preload="metadata" poster="docs/media/early-mobile-gameplay-poster.jpg" aria-label="Early mobile gameplay: movement, boosting and firing during a space battle" src="docs/media/early-mobile-gameplay.mp4"></video>
+<video autoplay loop muted playsinline preload="metadata" poster="docs/media/pc-180hz-gameplay-poster.jpg" aria-label="Actual browser gameplay on the tested desktop: movement, boosting and firing" src="docs/media/pc-180hz-gameplay-60.mp4"></video>
 
-*Recorded by the project author on a phone after the early mobile optimizations. This 14-second excerpt keeps the original playback speed, with the side margins cropped.*
+*Actual desktop recording from the tested build. This silent, looping preview plays at normal speed in a compatible 60-fps viewing copy.*
 
-[Watch or download the clip](docs/media/early-mobile-gameplay.mp4) · [Clip provenance](docs/evidence/mobile-demo-provenance.json)
+[120-fps viewing copy](docs/media/pc-180hz-gameplay-120.mp4) · [Clip provenance](docs/evidence/pc-display-video-provenance.json) · [Earlier phone showcase](docs/chapters/03-performance.md#early-mobile-gameplay)
 
-This is a gameplay showcase. The [frame-rate results](docs/chapters/06-adaptive-rendering.md) describe separate measured experiments.
+Both viewing copies resample a variable-rate recording. The [matched counters and OS display trace](docs/chapters/06-adaptive-rendering.md#the-latest-paired-pc-result) establish the measured rates.
 
 ## What interpolation changes
 
