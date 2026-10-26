@@ -1,4 +1,5 @@
-import { figureSvg, escapeHtml } from "./figures.js";
+import { figureSvg, motionKinds } from "./figures.js";
+import { initMotionFigure } from "./motion.js";
 const menu = document.querySelector("[data-chapter-menu]");
 if (menu) {
   const wide = matchMedia("(min-width: 981px)");
@@ -53,10 +54,14 @@ for (const figure of document.querySelectorAll("figure[data-interactive]")) {
       figure.querySelector('script[type="application/json"]').textContent,
     );
     const graphic = figure.querySelector(".figure-graphic");
+    if (motionKinds.includes(kind)) {
+      initMotionFigure(figure, kind, data);
+      continue;
+    }
     const controls = document.createElement("div");
     controls.className = "interactive-controls";
     if (kind === "render-clock") {
-      controls.innerHTML = `<div class="control-row"><label for="pose-phase">Move between gameplay updates</label><input id="pose-phase" type="range" min="0" max="100" value="${data.default_phase * 100}" step="1"></div><div class="control-row" role="group" aria-label="Rendering technique"><button type="button" data-interpolate="yes" aria-pressed="true">Interpolate poses</button><button type="button" data-interpolate="no" aria-pressed="false">Repeat the previous pose</button></div><div class="control-row"><label for="render-target">Explore a render budget</label><select id="render-target">${data.render_choices_hz.map((rate) => `<option value="${rate}" ${rate === data.default_render_hz ? "selected" : ""}>${rate} Hz${data.unimplemented_render_choices_hz.includes(rate) ? " — hypothetical" : ""}</option>`).join("")}</select></div><output class="figure-output" aria-live="polite"></output><p class="concept-warning">Conceptual positions, not captured game motion. The 144-Hz choice illustrates a budget only; it is not an implemented or validated build.</p>`;
+      controls.innerHTML = `<div class="control-row"><label for="pose-phase">Move between gameplay updates</label><input id="pose-phase" type="range" min="0" max="100" value="${data.default_phase * 100}" step="1"></div><div class="control-row" role="group" aria-label="Rendering technique"><button type="button" data-interpolate="yes" aria-pressed="true">Interpolate poses</button><button type="button" data-interpolate="no" aria-pressed="false">Repeat the previous pose</button></div><div class="control-row"><label for="render-target">Explore a render budget</label><select id="render-target">${data.render_choices_hz.map((rate) => `<option value="${rate}" ${rate === data.default_render_hz ? "selected" : ""}>${rate} Hz${data.unimplemented_render_choices_hz.includes(rate) ? " — hypothetical" : ""}</option>`).join("")}</select></div><div class="control-row"><button type="button" data-motion-play>Play motion</button><span class="motion-preference">Slowed illustration · not a game capture</span></div><output class="figure-output" aria-live="polite"></output><p class="concept-warning">Conceptual positions, not captured game motion. The 144-Hz choice illustrates a budget only; it is not an implemented or validated build.</p>`;
       let interpolate = true;
       const update = () => {
         const phase = Number(controls.querySelector("input").value) / 100;
@@ -65,26 +70,61 @@ for (const figure of document.querySelectorAll("figure[data-interactive]")) {
         controls.querySelector("output").textContent =
           `Phase ${phase.toFixed(2)} · gameplay step ${(1000 / data.simulation_hz).toFixed(2)} ms · render budget ${(1000 / rate).toFixed(2)} ms`;
       };
-      controls.querySelector("input").addEventListener("input", update);
+      const motion = controls.querySelector('[data-motion-play]');
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+      let animation = null;
+      let running = false;
+      let startTime = 0;
+      const stopMotion = () => {
+        cancelAnimationFrame(animation);
+        animation = null;
+        running = false;
+        motion.textContent = 'Play motion';
+        controls.querySelector('output').setAttribute('aria-live', 'polite');
+        figure.dataset.playing = 'false';
+      };
+      const drawMotion = now => {
+        if (!running) return;
+        const phase = Math.min(1, (now - startTime) / 4000);
+        controls.querySelector('input').value = String(Math.round(phase * 100));
+        update();
+        if (phase < 1) animation = requestAnimationFrame(drawMotion);
+        else stopMotion();
+      };
+      motion.addEventListener('click', () => {
+        if (reduced.matches) return;
+        if (running) { stopMotion(); return; }
+        const current = Number(controls.querySelector('input').value) / 100;
+        startTime = performance.now() - (current < 1 ? current : 0) * 4000;
+        running = true;
+        figure.dataset.playing = 'true';
+        motion.textContent = 'Pause motion';
+        controls.querySelector('output').setAttribute('aria-live', 'off');
+        animation = requestAnimationFrame(drawMotion);
+      });
+      const motionPreference = () => {
+        stopMotion();
+        motion.disabled = reduced.matches;
+        controls.querySelector('.motion-preference').textContent = reduced.matches
+          ? 'Reduced motion: move the slider manually.' : 'Slowed illustration · not a game capture';
+      };
+      reduced.addEventListener('change', motionPreference);
+      motionPreference();
+      document.addEventListener('visibilitychange', () => {if (document.hidden) stopMotion();});
+      addEventListener('pagehide', stopMotion);
+      if ('IntersectionObserver' in window) new IntersectionObserver(entries => {
+        if (!entries[0].isIntersecting) stopMotion();
+      }).observe(figure);
+      controls.querySelector("input").addEventListener("input", () => {stopMotion(); update();});
       controls.querySelector("select").addEventListener("change", update);
-      for (const button of controls.querySelectorAll("button"))
+      for (const button of controls.querySelectorAll("[data-interpolate]"))
         button.addEventListener("click", () => {
           interpolate = button.dataset.interpolate === "yes";
-          for (const peer of controls.querySelectorAll("button"))
+          for (const peer of controls.querySelectorAll("[data-interpolate]"))
             peer.setAttribute("aria-pressed", String(peer === button));
           update();
         });
       update();
-    } else if (kind === "multiplayer-routes") {
-      controls.innerHTML = `<div class="control-row" role="group" aria-label="Multiplayer architecture">${data.routes.map((r, i) => `<button type="button" data-route="${r.id}" aria-pressed="${i === 0}">${escapeHtml(r.label)}</button>`).join("")}</div><output class="figure-output" aria-live="polite">${escapeHtml(data.routes[0].cost)}</output>`;
-      for (const button of controls.querySelectorAll("button"))
-        button.addEventListener("click", () => {
-          const route = data.routes.find((r) => r.id === button.dataset.route);
-          graphic.innerHTML = figureSvg(kind, data, { route: route.id });
-          controls.querySelector("output").textContent = route.cost;
-          for (const peer of controls.querySelectorAll("button"))
-            peer.setAttribute("aria-pressed", String(peer === button));
-        });
     } else continue;
     figure.querySelector("figcaption").before(controls);
   } catch (error) {

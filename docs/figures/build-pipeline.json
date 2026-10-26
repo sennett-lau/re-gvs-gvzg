@@ -1,0 +1,42 @@
+{
+  "kind": "process-illustration",
+  "title": "From disc code to a running browser game",
+  "caption": "Conceptual build and runtime flow, not a live compiler or a complete exported build recipe. Generated C++ preserves translated guest behavior. Browser execution still needs the runtime and access to the user's disc data.",
+  "steps": [
+    {
+      "label": "Disc",
+      "title": "Start with the game's executable inputs",
+      "detail": "Read the main ELF and the archive containing loaded modules. The disc also contains assets that are not executable code.",
+      "artifact": "ELF + module archive",
+      "node": "User's disc"
+    },
+    {
+      "label": "Extract",
+      "title": "Identify the code that loads later",
+      "detail": "Extract the 325 MWo3 modules and record their load addresses and entry points. Translating the main ELF alone misses this code.",
+      "artifact": "Code images + entry map",
+      "node": "Extract + map"
+    },
+    {
+      "label": "Translate",
+      "title": "Translate guest instructions into C++",
+      "detail": "The recompiler emits C++ and dispatch tables. These are translated instructions, not the original developer's source.",
+      "artifact": "Generated C++",
+      "node": "Recompile"
+    },
+    {
+      "label": "Build",
+      "title": "Link the translated code with the runtime",
+      "detail": "Emscripten builds the translated game and PS2 runtime into a matched web package: loader JavaScript, WebAssembly and packaged data.",
+      "artifact": "JS + WASM + data",
+      "node": "Build for the web"
+    },
+    {
+      "label": "Run",
+      "title": "The player's browser executes the game",
+      "detail": "The local browser supplies graphics, audio and controller input. Runtime disc reads still need the user's game data; WASM alone is not the whole game.",
+      "artifact": "Browser + runtime services",
+      "node": "Run in a browser"
+    }
+  ]
+}

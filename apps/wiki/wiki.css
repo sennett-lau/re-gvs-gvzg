@@ -1541,3 +1541,79 @@ button[aria-pressed="true"] {
     font-size: 12pt;
   }
 }
+
+/* Slow, reader-controlled explanations. Text and topology remain without JS. */
+.motion-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.4;
+}
+.motion-heading strong { font-size: 18px; letter-spacing: -.4px; }
+.motion-counter { color: var(--accent); font: 11px/1.8 var(--mono); white-space: nowrap; }
+.pipeline-map { list-style: none; margin: 0; padding: 22px; display: grid; gap: 24px; }
+.pipeline-map li {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid var(--line);
+  padding: 13px 16px;
+  margin: 0;
+  background: var(--paper);
+}
+.pipeline-index { width: 26px; color: var(--muted); font: 12px var(--mono); }
+.pipeline-map strong, .network-node strong { display: block; font-size: 14px; line-height: 1.45; }
+.pipeline-map li > div > span, .network-node > span { display: block; font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+.pipeline-map .is-current, .network-node.is-current { border-color: var(--accent); background: var(--soft); box-shadow: inset 3px 0 var(--accent); }
+.pipeline-map .is-past { border-color: var(--line-strong); }
+.pipeline-connector { position: absolute; top: -27px; left: 20px; height: 24px; line-height: 24px; color: var(--muted); }
+.pipeline-packet { position: absolute; left: 1px; top: 0; width: 7px; height: 7px; background: var(--accent); animation: packet-arrival 1.2s ease-in-out both; }
+@keyframes packet-arrival { from { transform: translateY(-4px); opacity: .4; } to { transform: translateY(20px); opacity: 1; } }
+.network-map { padding: 24px 18px 0; }
+.network-center { max-width: 330px; margin-inline: auto; }
+.network-node { border: 1px solid var(--line); padding: 16px; background: var(--paper); height: 100%; }
+.network-clients { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.network-wires { display: block; width: 100%; max-height: 110px; overflow: visible; }
+.wire-base { fill: none; stroke: var(--line); stroke-width: 2; }
+.wire-active { fill: none; stroke: var(--accent); stroke-width: 2; }
+.network-packet { fill: var(--accent); }
+.network-node .network-tick { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line); color: var(--ink); font: 12px/1.6 var(--mono); }
+.network-status { text-align: center; color: var(--green); font: 12px/1.6 var(--mono); padding: 16px 0; margin: 0; }
+.is-stopped .network-status { color: var(--accent); font-weight: 700; }
+.is-stopped .network-center .network-node { border-style: double; border-width: 3px; }
+.motion-step-nav { display: grid; grid-template-columns: repeat(var(--step-count, 4), minmax(0, 1fr)); gap: 6px; }
+.motion-step-nav button { display: flex; flex-direction: column; align-items: center; gap: 2px; justify-content: center; border-radius: 0; min-height: 52px; padding: 8px 4px; }
+.motion-step-nav button span { color: var(--muted); font: 10px var(--mono); }
+.motion-step-nav button[aria-current="step"] { border-bottom: 3px solid var(--accent); background: var(--soft); }
+.motion-explanation { border-left: 2px solid var(--accent); padding: 4px 0 4px 16px; min-height: 92px; }
+.motion-explanation > strong { display: block; font-size: 15px; line-height: 1.5; color: var(--ink); }
+.motion-explanation > p { margin: 8px 0 0; font-size: 13px; line-height: 1.75; color: var(--lead); }
+.motion-playback button, .motion-choices button { min-height: 44px; }
+.motion-preference { font-size: 11px; color: var(--muted); line-height: 1.6; }
+button:disabled { cursor: default; opacity: .55; }
+@media (min-width: 700px) {
+  .pipeline-map { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; padding: 22px 16px; }
+  .pipeline-map li { display: block; padding: 14px 10px; }
+  .pipeline-index { display: block; margin-bottom: 12px; }
+  .pipeline-connector { top: 50%; left: -15px; height: 14px; line-height: 14px; transform: rotate(-90deg); }
+}
+@media (max-width: 600px) {
+  .motion-heading { padding: 16px 12px; gap: 10px; }
+  .motion-heading strong { font-size: 16px; }
+  .pipeline-map { padding: 16px 12px; }
+  .pipeline-map li { padding: 12px; gap: 8px; }
+  .pipeline-index { width: 18px; }
+  .network-map { padding: 16px 10px 0; }
+  .network-clients { gap: 8px; }
+  .network-node { padding: 12px 9px; }
+  .network-node strong { font-size: 13px; }
+  .network-node > span { font-size: 11px; }
+  .motion-explanation { min-height: 140px; }
+  .motion-playback { gap: 8px; }
+  .motion-preference { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .pipeline-packet { animation: none; } }
+@media print { .pipeline-packet, .network-packet { display: none; } }

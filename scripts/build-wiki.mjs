@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { marked } from "marked";
-import { figureSvg, escapeHtml } from "../apps/wiki/components/figures.js";
+import { figureSvg, figureMarkup, escapeHtml } from "../apps/wiki/components/figures.js";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const out = path.join(root, ".local/wiki");
 const posix = (value) => value.split(path.sep).join("/");
@@ -26,7 +26,7 @@ async function list(dir) {
     .sort();
 }
 const figures = {};
-for (const id of ["render-clock", "multiplayer-routes"]) {
+for (const id of ["render-clock", "multiplayer-routes", "build-pipeline", "lockstep-gate"]) {
   const data = JSON.parse(
     await fs.readFile(path.join(root, `docs/figures/${id}.json`), "utf8"),
   );
@@ -109,6 +109,7 @@ for (const [src, dst] of [
   ["apps/wiki/components/reader.js", "reader.js"],
   ["apps/wiki/components/theme.js", "theme.js"],
   ["apps/wiki/components/figures.js", "figures.js"],
+  ["apps/wiki/components/motion.js", "motion.js"],
 ])
   await fs.copyFile(path.join(root, src), path.join(out, "assets", dst));
 await fs.cp(
@@ -238,7 +239,7 @@ for (const page of pages) {
     (_, id) => {
       const data = figures[id];
       if (!data) throw Error(`Unknown figure ${id}`);
-      return `<figure data-interactive="${id}"><p class="eyebrow">Interactive explanation · illustrative</p><div class="figure-graphic">${figureSvg(id, data)}</div><script type="application/json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script><figcaption>${escapeHtml(data.caption)}</figcaption></figure>`;
+      return `<figure id="figure-${id}" data-interactive="${id}"><p class="eyebrow">Interactive explanation · illustrative</p><div class="figure-graphic">${figureMarkup(id, data)}</div><script type="application/json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script><figcaption>${escapeHtml(data.caption)}</figcaption></figure>`;
     },
   );
   body = body
