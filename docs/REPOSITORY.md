@@ -1,6 +1,6 @@
 # Repository design and export scope
 
-This local repository starts with the report and its reader. The existing game workspace remains the source for subsequent reviewed code exports. Creating these documentation commits does not reconstruct, publish or validate the proposed game milestones.
+The Wiki and above-60 rendering proof of concept are ready for review. This local repository contains their evidence and selected runnable research exports. A complete playable game checkout is the next delivery stage; its remaining code still lives in the original workspace.
 
 ## Where content belongs
 
@@ -13,17 +13,25 @@ This local repository starts with the report and its reader. The existing game w
 | `docs/evidence/` | Small curated measurements and source provenance | Yes |
 | `docs/figures/` | Concept parameters and generated static diagrams | Yes |
 | `apps/wiki/` | Reader template, styles and reusable interactive components | Yes |
-| `scripts/` | Local reader build and validation | Yes |
+| `scripts/` | Reader build, validation, media generation and repeatable numeric analyses | Yes |
 | `apps/game/` | Game UI, input, diagnostics and one matched `prebuilt/` set | Future export |
 | `generated/` | Selected readable generated C++ and translation tables | Future export |
 | `src/hooks/`, `patches/runtime/` | Our game-specific hooks and runtime/compiler changes | Future export |
 | `research/source/` | Selected RE scripts, address maps and useful exports | Input regression and partial render-hook layer exported |
-| `docs/media/` | Selected real captures with provenance captions | Early mobile demo, native comparison and PC screenshot |
+| `docs/media/` | Selected real captures with provenance captions | Early mobile demo, labeled native comparison, filmstrip, PC screenshot and desktop 60/120-fps viewing copies |
 | `poc/streaming/`, `poc/lockstep/` | Independently reproducible multiplayer experiments | Future export |
 | `scripts/release/` | Packaging profiles, manifests and checksum generation | Future export |
 | `.local/release-builds/` | Ignored temporary packaging output | Created only when needed |
 
 There is no `distribution/` or `releases/` source folder. Future GitHub Release pages hold the version notes and download assets. A release is a versioned software delivery, not a dummy tag created solely to bypass a file limit.
+
+## Current delivery status
+
+The 2026-10-27 checkout audit found **13 tracked files in `research/source/`**: the input-edge regression and partial render-hook package. The reader, analysis scripts, selected evidence and videos are also committed locally. The hosted Wiki serves the built report; it is not a GitHub code release.
+
+The proposed `apps/game/`, `generated/`, `src/hooks/`, `patches/runtime/` and `poc/` directories contain **no tracked files yet**. Their complete implementations and builds remain in the original `ps2-web-recomp` workspace. This repository has no Git remote configured at the audit date, and no game Release assets have been published from it.
+
+The next export should preserve the existing generated C++, runtime and interpolation changes, matched JS/WASM/data package, and multiplayer prototypes. It needs the [rebuild checks below](#rebuild-acceptance), not another frame-rate target. Keep the agreed small commits and reconstructed milestones; exclude discs, personal runtime state and raw debug captures.
 
 ## Code and data boundaries
 

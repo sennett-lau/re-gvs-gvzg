@@ -16,7 +16,7 @@ Mobile and browser fixes do not have to disappear into one large `v0.2.0` releas
 | `v0.1.3` · Presentation fixes | Fullscreen/resize corrections that preserve the intended game behavior | Recover a distinct delta; verify live resizing and bounded rendering dimensions |
 | `v0.2.0` · Performance Update | A reviewed performance milestone, including translated VU coverage and measured renderer/runtime improvements that remain after the 0.1 fixes | Reconcile which changes are already in 0.1.x; compare the matched builds without counting the same work twice |
 | `v0.2.1`, `v0.2.2`, … | Subsequent distinct compatible fixes or small performance improvements | A new verified delta after 0.2.0; do not merely rename earlier optimizations |
-| `v0.3.0-alpha.1` · Adaptive Rendering — Alpha 1 | 60-Hz canonical gameplay with guarded extra renders and interpolation | Reconstruct the accepted composition; state mode/device coverage and unresolved presentation limits |
+| `v0.3.0-alpha.1` · Adaptive Rendering — Alpha 1 | 60-Hz canonical gameplay with guarded extra renders and interpolation | Reconstruct the measured composition; verify its package and state the tested mode/device scope |
 
 The exact assignment of early fixes may change after reconstruction. For example, a recovery fix already required for the earliest working baseline belongs in `v0.1.0`; it cannot also be advertised as a newly introduced `v0.1.2` change. Likewise a fullscreen performance feature may belong in `v0.2.0` if it is not simply a compatible correction. The retained `gundam-mobile-4` manifest spans several changes and cannot by itself resolve this chronology.
 
@@ -38,4 +38,6 @@ GitHub's prerelease flag is separate from the spelling of a tag. When publicatio
 
 ## Current repository status
 
-Only report and reader commits are being created locally. There are no game release tags or published assets in this repository. A future GitHub Release should carry meaningful version notes, a matched playable package where applicable, a build manifest and checksums. A dummy `v0.0.0` is not needed to store large files. See [Repository design](REPOSITORY.md) and [Derived artifacts](DERIVED.md).
+The report, reader, selected research code, measurements and media are committed locally. The above-60 proof of concept is established; a complete game-code export is still separate work. The [research goal](chapters/04-frame-rate.md) defines the measured capability; further pacing refinement is optional.
+
+There are no game release tags or published assets in this repository. A future GitHub Release should carry meaningful version notes, a matched playable package where applicable, a build manifest and checksums. A dummy `v0.0.0` is not needed to store large files. See [current delivery status](REPOSITORY.md#current-delivery-status) and [Derived artifacts](DERIVED.md).
