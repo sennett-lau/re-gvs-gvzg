@@ -58,6 +58,12 @@ Bold selected claims, numbers and decisive conditions. Keep their units visible.
 
 A callout is an editorial summary. Do not present it as a quotation from a participant or external source.
 
+## Use motion to explain a mechanism
+
+Use a diagram when it clarifies a sequence, a dependency or where computation happens. Keep its labels and step descriptions in `docs/figures/` so the reader and static SVG share the same source. Keep the research narrative in Markdown.
+
+Motion starts only when the reader requests it, plays a finite sequence and offers pause and manual steps. Respect reduced-motion settings and pause offscreen. Label conceptual timing and positions as illustrations; use retained captures and measurements for performance claims.
+
 ## Preserve the research record
 
 Keep historical measurements, devices and builds separate. Describe a proposed test as proposed. Do not convert a native result into browser or phone evidence.

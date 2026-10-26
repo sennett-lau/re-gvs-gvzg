@@ -16,19 +16,6 @@ A phone that struggles to execute the translated PS2 game can still be a useful 
 
 The model follows a console with two controller ports. One game owns the combat rules, state and cameras. Both controllers act on that same game. This avoids the requirement that two independent simulations remain identical, which is the separate problem in [chapter 08](08-independent-clients.md).
 
-```text
-Remote player 1 ── pad 1 input ──┐
-                               ▼
-                        Host browser
-                       One running game
-                               ▲
-Remote player 2 ── pad 2 input ──┘
-                               │
-                      Canvas + game audio
-                               │
-                       WebRTC to both players
-```
-
 > [!NOTE]
 > **The host must run a game browser.**
 >

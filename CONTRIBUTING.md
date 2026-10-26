@@ -110,6 +110,8 @@ The wording review preserved the chapters' existing numeric values and code iden
 
 The later 180-Hz evidence update passed 48 layout checks across eight affected pages, two themes and widths of 320, 390 and 1,440 pixels. Both new viewing copies decoded without errors. Overview autoplay, mute, hidden controls and looping passed; the chapter video remained opt-in. The new measurements remained readable without JavaScript. No page or HTTP errors appeared in that reader check.
 
+The motion explanations passed 32 layout checks across four chapters, both themes and widths of 320, 390, 768 and 1,440 pixels. Checks covered manual and keyboard stepping, moving packets, delayed-input waiting, mismatch stopping, route switching, interpolation playback and finite playback. Reduced-motion preferences and leaving the viewport stop animation. All four explanations retain static content without JavaScript. No page, HTTP or optional-illustration warnings appeared.
+
 These checks validate the report artifact and its reading interface. They do not add a new game, phone, audio or multiplayer performance result to the historical research.
 
 ## Keep commits and publication deliberate
