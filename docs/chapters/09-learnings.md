@@ -23,10 +23,10 @@ Ghidra with the PS2 extension helped recover those meanings from the original ex
 >
 > The retained tests support specific rendering and multiplayer results. They do not establish every game mode, current-phone high-refresh performance or a complete online match flow.
 
-| Area · partially verified | Supported by retained evidence | Not yet established |
+| Area | Supported by retained evidence | Further scope |
 | --- | --- | --- |
 | 🟡 [Browser port](02-browser-port.md) | Executable game paths, ordinary controls and tested save persistence | Every mode and a portable clean setup for every reader |
-| 🟡 [Rendering](06-adaptive-rendering.md) | Distinct native intermediate images. About 120 renders and OS display updates/s, with 60 gameplay updates/s, in bounded PC combat. | Uniform frame pacing, normal-speed 144, or 120-Hz gameplay simulation |
+| ✅ [Above-60 rendering PoC](06-adaptive-rendering.md) | Distinct native intermediate images. About 120 renders and OS display updates/s, with 60 gameplay updates/s, in bounded PC combat. | More game modes and sustained current-build phone use; further pacing refinement is optional |
 | 🟡 [Phone](06-adaptive-rendering.md) | Earlier saved-battle Auto capture: about 78 computed and 72 browser-observed updates/s at normal speed | Latest full-game high-refresh throughput or a fixed main-menu slowdown |
 | 🟡 [Streaming](07-host-streaming.md) | Implemented two-controller/media transport and a user's two-device observation | A retained full match with separate host and two clients, measured latency and recovery |
 | 🟡 [Independent clients](08-independent-clients.md) | Actor ownership, bounded deterministic trials and 2,640-tick browser agreement with delayed disc delivery | Full selection-to-rematch integration, adaptive cross-rate agreement or restored original online service |

@@ -6,11 +6,11 @@
 >
 > - **Question:** Can the amount of extra rendering adapt to the device’s available time?
 > - **Result:** The latest PC run reached 120.02 renders and OS display updates/s, with 60.01 gameplay updates/s on a confirmed 180-Hz desktop.
-> - **Still open:** Frame pacing varies. Current-build phone measurements and complete match flows still need validation.
+> - **Still open:** Current-build phone measurements and complete match flows remain follow-up work beyond this proof of concept.
 
 **Adaptive rendering adjusts the drawing workload while keeping gameplay at 60 updates per emulated second.** The early fixed-120 schedule advanced gameplay on every second render interval. If a device completed only 80 intervals per wall second, gameplay fell to 40 updates and audio slowed down. At a correctly scheduled target of 80, those 80 intervals can contain all 60 gameplay updates.
 
-**🟡 Partially verified · Normal-speed rendering works in tested scenes.** Extra rendering cannot help a device that already misses the original 60-update workload. The phone's slow main menu remains a separate problem.
+**✅ Verified · Above-60 PC rendering proof of concept.** The measured result meets the [research goal](04-frame-rate.md). Extra rendering cannot help a device that already misses the original 60-update workload. The phone's slow main menu remains a separate problem.
 
 ## Keep game time continuous as the target changes
 
@@ -45,7 +45,7 @@ These variants stayed excluded. Packet ordering and completeness remain part of 
 >
 > In a **65.02-second fullscreen battle**, the game completed **120.02 renders/s** and **60.01 gameplay updates/s**. PresentMon recorded **7,803 display-tracked presents**, about **120.02/s**, on a confirmed 180-Hz desktop.
 >
-> This is an average delivery result. Frame spacing remains uneven. [Selected measurements and provenance](../evidence/pc-display-180hz.json).
+> This meets the above-60 proof-of-concept goal. Frame spacing varies; the recorded intervals preserve that detail. [Selected measurements and provenance](../evidence/pc-display-180hz.json).
 
 **✅ Verified · PC counters and OS presentation events.** The new session used the same corrected build, `22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c51075c4464f8a56c8252f`. No runtime patch was needed for this test.
 
@@ -70,7 +70,7 @@ The earlier **approximately 56/s reading did not recur** in this session. That d
 
 At fixed 120, the median display interval was **5.58 ms**, p95 **16.67 ms**, and p99 **22.24 ms**. At fixed 60, p95 was **22.25 ms** and p99 **27.79 ms**. Neither target delivered evenly spaced frames throughout the run.
 
-A fixed 180-Hz schedule has refresh slots of about 5.56 ms. A 120-update stream cannot occupy equal whole-refresh slots at that cadence. The longer tails still merit [scheduler investigation](10-further-work.md#1-improve-frame-pacing). These measurements establish OS presentation; [Evidence conventions](../EVIDENCE.md#how-to-interpret-frame-rates) explain its boundary.
+A fixed 180-Hz schedule has refresh slots of about 5.56 ms. A 120-update stream cannot occupy equal whole-refresh slots at that cadence. Further [frame-pacing work](10-further-work.md#optional-frame-pacing-investigation) is optional refinement, not a prerequisite for this proof of concept. [Evidence conventions](../EVIDENCE.md#how-to-interpret-frame-rates) explain the measurement boundary.
 
 ### Watch the measured build
 

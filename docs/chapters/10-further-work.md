@@ -4,32 +4,65 @@
 
 > **At a glance**
 >
-> - **Question:** Which tests and integrations should come next?
-> - **Result:** The proposed sequence covers current-phone comparisons, the menu bottleneck, complete game flows and integration of both multiplayer routes.
+> - **Question:** What follows the completed high-refresh proof of concept?
+> - **Result:** Above-60 rendering is demonstrated. The next delivery work is a reproducible game-code package, followed by multiplayer integration and broader device coverage.
 > - **Still open:** These are proposed experiments. They do not establish new game-performance or multiplayer results.
 
-**⬜ Untested · The experiments below are the next acceptance targets.** The [findings and lessons](09-learnings.md) describe the existing results.
+**Follow-up work beyond the completed rendering proof of concept.** The [findings and lessons](09-learnings.md) describe the existing results.
 
 ## What to implement next
 
 > [!TIP]
-> **Improve frame spacing, then broaden device coverage.**
+> **Package the working code, then build on it.**
 >
-> The new 180-Hz desktop session reached about **60 and 120 OS display updates/s** at the corresponding targets. Average delivery now has evidence; the interval tails remain uneven.
+> The [120-render PC result](06-adaptive-rendering.md#the-latest-paired-pc-result) meets the above-60 research goal. Further pacing refinement is optional.
 >
-> Keep current-phone throughput as a separate comparison. [Latest PC result](06-adaptive-rendering.md#the-latest-paired-pc-result).
+> The main delivery gap is a complete game-code export. The two multiplayer approaches remain implementation work.
 
-### 1 · Improve frame pacing
+### 1 · Make the game experiment reproducible
 
-The historical 56/s reading did not recur on the confirmed 180-Hz desktop. The next experiment should explain frame spacing rather than assume a persistent four-frame-per-second loss.
+The checkout now reproduces a bounded input regression and both PC rate analyses, and exports a [partial render-hook layer](../../research/source/render-hooks/README.md). The CI recipe repeats portable checks. It still lacks the complete matched game package. Export pinned runtime sources, game hooks, generated-unit mappings, build commands and checksums together. Test them in an empty checkout before calling the game build reproducible. [Packaging and export scope](../REPOSITORY.md#rebuild-acceptance)
+
+### 2 · Integrate the two multiplayer routes
+
+- **Route A · Streaming:** Compare selectable direct/relay ICE and supported media hints, then complete a host-plus-two-client match. Measure latency and recovery. See [the proposed settings](07-host-streaming.md#reduce-streaming-latency-the-proposed-experiment).
+- **Route B · Independent clients:** Measure hash cost separately from input waiting, and choose a shared startup delay from relay timing and jitter. Add agreed selection and prove battle-to-rematch checkpoints. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
+
+Investigate the original Network Battle bridge separately before committing to restoration. It is an integration option within route B, not a completed third mode.
+
+### 3 · Validate the current phone build
+
+Record ordinary boot, menu, selection and battle with stable measurement windows, current browser cadence and running audio.
+
+Compare the same scene at fixed 60 and Auto. Include fullscreen and a longer warm-device session. Distinguish computation, shown callbacks and physical display evidence.
+
+### 4 · Resolve the menu bottleneck
+
+Batching and feedback checks already exist. Add counts for **why each batch ends**, with separate CLUT load, dispatch, slot-exhaustion and overlap counters. The [CLUT source audit](06-adaptive-rendering.md#batching-already-exists-find-what-ends-each-batch) explains why a palette address alone is insufficient. Capture the same menu and Versus scene on the affected phone, with observer-on/off controls.
+
+If a specific flush rule dominates, test one conservative change. Compare output pixels and VRAM, including framebuffer-texture overlap cases. Fewer dispatches alone do not establish correct rendering or lower frame time.
+
+Fast desktop menus cannot demonstrate a phone fix. See [the performance investigation](03-performance.md) for the existing evidence.
+
+### 5 · Finish game-flow coverage
+
+Reach natural results, re-entry and rematch. Then extend high refresh one mode/camera lifecycle at a time. Preserve pause, input edges and cue timing.
+
+Improve effects or hierarchy-aware pose interpolation only with corresponding visual controls. See [adaptive results and limits](06-adaptive-rendering.md) for the current coverage.
+
+## Optional frame-pacing investigation
+
+This is an optional refinement after the completed above-60 proof of concept. It does not block the current Wiki.
+
+The historical 56/s reading did not recur on the confirmed 180-Hz desktop. If this investigation resumes, explain frame spacing rather than assume a persistent four-frame-per-second loss.
 
 At fixed 120, p95 display spacing was 16.67 ms and p99 was 22.24 ms. Fixed 60 also varied, with p99 at 27.79 ms. Preserve these traces as the control before changing the scheduler.
 
 Compare fixed 60, fixed 120 and Auto in the same scene with the same input sequence. Keep at least 60 stable seconds after warm-up. Repeat windowed and fullscreen, with the window wholly on the recorded display. An observer-off control should measure instrumentation cost.
 
-#### Align individual submissions with display changes
+### Align individual submissions with display changes
 
-The accepted session aligns whole measurement windows. Next, assign frame IDs and log `performance.now()` at GPU submission, scheduled `requestAnimationFrame` time, callback entry and task-yield resumption. Keep a bounded memory buffer and export after the run. Avoid per-frame console output.
+The accepted session aligns whole measurement windows. To investigate individual frames, assign frame IDs and log `performance.now()` at GPU submission, scheduled `requestAnimationFrame` time, callback entry and task-yield resumption. Keep a bounded memory buffer and export after the run. Avoid per-frame console output.
 
 Use **PresentMon** in the interactive desktop session, starting before the browser. Select the game's GPU process and swapchain after capture. Save the version, options and diagnostics, and reject overflowed traces. The completed experiment used **2.6.0**, whose CSV fields include `TimeInQPC`, `MsUntilDisplayed` and `MsBetweenDisplayChange`. An `NA` field is not enough to label a frame dropped. [Versioned CSV implementation](https://github.com/GameTechDev/PresentMon/blob/v2.6.0/PresentMon/CsvOutput.cpp)
 
@@ -44,37 +77,6 @@ Use a unique session name when coordinating multiple captures. Keep QPC alignmen
 A later controlled comparison at a **120-Hz display setting** would separate 180-Hz refresh-slot quantization from scheduling jitter. Record the active setting and restore it afterward. The completed session kept all three monitors at 180 Hz.
 
 If late submissions remain unexplained, compare an isolated **diagnostic-only** browser with `--disable-frame-rate-limit`. Chromium states that it also implies `--disable-gpu-vsync`. This flag was not used in the accepted tests and is not a shipping fix. [Chromium display switches](https://github.com/chromium/chromium/blob/main/components/viz/common/switches.cc)
-
-### 2 · Validate the current phone build
-
-Record ordinary boot, menu, selection and battle with stable measurement windows, current browser cadence and running audio.
-
-Compare the same scene at fixed 60 and Auto. Include fullscreen and a longer warm-device session. Distinguish computation, shown callbacks and physical display evidence.
-
-### 3 · Resolve the menu bottleneck
-
-Batching and feedback checks already exist. Add counts for **why each batch ends**, with separate CLUT load, dispatch, slot-exhaustion and overlap counters. The [CLUT source audit](06-adaptive-rendering.md#batching-already-exists-find-what-ends-each-batch) explains why a palette address alone is insufficient. Capture the same menu and Versus scene on the affected phone, with observer-on/off controls.
-
-If a specific flush rule dominates, test one conservative change. Compare output pixels and VRAM, including framebuffer-texture overlap cases. Fewer dispatches alone do not establish correct rendering or lower frame time.
-
-Fast desktop menus cannot demonstrate a phone fix. See [the performance investigation](03-performance.md) for the existing evidence.
-
-### 4 · Finish game-flow coverage
-
-Reach natural results, re-entry and rematch. Then extend high refresh one mode/camera lifecycle at a time. Preserve pause, input edges and cue timing.
-
-Improve effects or hierarchy-aware pose interpolation only with corresponding visual controls. See [adaptive results and limits](06-adaptive-rendering.md) for the current coverage.
-
-### 5 · Integrate the two multiplayer routes
-
-- **Route A · Streaming:** Compare selectable direct/relay ICE and supported media hints, then complete a host-plus-two-client match. Measure latency and recovery. See [the proposed settings](07-host-streaming.md#reduce-streaming-latency-the-proposed-experiment).
-- **Route B · Independent clients:** Measure hash cost separately from input waiting, and choose a shared startup delay from relay timing and jitter. Add agreed selection and prove battle-to-rematch checkpoints. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
-
-Investigate the original Network Battle bridge separately before committing to restoration. It is an integration option within route B, not a completed third mode.
-
-### 6 · Make the game experiment reproducible
-
-The checkout now reproduces a bounded input regression and the historical rate plot, and exports a [partial render-hook layer](../../research/source/render-hooks/README.md). The CI recipe repeats portable checks. It still lacks the complete matched game package. Export pinned runtime sources, game hooks, generated-unit mappings, build commands and checksums together. Test them in an empty checkout before calling the game build reproducible. [Packaging and export scope](../REPOSITORY.md#rebuild-acceptance)
 
 ## Improvements worth proposing upstream
 

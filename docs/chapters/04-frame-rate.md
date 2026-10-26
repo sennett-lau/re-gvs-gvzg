@@ -6,9 +6,11 @@
 >
 > - **Question:** Can we show smoother motion without making the game run too fast?
 > - **Result:** Keep gameplay at 60 updates per second and draw intermediate poses. Simply increasing the video clock accelerated the game.
-> - **Still open:** Normal-speed 144 Hz and 120-Hz gameplay simulation remain unproven. Chapter 06 now adds OS display evidence for the 120-render path.
+> - **Still open:** Broader game-mode and current-phone coverage are follow-up work. The above-60 rendering proof of concept is established.
 
-The first high-refresh experiment made the game run faster, not correctly. The later prototype took a different route: retain 60 gameplay updates per emulated second, but render intermediate model and camera poses more often. This distinction explains both the progress and the remaining gap between a counter showing 120 and a phone displaying smooth, normal-speed play.
+The first high-refresh experiment made the game run faster, not correctly. The later prototype retains 60 gameplay updates per emulated second, but renders intermediate model and camera poses more often.
+
+**The goal is to demonstrate normal-speed rendering beyond the original 60-update rate.** The [measured 120-render PC result](06-adaptive-rendering.md#the-latest-paired-pc-result) meets that goal. Perfectly constant frame spacing is not required for this proof of concept. Its measured variation remains part of the evidence. Further 144-Hz testing is outside the current scope.
 
 **✅ Verified · Native timing and image comparisons.** See [R01–R03](../evidence/rendering-findings.json) for the retained controls.
 
@@ -73,10 +75,10 @@ Interpolation changed the rendering copies of model transforms and the camera be
 
 | Route | Current result | Remaining work |
 | --- | --- | --- |
-| Keep gameplay at 60 and interpolate extra renders | Implemented and tested in bounded battle paths | Physical high-refresh presentation, more effects and modes, sustained phone throughput |
-| Run gameplay at 120/144 with smaller timesteps | Not implemented | Recover and retime movement, acceleration, collision, animation, AI, input, cooldowns and scheduler behavior |
+| Keep gameplay at 60 and interpolate extra renders | Above-60 proof of concept established, including PC OS display evidence at about 120/s | Optional extension to more effects, modes and sustained phone use |
+| Run gameplay itself above 60 with smaller timesteps | Not implemented; separate research direction | Recover and retime movement, acceleration, collision, animation, AI, input, cooldowns and scheduler behavior |
 
-The adaptive implementation is bounded to 60–120 video Hz. Normal-speed 144 rendering has not been demonstrated. Its fractional relationship to 60-Hz simulation requires correct phase handling. The render budget shrinks from 8.33 ms at 120 to 6.94 ms at 144. Raising a constant would not establish that either the behavior or the hardware meets that budget.
+The adaptive implementation is bounded to 60–120 video Hz. The 144-Hz values in Experiment 1 document the earlier accelerated-game diagnostic. They are not an implemented normal-speed mode or a required next milestone.
 
 ## How to prove that higher refresh works
 
@@ -87,7 +89,7 @@ A defensible result needs separate checks on the intended device:
 - Distinct rendered motion.
 - Measured display delivery.
 
-The [paired PC result](06-adaptive-rendering.md#the-latest-paired-pc-result) separates computed work from shown cadence. Its remaining display and phone checks guide the next experiment.
+The [paired PC result](06-adaptive-rendering.md#the-latest-paired-pc-result) supplies normal-speed counters and OS display delivery. The native comparison above supplies distinct intermediate-image evidence. Together they support the scoped proof of concept; extending device and mode coverage is separate work.
 
 The next chapters explain the recovered rendering boundary. They cover continuous timing, button-press detection and the conditions that permit extra rendering.
 

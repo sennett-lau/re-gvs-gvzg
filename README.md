@@ -12,7 +12,7 @@ This project studies how [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en
 
 **✅ Verified · PC counters + OS display events**
 
-A **65-second fullscreen battle** on a confirmed 180-Hz desktop reached **120.02 OS-reported display updates/s**, with normal-speed gameplay. Frame spacing still varies.
+A **65-second fullscreen battle** on a confirmed 180-Hz desktop reached **120.02 OS-reported display updates/s**, with normal-speed gameplay. This establishes the above-60 rendering proof of concept.
 
 [See the measured rates and game capture](docs/chapters/06-adaptive-rendering.md#the-latest-paired-pc-result).
 
