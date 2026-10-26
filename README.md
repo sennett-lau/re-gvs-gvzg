@@ -44,6 +44,14 @@ The old input gate failed **369** cases. The corrected gate passed every tested 
 
 This is a gameplay showcase. The [frame-rate results](docs/chapters/06-adaptive-rendering.md) describe separate measured experiments.
 
+## What interpolation changes
+
+<video controls muted playsinline preload="none" poster="docs/media/repeat-vs-interpolate-poster.png" aria-label="Native comparison: repeat control versus interpolated motion, with sample and unique-image counts" src="docs/media/repeat-vs-interpolate-quarter-speed.mp4"></video>
+
+*The same movement fixture produces 122 unique images with repeated poses and 241 with interpolation. This native comparison plays four times slower; it demonstrates image differences, not device throughput.*
+
+[See the four-sample filmstrip and experiment](docs/chapters/04-frame-rate.md#experiment-2-render-without-advancing-gameplay).
+
 ## Explore the research
 
 Follow the stages in order, or choose the feature that interests you.

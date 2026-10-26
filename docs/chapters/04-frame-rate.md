@@ -48,6 +48,16 @@ The next prototype used an existing branch that bypasses the mode update while r
 
 Interpolation changed the rendering copies of model transforms and the camera between their previous and current canonical states. The same sequence then contained 241 distinct image hashes while its tracked simulation state continued to match the 60-Hz reference. This is evidence of new visual samples in that captured scene, not merely repeated framebuffers.
 
+<video controls muted playsinline preload="none" poster="../media/repeat-vs-interpolate-poster.png" aria-label="Four-times slower comparison: repeated frames on the left, interpolation on the right" src="../media/repeat-vs-interpolate-quarter-speed.mp4"></video>
+
+*Left: repeat control. Right: interpolated motion. Burned labels identify each sample and the cumulative number of unique source images. Playback is four times slower: 120 samples per emulated second play at 30 FPS. This is an offline image comparison.*
+
+![Four consecutive cropped samples: repeat pairs 61/62 and 63/64 on the left; four distinct interpolated samples on the right](../media/repeat-vs-interpolate-filmstrip.png)
+
+*Read down each column. Samples 61–62 repeat one image on the left; 63–64 repeat the next. All four right-hand samples differ. Every cell uses the same unscaled crop; counts refer to complete original images, starting at sample 0.*
+
+[Download the labeled video](../media/repeat-vs-interpolate-quarter-speed.mp4) · [Open the filmstrip](../media/repeat-vs-interpolate-filmstrip.png) · [Capture provenance](../evidence/review-provenance.json)
+
 > [!IMPORTANT]
 > **120 render updates can retain 60 gameplay updates.**
 >
@@ -76,23 +86,14 @@ A defensible result needs separate checks on the intended device:
 - Stable audio production and consumption.
 - Distinct rendered motion.
 - Measured display delivery.
-The latest PC result supports approximately 120 computed render updates at normal game speed in a narrow Versus scene. Its captured browser cadence was near 60 Hz, with about 56 shown updates per second. Physical 120-Hz delivery and current-build phone performance remain open tests.
+
+The [paired PC result](06-adaptive-rendering.md#the-latest-paired-pc-result) separates computed work from shown cadence. Its remaining display and phone checks guide the next experiment.
 
 The next chapters explain the recovered rendering boundary. They cover continuous timing, button-press detection and the conditions that permit extra rendering.
 
 <details>
 <summary>Source trail and verification records</summary>
 
-[R01–R03 in the curated evidence file](../evidence/rendering-findings.json) identify the original working-tree sources, their SHA-256 hashes, and the selected measurements. The principal source reports are `docs/gundam-high-fps-research.md` and `docs/gundam-120fps-prototype.md` in the original `ps2-web-recomp` working tree. Selected visuals are included below. Raw RAM and save states remain outside this report repository.
+[R01–R03 in the curated evidence file](../evidence/rendering-findings.json) identify the original working-tree sources, their SHA-256 hashes, and the selected measurements. The principal source reports are `docs/gundam-high-fps-research.md` and `docs/gundam-120fps-prototype.md` in the original `ps2-web-recomp` working tree. Selected visuals appear in Experiment 2. Raw RAM and save states remain outside this report repository.
 
 </details>
-
-## See repeated frames and interpolated motion
-
-**Left: the repeat control. Right: interpolated model and camera poses.** Both sequences contain 241 native captures from the same two-second movement fixture, including the initial image. The control has 122 unique images; interpolation has 241.
-
-<video controls muted playsinline preload="none" poster="../media/repeat-vs-interpolate-poster.png" aria-label="Four-times slower comparison: repeated frames on the left, interpolation on the right" src="../media/repeat-vs-interpolate-quarter-speed.mp4"></video>
-
-*Playback is four times slower: 120 captured samples per emulated second are encoded at 30 FPS. This makes intermediate poses visible on an ordinary display. It is an offline visual comparison, not a browser performance recording.*
-
-[Download the silent comparison](../media/repeat-vs-interpolate-quarter-speed.mp4) · [Capture and encoding provenance](../evidence/review-provenance.json)

@@ -14,7 +14,7 @@ async function list(dir) {
   return (
     await Promise.all(
       entries
-        .filter((e) => !e.name.startsWith("."))
+        .filter((e) => !e.name.startsWith(".") && e.name !== "__pycache__" && !/\.py[co]$/.test(e.name))
         .map((e) =>
           e.isDirectory()
             ? list(path.join(dir, e.name))
@@ -38,7 +38,7 @@ for (const id of ["render-clock", "multiplayer-routes"]) {
 }
 const docs = await list("docs");
 const research = await list("research/source");
-const analysisScripts = ["scripts/plot-pc-cadence.py"];
+const analysisScripts = ["scripts/plot-pc-cadence.py", "scripts/build-comparison-media.py"];
 const markdown = [
   "README.md",
   "CONTRIBUTING.md",
