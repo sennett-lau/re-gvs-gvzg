@@ -34,9 +34,15 @@ The old input gate failed **369** cases. The corrected gate passed every tested 
 
 <!-- results:end -->
 
-![Retained browser capture of the single-camera Versus battle, with the test controls and 56 FPS browser overlay visible](docs/media/pc-versus-120-request.png)
+## Early mobile gameplay
 
-*Actual retained PC capture from the 120-target experiment. The image shows the game and test overlay; refresh-rate evidence comes from counters and measurements.*
+<video autoplay loop muted playsinline preload="metadata" poster="docs/media/early-mobile-gameplay-poster.jpg" aria-label="Early mobile gameplay: movement, boosting and firing during a space battle" src="docs/media/early-mobile-gameplay.mp4"></video>
+
+*Recorded by the project author on a phone after the early mobile optimizations. This 14-second excerpt keeps the original playback speed, with the side margins cropped.*
+
+[Watch or download the clip](docs/media/early-mobile-gameplay.mp4) · [Clip provenance](docs/evidence/mobile-demo-provenance.json)
+
+This is a gameplay showcase. The [frame-rate results](docs/chapters/06-adaptive-rendering.md) describe separate measured experiments.
 
 ## Explore the research
 

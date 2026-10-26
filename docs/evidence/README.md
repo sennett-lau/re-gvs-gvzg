@@ -25,6 +25,7 @@ Run `python3 scripts/plot-pc-cadence.py`. The [plot script](../../scripts/plot-p
 
 ### Visuals and patch excerpts · inspectable artifacts
 
+- [Early mobile gameplay](../media/early-mobile-gameplay.mp4): a user-recorded showcase from an early optimized phone build. [Clip provenance](mobile-demo-provenance.json) records the trim and crop. Its exact build is unidentified.
 - [Four-times slower native comparison](../media/repeat-vs-interpolate-quarter-speed.mp4): repeat control on the left, interpolation on the right.
 - [Unedited PC screenshot](../media/pc-versus-120-request.png): the actual Versus scene and test overlay.
 - [Disassembly](code/hook-instructions.txt), [render branch](code/render-boundary.diff), [input gate](code/input-gate.diff) and [cue-clock diff](code/cue-clock.diff).

@@ -6,7 +6,7 @@ No original ISO, ROM or compressed disc backup is included. Future game packages
 
 The local report describes observations and experiments, not a transfer of rights in the game. Research purpose and a takedown process are not assertions of permission. Rights in third-party tools and code are described separately in [Third-party notices](THIRD_PARTY_NOTICES.md).
 
-The selected game screenshots, native comparison video, disassembly, generated-C++ excerpts and 356-byte regression fixture are game-derived research material. Their provenance is recorded with the evidence. They are not independently authored game assets or a complete game package.
+The selected game screenshots, mobile gameplay clip, native comparison video, disassembly, generated-C++ excerpts and 356-byte regression fixture are game-derived research material. Their provenance is recorded with the evidence. They are not independently authored game assets or a complete game package.
 
 The license for this project's own contributions has not yet been selected. A chosen license will be placed at `docs/license/LICENSE` and linked from the README; no empty or misleading license file is provided meanwhile.
 

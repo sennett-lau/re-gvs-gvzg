@@ -18,7 +18,7 @@ This local repository starts with the report and its reader. The existing game w
 | `generated/` | Selected readable generated C++ and translation tables | Future export |
 | `src/hooks/`, `patches/runtime/` | Our game-specific hooks and runtime/compiler changes | Future export |
 | `research/source/` | Selected RE scripts, address maps and useful exports | Portable input regression exported; wider source export pending |
-| `docs/media/` | Selected real captures with evidence captions | Native comparison and PC screenshot |
+| `docs/media/` | Selected real captures with provenance captions | Early mobile demo, native comparison and PC screenshot |
 | `poc/streaming/`, `poc/lockstep/` | Independently reproducible multiplayer experiments | Future export |
 | `scripts/release/` | Packaging profiles, manifests and checksum generation | Future export |
 | `.local/release-builds/` | Ignored temporary packaging output | Created only when needed |
