@@ -1,0 +1,73 @@
+{
+  "recorded_utc_date": "2026-10-26",
+  "purpose": "Actual desktop gameplay showcase from the measured build; viewing copies are not a frame-timing benchmark.",
+  "build_id": "22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c51075c4464f8a56c8252f",
+  "source": {
+    "label": "Primary-monitor Desktop Duplication recording",
+    "sha256": "ca0da1e3a834c76535ac7f31f76daa96856468e08191ce7bf52e8e5167d45e60",
+    "bytes": 115044533,
+    "dimensions": [
+      2560,
+      1440
+    ],
+    "duration_seconds": 12,
+    "encoded_frames": 1572,
+    "mean_encoded_frames_per_second": 131,
+    "requested_capture_hz": 180,
+    "variable_frame_rate": true,
+    "audio_streams": 0,
+    "included": false,
+    "limits": "Requested 180-Hz capture was not achieved uniformly. FFmpeg corrected non-monotonic DTS values. Preserve the original privately; use the separate PresentMon window for rate conclusions."
+  },
+  "edit": {
+    "crop": [
+      320,
+      0,
+      1920,
+      1440
+    ],
+    "output_pixels": [
+      960,
+      720
+    ],
+    "duration_seconds": 12,
+    "playback_speed": 1,
+    "description": "Crop the black side margins, resize, resample timestamps to 60 or 120 FPS, strip source metadata. No optical interpolation. Resampling can duplicate or drop frames.",
+    "command_template": "ffmpeg -i INPUT.mp4 -vf crop=1920:1440:320:0,scale=960:720:flags=lanczos,fps=RATE -c:v libx264 -preset medium -crf 22 -profile:v high -level:v LEVEL -pix_fmt yuv420p -an -map_metadata -1 -movflags +faststart OUTPUT.mp4",
+    "levels": {
+      "60": "4.1",
+      "120": "4.2"
+    },
+    "poster_offset_seconds": 5
+  },
+  "measurement_relation": "Recorded before, not during, the final 65.02-second 120-target measurement. Same game session and unmodified JS/WASM.",
+  "exports": {
+    "docs/media/pc-180hz-gameplay-60.mp4": {
+      "sha256": "2c45110696eb8636cd4c918b0d8d81cbec12054b86c2ffa7e84b4ebb922ac548",
+      "bytes": 8714727
+    },
+    "docs/media/pc-180hz-gameplay-120.mp4": {
+      "sha256": "8510f1774d536b8cf3d88172e1cc7673f5f6d59e6cc3db6a7b07718c193c7d67",
+      "bytes": 10022634
+    },
+    "docs/media/pc-180hz-gameplay-poster.jpg": {
+      "sha256": "2f61d941db935104f89adc46954ba104ae7caff8b05167e4df49c5ef204cb829",
+      "bytes": 100519
+    }
+  },
+  "validation": {
+    "60_fps_copy": {
+      "profile": "H.264 High Level 4.1",
+      "encoded_frames": 720,
+      "duration_seconds": 12,
+      "audio_streams": 0
+    },
+    "120_fps_copy": {
+      "profile": "H.264 High Level 4.2",
+      "encoded_frames": 1440,
+      "duration_seconds": 12,
+      "audio_streams": 0
+    },
+    "decode": "Both viewing copies decoded without FFmpeg errors."
+  }
+}
