@@ -38,7 +38,7 @@ for (const id of ["render-clock", "multiplayer-routes"]) {
 }
 const docs = await list("docs");
 const research = await list("research/source");
-const analysisScripts = ["scripts/plot-pc-cadence.py", "scripts/build-comparison-media.py"];
+const analysisScripts = ["scripts/plot-pc-cadence.py", "scripts/plot-pc-display.py", "scripts/build-comparison-media.py"];
 const markdown = [
   "README.md",
   "CONTRIBUTING.md",

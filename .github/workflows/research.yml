@@ -25,6 +25,6 @@ jobs:
           python-version: '3.12'
       - run: npm ci --ignore-scripts
       - run: npm run verify:research
-      - run: git diff --exit-code -- docs/figures/pc-cadence.svg
+      - run: git diff --exit-code -- docs/figures/pc-cadence.svg docs/figures/pc-display-180hz.svg
       - run: npm run wiki:build
       - run: npm run check

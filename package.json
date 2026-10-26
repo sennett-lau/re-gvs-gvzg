@@ -10,7 +10,7 @@
     "wiki:build": "node scripts/build-wiki.mjs",
     "wiki:serve": "python3 -m http.server 8768 --bind 127.0.0.1 --directory .local/wiki",
     "check": "node scripts/check-report.mjs",
-    "verify:research": "python3 research/source/input-gate/verify.py && python3 research/source/render-hooks/verify.py && python3 scripts/plot-pc-cadence.py"
+    "verify:research": "python3 research/source/input-gate/verify.py && python3 research/source/render-hooks/verify.py && python3 scripts/plot-pc-cadence.py && python3 scripts/plot-pc-display.py"
   },
   "devDependencies": {
     "marked": "17.0.5"

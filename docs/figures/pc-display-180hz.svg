@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 700" role="img" aria-labelledby="title desc">
+<title id="title">Normal-speed 120 rendering reaches the desktop display</title>
+<desc id="desc">Two approximately 65-second fullscreen runs on a 180-Hz desktop. Render, gameplay and OS display rates are compared above. Histograms below show uneven display intervals; an average of 120 updates does not mean uniform 8.33-millisecond spacing.</desc>
+<rect width="800" height="700" fill="#141b22"/>
+<g font-family="sans-serif" fill="#e0e7ec" font-size="16">
+<text x="28" y="35" font-size="23" font-weight="bold">120 updates reach the display · pacing still varies</text>
+<text x="28" y="64" fill="#b9c7d0">180-Hz desktop · 2560 × 1440 fullscreen canvas · normal game speed</text>
+<rect x="30" y="86" width="14" height="14" fill="#edaa7a"/>
+<text x="52" y="99">Render /s</text>
+<rect x="283" y="86" width="14" height="14" fill="#9bdbba"/>
+<text x="305" y="99">Gameplay /s</text>
+<rect x="536" y="86" width="14" height="14" fill="#9cc9f0"/>
+<text x="558" y="99">OS display /s</text>
+<text x="28" y="137" font-size="20" font-weight="bold">Fixed 60 · 65.01 s</text>
+<rect x="28" y="156" width="122.33" height="20" fill="#edaa7a"/>
+<text x="308" y="172">60.01</text>
+<rect x="28" y="188" width="122.33" height="20" fill="#9bdbba"/>
+<text x="308" y="204">60.01</text>
+<rect x="28" y="220" width="122.31" height="20" fill="#9cc9f0"/>
+<text x="308" y="236">60.00</text>
+<text x="28" y="277">3,901 display-tracked presents</text>
+<text x="420" y="137" font-size="20" font-weight="bold">Fixed 120 · 65.02 s</text>
+<rect x="420" y="156" width="244.66" height="20" fill="#edaa7a"/>
+<text x="700" y="172">120.02</text>
+<rect x="420" y="188" width="122.33" height="20" fill="#9bdbba"/>
+<text x="700" y="204">60.01</text>
+<rect x="420" y="220" width="244.66" height="20" fill="#9cc9f0"/>
+<text x="700" y="236">120.02</text>
+<text x="420" y="277">7,803 display-tracked presents</text>
+<path d="M28 300h744" stroke="#36434d"/>
+<text x="28" y="334" font-size="20" font-weight="bold">Time between OS display changes</text>
+<text x="28" y="360" fill="#b9c7d0">Bars: share of recorded intervals · labels: interval in milliseconds</text>
+<text x="28" y="393" font-weight="bold">Fixed 60</text>
+<text x="28" y="425" font-size="14">&lt;8.33</text>
+<rect x="131" y="410" width="18.23" height="19" fill="#9cc9f0"/>
+<text x="318" y="425" font-size="14">10.1%</text>
+<text x="28" y="454" font-size="14">8.33–13.89</text>
+<rect x="131" y="439" width="36.91" height="19" fill="#9cc9f0"/>
+<text x="318" y="454" font-size="14">20.5%</text>
+<text x="28" y="483" font-size="14">13.89–19.44</text>
+<rect x="131" y="468" width="56.57" height="19" fill="#9cc9f0"/>
+<text x="318" y="483" font-size="14">31.4%</text>
+<text x="28" y="512" font-size="14">19.44–25</text>
+<rect x="131" y="497" width="63.54" height="19" fill="#9cc9f0"/>
+<text x="318" y="512" font-size="14">35.3%</text>
+<text x="28" y="541" font-size="14">≥25</text>
+<rect x="131" y="526" width="4.75" height="19" fill="#9cc9f0"/>
+<text x="318" y="541" font-size="14">2.6%</text>
+<text x="28" y="578">p95 22.25 ms</text>
+<text x="28" y="602">p99 27.79 ms</text>
+<text x="420" y="393" font-weight="bold">Fixed 120</text>
+<text x="420" y="425" font-size="14">&lt;8.33</text>
+<rect x="523" y="410" width="105.35" height="19" fill="#9cc9f0"/>
+<text x="710" y="425" font-size="14">58.5%</text>
+<text x="420" y="454" font-size="14">8.33–13.89</text>
+<rect x="523" y="439" width="63.02" height="19" fill="#9cc9f0"/>
+<text x="710" y="454" font-size="14">35.0%</text>
+<text x="420" y="483" font-size="14">13.89–19.44</text>
+<rect x="523" y="468" width="8.28" height="19" fill="#9cc9f0"/>
+<text x="710" y="483" font-size="14">4.6%</text>
+<text x="420" y="512" font-size="14">19.44–25</text>
+<rect x="523" y="497" width="2.95" height="19" fill="#9cc9f0"/>
+<text x="710" y="512" font-size="14">1.6%</text>
+<text x="420" y="541" font-size="14">≥25</text>
+<rect x="523" y="526" width="0.39" height="19" fill="#9cc9f0"/>
+<text x="710" y="541" font-size="14">0.2%</text>
+<text x="420" y="578">p95 16.67 ms</text>
+<text x="420" y="602">p99 22.24 ms</text>
+<text x="28" y="646" fill="#b9c7d0">PresentMon 2.6.0 · matched counter windows · no trace warnings in these runs</text>
+<text x="28" y="674" fill="#b9c7d0">OS presentation evidence; not a panel pixel-response or same-match image test</text>
+</g></svg>
