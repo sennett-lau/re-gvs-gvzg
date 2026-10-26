@@ -652,6 +652,59 @@ article > details p {
   margin: 25px 0 32px;
   scrollbar-width: thin;
 }
+.table-hint {
+  display: none;
+}
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0 28px;
+}
+.result-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--green);
+  background: var(--panel);
+  min-width: 0;
+}
+.result-card h3 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  line-height: 1.45;
+}
+.result-card p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 12px 0 0;
+}
+.result-status {
+  border-left: 3px solid var(--line-strong);
+  padding-left: 12px;
+  font-size: 13px;
+}
+.result-card .result-status {
+  border-left: 0;
+  padding-left: 0;
+}
+article video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
+  border: 1px solid var(--line);
+  margin: 24px 0 12px;
+}
+article > p > img {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+}
+@media (max-width: 1150px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+}
 table {
   width: 100%;
   border-collapse: collapse;
@@ -1214,7 +1267,7 @@ button[aria-pressed="true"] {
     padding: 0;
   }
   .figure-graphic svg {
-    min-width: 390px;
+    min-width: 0;
   }
   .control-row {
     gap: 10px;
@@ -1237,6 +1290,12 @@ button[aria-pressed="true"] {
   }
   .table-wrap {
     margin: 22px 0;
+  }
+  .table-hint {
+    display: block;
+    margin: 20px 0 -16px;
+    color: var(--muted);
+    font-size: 11px;
   }
   table {
     font-size: 11px;

@@ -37,10 +37,13 @@ for (const id of ["render-clock", "multiplayer-routes"]) {
   );
 }
 const docs = await list("docs");
+const research = await list("research/source");
+const analysisScripts = ["scripts/plot-pc-cadence.py"];
 const markdown = [
   "README.md",
   "CONTRIBUTING.md",
   ...docs.filter((f) => f.endsWith(".md")),
+  ...research.filter((f) => f.endsWith(".md")),
 ];
 const pagePath = (source) =>
   source === "README.md"
@@ -81,6 +84,8 @@ const manifest = { schema: 1, source_sha256: {} };
 for (const file of [
   ...markdown,
   ...docs.filter((f) => !f.endsWith(".md")),
+  ...research.filter((f) => !f.endsWith(".md")),
+  ...analysisScripts,
   "upstream.lock",
   "package.json",
   "package-lock.json",
@@ -116,6 +121,8 @@ for (const source of [
   "CONTRIBUTING.md",
   "upstream.lock",
   ...docs,
+  ...research,
+  ...analysisScripts,
 ]) {
   const target = path.join(out, "sources", source);
   await fs.mkdir(path.dirname(target), { recursive: true });
@@ -171,6 +178,13 @@ for (const page of pages) {
   renderer.image = function ({ href, text }) {
     return `<img src="${escapeHtml(rewrite(href))}" alt="${escapeHtml(text)}" loading="lazy">`;
   };
+  // Media lives beside the canonical Markdown. Resolve its paths just as we
+  // resolve Markdown image links when chapters move to the reader root.
+  renderer.html = function ({ text }) {
+    return text.replace(/(<(?:video|source)\b[^>]*?)(>)/g, (_, tag, close) =>
+      tag.replace(/\b(src|poster)="([^"]+)"/g, (_, name, url) =>
+        `${name}="${escapeHtml(rewrite(url))}"`) + close);
+  };
   renderer.blockquote = function ({ text, tokens }) {
     const marker = /^\[!(IMPORTANT|NOTE|TIP)\][ \t]*(?:\n|$)/.exec(text);
     if (!marker)
@@ -189,11 +203,28 @@ for (const page of pages) {
   };
   // Remove only the Markdown reader hint before parsing. Adjacent blockquotes
   // can merge, so removing the resulting HTML block would also erase a brief.
+  let sourceText = page.text;
+  // A linked code excerpt has one canonical copy. The Wiki embeds those exact
+  // bytes; a Markdown reader can open the adjacent download link.
+  for (const match of sourceText.matchAll(/<!-- evidence-code: ([^\s]+) -->/g)) {
+    const file = path.resolve(root, path.dirname(page.source), match[1]);
+    if (!file.startsWith(path.join(root, "docs/evidence/code") + path.sep))
+      throw Error(`Code excerpt outside evidence directory: ${match[1]}`);
+    const code = await fs.readFile(file, "utf8");
+    const language = file.endsWith(".diff") ? "diff" : "text";
+    sourceText = sourceText.replace(match[0], `\n\`\`\`${language}\n${code}\`\`\`\n`);
+  }
   let body = marked.parse(
-    page.text.replace(/^> Prefer the illustrated reader\?.*$/m, ""),
+    sourceText.replace(/^> Prefer the illustrated reader\?.*$/m, ""),
     { renderer, gfm: true },
   );
   body = body.replace(/^<h1[^>]*>[\s\S]*?<\/h1>\s*/, "");
+  body = body.replace(/<!-- results:start -->\s*([\s\S]*?)<!-- results:end -->/, (_, content) => {
+    const items = content.trim().split(/(?=<h3\b)/).filter(Boolean);
+    return `<div class="results-grid">${items.map(item => `<section class="result-card">${item}</section>`).join("")}</div>`;
+  });
+  body = body.replace(/<p><strong>(✅|🟡|⬜) ([^<]+)<\/strong>([\s\S]*?)<\/p>/g,
+    (_, icon, label, rest) => `<p class="result-status"><strong><span aria-hidden="true">${icon}</span> ${label}</strong>${rest}</p>`);
   body = body.replace(
     /<blockquote>\s*<p><strong>At a glance<\/strong><\/p>/g,
     '<blockquote class="chapter-brief" aria-label="At a glance"><p><strong>At a glance</strong></p>',
@@ -213,12 +244,13 @@ for (const page of pages) {
   body = body
     .replace(
       /<table>/g,
-      '<div class="table-wrap" role="region" aria-label="Research table" tabindex="0"><table>',
+      '<p class="table-hint">Swipe or scroll horizontally to read all columns.</p><div class="table-wrap" role="region" aria-label="Research table; scroll horizontally for all columns" tabindex="0"><table>',
     )
     .replace(/<\/table>/g, "</table></div>");
   const navLink = (item, className = "") => {
     const destination = pageBySource.get(item.source);
-    const active = item.source === page.source;
+    const active = item.source === page.source ||
+      (item.source === "docs/evidence/README.md" && page.source.startsWith("research/source/"));
     return `<a class="nav-link ${className}" href="${escapeHtml(rel(destination.output))}"${active ? ' aria-current="page"' : ""}><span>${escapeHtml(item.label)}</span>${active ? '<i aria-hidden="true">↗</i>' : ""}</a>`;
   };
   const activeStage = navigation.stages.find((stage) =>
@@ -291,6 +323,7 @@ for (const page of pages) {
     KICKER: activeStage
       ? `STAGE ${activeStage.number} / ${escapeHtml(activeStage.title)}${activeGroup ? " / " + escapeHtml(activeGroup.title) : ""}`
       : page.source.startsWith("docs/evidence/") ||
+          page.source.startsWith("research/source/") ||
           page.source === "docs/EVIDENCE.md"
         ? "EVIDENCE / RESEARCH NOTES"
         : page.source === "README.md"
