@@ -1,0 +1,17 @@
+{
+  "reviewed": "2026-10-26",
+  "source_sha256": {
+    "games/gundam-vs-z-gundam/disc/SLPS_254.19": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+    "research/gundam-full-game-input-gate/baseline_unit_0049.cpp": "33e38c0cf733c6a03ced03adea416d2cb595d3edc43365aff400cd559fcc2afa",
+    "research/gundam-full-game-input-gate/unit_0049.cpp": "c6dab555d8722dcbffb7de386c82bb268fe6c9ae18d4d57141bb8034816c1ecf",
+    "research/gundam-full-game-input-gate/test_input_gate.py": "bd3343dac59b2002d259843ffe5cb663818831cdbcbcb13bcec302947edbe8c4",
+    "research/gundam-full-game-input-gate/input-gate.diff": "832415f3d43048fe3d34119eb8550689d4cef3cdaefcb67df32383738e1629c1"
+  },
+  "adaptation": "Replaced local ELF loader with exported instruction blocks; limited C++ identity check to the pad-entry excerpt; stopped writing results beside source; pinned historical phase totals. The instruction interpreter, phase schedule and episode sweep are retained.",
+  "export_sha256": {
+    "instructions.json": "ee79cfc6b80e62f7a5ea44352ebe81feb1c55888901b5a11fddd4e556589c1b5",
+    "baseline.cpp": "6d702852f0ca333a73fa4818173725ae66a1c933219f21509b7dc236e8f1f31c",
+    "candidate.cpp": "b630c99985140a176639e78b170f7526df912ffdb288b731e76c82d128b15391",
+    "verify.py": "d63f88207b758ee8d146f7168f9ce562d302559317ad65db68c8971a64250ea6"
+  }
+}

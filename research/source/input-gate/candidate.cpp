@@ -1,0 +1,33 @@
+L_00226D30:
+    if (research_render_only()) { c.pc = c.r[31].w[0]; return; }
+    set32(c.r[29], c.r[29].w[0] - 208u);
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x006F0000u);
+    st64((c.r[29].w[0] + 144u), c.r[31].d[0]);
+    set32(c.r[2], c.r[2].w[0] + 9600u);
+    st128((c.r[29].w[0] + 128u) & ~15u, c.r[30]);
+    st128((c.r[29].w[0] + 112u) & ~15u, c.r[23]);
+    st128((c.r[29].w[0] + 96u) & ~15u, c.r[22]);
+    c.r[23].sd[0] = static_cast<std::int32_t>(0x006F0000u);
+    st128((c.r[29].w[0] + 80u) & ~15u, c.r[21]);
+    c.r[22].d[0] = 0ull + 0ull;
+    st128((c.r[29].w[0] + 64u) & ~15u, c.r[20]);
+    set32(c.r[23], c.r[23].w[0] + 9344u);
+    st128((c.r[29].w[0] + 48u) & ~15u, c.r[19]);
+    c.r[20].sd[0] = static_cast<std::int32_t>(0x006F0000u);
+    st128((c.r[29].w[0] + 32u) & ~15u, c.r[18]);
+    c.r[19].sd[0] = static_cast<std::int32_t>(0x006F0000u);
+    st128((c.r[29].w[0] + 16u) & ~15u, c.r[17]);
+    c.r[18].sd[0] = static_cast<std::int32_t>(0x006F0000u);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.r[17].sd[0] = static_cast<std::int32_t>(0x006F0000u);
+    st32((c.r[29].w[0] + 176u), c.r[2].w[0]);
+    set32(c.r[18], c.r[18].w[0] + 9632u);
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x006F0000u);
+    set32(c.r[17], c.r[17].w[0] + 9696u);
+    set32(c.r[2], c.r[2].w[0] + 9440u);
+    set32(c.r[16], c.r[28].w[0] - 23988u);
+    st32((c.r[29].w[0] + 160u), c.r[2].w[0]);
+    set32(c.r[21], c.r[28].w[0] - 23984u);
+    set32(c.r[20], c.r[20].w[0] + 9680u);
+    set32(c.r[19], c.r[19].w[0] + 9648u);
+    c.budget -= 30;
