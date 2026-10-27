@@ -320,5 +320,156 @@
       "docs/media/multiplayer-returned-preparation.png",
       "docs/media/multiplayer-second-briefing.png"
     ]
+  },
+  "tunnel_recovery_trial": {
+    "date": "2026-10-28",
+    "status": "Local source and temporary test host updated; GitHub package unchanged",
+    "user_report": {
+      "scope": "Reported repeated no-card screen before the friend deliberately disconnected",
+      "diagnostic_render_fps_median": 16.432821175406957,
+      "original_cause": "Not established by the final missing-peer halt; the specific earlier error was absent from the retained log"
+    },
+    "first_trial_failure": {
+      "no_card_helper_passed": true,
+      "active_two_human_battle": true,
+      "matched_checkpoint": 4320,
+      "failed_input_frame": 4417,
+      "error": "Out-of-order input; expected frame 4417",
+      "cause": "An accepted input reply failed. Poll acknowledgements pruned history before the identical batch retry arrived.",
+      "repair": "Keep 128 accepted input receipts per player separately from polled history; reject conflicting duplicates."
+    },
+    "corrected_trial": {
+      "passed": true,
+      "scope": "Two isolated browser contexts on the same Windows PC, accessing a public Cloudflare Tunnel. No separate-household or physical-phone acceptance.",
+      "build_identity": "a8dfa16cd155019c073cee0d47106d3b016b588ce3705a43d8a085732d7e9f53",
+      "engine_wasm_sha256": "8ff77024d4331afae493d8c342869e70438336819960e66ef6bb88580e240cec",
+      "engine_rebuilt_for_this_fix": false,
+      "browser": "156.0.8078.48",
+      "normal_boot": true,
+      "no_card_helper": true,
+      "original_versus_preparation": true,
+      "two_human_opposing_teams": true,
+      "movement_and_firing": true,
+      "pause_full_screen_and_resume_player_view": true,
+      "before_checkpoints": [
+        {
+          "frame": 3480,
+          "hash": "8fbc1357076a9bc7"
+        },
+        {
+          "frame": 3480,
+          "hash": "8fbc1357076a9bc7"
+        }
+      ],
+      "after_checkpoints": [
+        {
+          "frame": 4800,
+          "hash": "b4d767018d5f3440"
+        },
+        {
+          "frame": 4800,
+          "hash": "b4d767018d5f3440"
+        }
+      ],
+      "final_ticks": [
+        4814,
+        4814
+      ],
+      "negotiated_input_delay_frames": 10,
+      "recorded_retries": [
+        5,
+        7
+      ],
+      "specific_failure": [
+        null,
+        null
+      ],
+      "browser_output_muted": true,
+      "audio_contexts": [
+        [
+          "running"
+        ],
+        [
+          "running"
+        ]
+      ],
+      "audio_rings_advanced": true,
+      "page_errors": [],
+      "full_match": false
+    },
+    "protocol_comparison": {
+      "scope": "Protocol throughput only, 240 ticks after startup, 150 ms injected round-trip delay, both clients paced toward 60 ticks/s; no game/WASM/audio workload.",
+      "baseline_source_commit": "8521316",
+      "reproduce": "tests/multiplayer/relay-benchmark.cjs; use earlier transport and GameSession files without --adaptive for the control.",
+      "baseline": {
+        "scope": "Protocol throughput; not game FPS",
+        "ticks": 240,
+        "seconds": 20.922448375,
+        "ticks_per_second": 11.47093283244868,
+        "injected_rtt_ms": 150,
+        "input_delay": 3,
+        "matching_inputs": true,
+        "requests": 530
+      },
+      "improved": {
+        "scope": "Protocol throughput; not game FPS",
+        "ticks": 240,
+        "seconds": 4.5561905419999995,
+        "ticks_per_second": 52.67558452343586,
+        "injected_rtt_ms": 150,
+        "input_delay": 23,
+        "matching_inputs": true,
+        "requests": 190
+      }
+    },
+    "checks": {
+      "javascript_tests": 81,
+      "python_multiplayer_tests": 28,
+      "native_hooks": "passed",
+      "http_range_and_isolation": "passed",
+      "ui_stub_cases": [
+        {
+          "owner": 0,
+          "width": 320,
+          "fit": true
+        },
+        {
+          "owner": 0,
+          "width": 390,
+          "fit": true
+        },
+        {
+          "owner": 0,
+          "width": 1280,
+          "fit": true
+        },
+        {
+          "owner": 1,
+          "width": 320,
+          "fit": true
+        },
+        {
+          "owner": 1,
+          "width": 390,
+          "fit": true
+        },
+        {
+          "owner": 1,
+          "width": 1280,
+          "fit": true
+        }
+      ],
+      "ui_stub_scope": "P1 confirmation, P2 waiting, responsive layout and hide after prompt; game execution verified separately above"
+    },
+    "source_sha256": {
+      "apps/game/shell.html": "59a89d068363f21953e20e8c75359ed9534c9210c8346d0274641752e4568bfa",
+      "apps/game/assets/multiplayer.js": "66fb4c64004a2da22193be92b4c94c0e9c6c8139888ab014bcdd16501696b60b",
+      "apps/game/assets/multiplayer.css": "a1107906f91f05914c4d3cd518ff58ba83eb86897dc2a0e160a16685cae6b521",
+      "poc/lockstep/server/netplay.py": "b879b18bf67636bc5d4a21584049ac2a18224f5e7e6fb10863b6875f6485f6d6",
+      "poc/lockstep/web/netplay-game.js": "570a7ccd595cc214bdf61ccab002679cbb55f422226ebb53cb573199c01dedb9",
+      "poc/lockstep/web/netplay-transport.js": "7ed04d8dd9979b3a0a41655fdd501d4dfb9dd31f3df9d73401e24ac11fe49d3d",
+      "tests/browser/multiplayer-smoke.cjs": "0fd40f6618df2322e6ae5a5d065260a7deb4408b7605c308dd3a727936571194",
+      "tests/multiplayer/relay-benchmark.cjs": "b8fb5dba4e281ac3abbef4122815dca5f84086efbff965c9fa482e14f35d8eee"
+    }
   }
 }

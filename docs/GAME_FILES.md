@@ -85,9 +85,11 @@ For a local direct-connect test, `.local/ice.json` can contain `{"iceServers": [
 Start the game and select **通信対戦 / Network Battle**, or open **Multiplayer** from the toolbar. The connection desk offers two routes:
 
 - **Share this game:** the host plays as P1 and invites P2. Select the separate-host option when both players will connect remotely. Copy the invitation, continue to Versus, then let P2 press Start. Each player selects Ready in the original preparation screen.
-- **Run on both devices:** create a room or open its invitation. Both devices press **Start together**. This starts the same normal boot at 60 Hz without personal saves. At the memory-card confirmation, Player 1 selects **はい / Yes**. Choose Network Battle or Versus, let P2 press Start, then both select Ready. The Session desk switches between the player's battle view and the full game screen.
+- **Run on both devices:** create a room or open its invitation. Wait for game loading and both connection checks. Both devices press **Start together**. This starts the same normal boot at 60 Hz without personal saves. At the memory-card prompt, Player 1 clicks **Continue without saving**. Controller input also works: Left, then Circle (keyboard X), to select **はい / Yes**. Player 2 waits at this prompt. Choose Network Battle or Versus, let P2 press Start, then both select Ready. The Session desk switches between the player's battle view and the full game screen.
 
 Invitations contain room access, never the host's owner token. Closing a streaming room permits another room without reloading. Independent games stop when synchronization fails; create a fresh room after a session ends.
+
+Independent games now agree on an input buffer from both measured connections. The desk shows its frame count and scheduling delay before starting. A larger buffer reduces network stalls but adds control latency. After a host update, both players must reload and use a new room. **Save diagnostics** includes input waits, retries and the first specific multiplayer error.
 
 The earlier fixture-based POC remains under `poc/lockstep/` as a research reference. The new build reuses its transport and native input adapter with normal-boot RTC/disc handling; no private save-state fixture is needed. See [Route A](chapters/07-host-streaming.md) and [Route B](chapters/08-independent-clients.md) for measured scope and remaining work.
 
@@ -96,10 +98,12 @@ Run the optional silent GPU acceptance against a server with both services enabl
 ```sh
 node tests/browser/multiplayer-smoke.cjs http://127.0.0.1:8629/ .local/multiplayer-stream stream
 node tests/browser/multiplayer-smoke.cjs http://127.0.0.1:8629/ .local/multiplayer-dedicated stream --dedicated
-node tests/browser/multiplayer-smoke.cjs http://127.0.0.1:8629/ .local/multiplayer-lockstep lockstep
+node tests/browser/multiplayer-smoke.cjs http://127.0.0.1:8629/ .local/multiplayer-lockstep lockstep --boot-helper
 ```
 
-Set `PLAYWRIGHT_MODULE` and `CHROME_PATH` if needed. The test uses two isolated browser contexts (three with `--dedicated`), normal game input and muted browser output with audio processing active. It checks native menu entry, opposing-player preparation, active battle and route-specific behavior. Add `--round` to continue through the original battle timer into the round-end sequence. Results/rematch need separate coverage. These are bounded same-PC acceptance tests, not WAN benchmarks.
+Set `PLAYWRIGHT_MODULE` and `CHROME_PATH` if needed. The test uses two isolated browser contexts (three with `--dedicated`), normal game input and muted browser output with audio processing active. It checks native menu entry, opposing-player preparation, active battle and route-specific behavior. `--boot-helper` tests the visible no-card confirmation button. Omit it to use keyboard input directly. Add `--round` to continue through the original battle timer into the round-end sequence. Results/rematch need separate coverage. These are bounded same-PC acceptance tests, not WAN benchmarks.
+
+For a protocol-only delay comparison, run `TEST_RTT_MS=150 node tests/multiplayer/relay-benchmark.cjs ./poc/lockstep/web http://127.0.0.1:8629/netplay-api/ 240 3 --adaptive`. It injects 150 ms round trips around real HTTP requests. Its tick rate excludes game computation, rendering and audio. It is not game FPS.
 
 ## Check and package locally
 

@@ -22,7 +22,7 @@ These tests establish actor ownership and a bounded deterministic baseline. They
 
 The transport assigns player slots and agrees on build and initial-state identities. It buffers future inputs. Both copies wait for the shared input pair before each 60 Hz simulation tick. This approach is called lockstep.
 
-**The retained prototype already uses a three-frame input delay.** Its `netplay-manifest.json` sets `runtime_config.input_delay` to `3`, matching the transport defaults. This is about 50 ms of intentional scheduling lead at 60 Hz, not a measured end-to-end latency. The first delayed ticks are primed with neutral input. The server accepts a session delay from 0 to 30 frames; three is the retained default, not the only supported setting. [Inspected source and manifest](../evidence/implementation-review.json)
+**The earlier prototype used a three-frame input delay.** This provides about 50 ms of scheduling lead at 60 Hz. The normal-boot integration now measures both relay connections before choosing one shared delay. It waits for game loading to finish before measuring. The initial delayed ticks still use neutral input. Legacy callers retain the three-frame default. [Earlier source inspection](../evidence/implementation-review.json) and [current integration evidence](../evidence/multiplayer-integration.json).
 
 At checkpoints, it compares full-RAM hashes from both copies at the same gameplay tick. Missing input pauses progress. Mismatches stop the session. There is no rollback or mid-match resynchronization.
 
@@ -52,9 +52,19 @@ The selected values and source hashes are in [network-findings.json](../evidence
 
 **The live checkpoint hash is FNV-1a 64-bit, not SHA-256.** `web_netplay.cpp` scans all 32 MiB of RAM every 120 ticks, before requesting the shared input pair. The release identifies this scheme as `fnv1a64-full-ram-before-input-v1`. Its cost on a phone has not been measured separately.
 
-The existing `waitMs` counter starts **after hashing**. It combines browser dispatch, checkpoint agreement and input waiting; it cannot attribute a stall to one of them. Add separate hash durations, input-wait counts/durations and checkpoint-barrier timings, retaining median and tail latency. Only then compare another hash such as XXH3. Both peers must agree on the algorithm and version, and the deliberately wrong-input test must still detect divergence. File-audit SHA-256 hashes have a separate purpose.
+The native `waitMs` counter starts **after hashing**. It combines browser dispatch, checkpoint agreement and input waiting. The transport now separately records empty-input-buffer waits, recent request timings, retries and the first failure. Diagnostics exclude room credentials from those records. Hash durations and checkpoint-barrier timings still need separate instrumentation before comparing another hash such as XXH3. Both peers must agree on the algorithm and version. The deliberately wrong-input test must still detect divergence. File-audit SHA-256 hashes have a separate purpose.
 
-Choose delay during session setup from measured relay-path round trips and jitter, then agree one value before priming neutral ticks. Compare a small range around that estimate using the input-wait distribution. RTT alone does not describe asymmetric arrivals or browser scheduling, so it should seed the experiment rather than dictate a universal formula. Keep the agreed delay fixed during a match until a synchronized change protocol exists. [Inspected implementation](../evidence/implementation-review.json)
+Setup takes five round-trip samples per player. The HTTP fallback uses twice the largest sample plus two ticks, rounded up and bounded to 3–30 frames. Both players must report before starting. The delay stays fixed after the first input or checkpoint. This conservative policy trades control latency for fewer network stalls. It needs further tuning on separate devices.
+
+### Recover from Tunnel delays and lost replies
+
+**🟡 Partially verified · Public Tunnel, two browser contexts on one PC.** A player report showed roughly 16–20 FPS while still on the no-card prompt. The friend disconnected afterward, so the final missing-peer error did not explain the earlier repeated screen.
+
+The fix preserves short button presses between slow frames and offers Player 1 a **Continue without saving** button. It sends ordinary Left and Circle inputs through the relay. Player 2 waits. No guest memory is changed to bypass the prompt.
+
+The transport also prefetches agreed inputs while the game consumes its current buffer. A real Tunnel test then exposed a separate retry bug. The server had accepted an input batch, but its reply failed. Both clients consumed those inputs before the retry arrived, pruning the server's history. The retry was incorrectly rejected as out of order. Each player now retains 128 accepted input receipts independently of that history. Matching retries succeed, while conflicting duplicates still fail.
+
+With these changes, a second real-game test passed normal boot, both Ready actions, movement, firing and pause/resume. Both copies agreed at tick **4,800**, despite recorded network retries. Browser audio output was muted while audio processing continued. The input buffer was **10 frames**, about **167 ms** of scheduling lead. This is a bounded Tunnel test, not a completed match between separate households. [Selected results and source hashes](../evidence/multiplayer-integration.json).
 
 ### Rollback needs more than a RAM copy
 
@@ -77,7 +87,7 @@ Original Network Battle selection
 
 The menu hook returns mode `4` for Versus and changes the selected-mode byte to `1`, matching the original Versus path. Cancel returns mode `2`. The original generated file stays intact; [the build adapter](../../scripts/game/multiplayer.py) prepares an override, and [the native bridge](../../src/multiplayer/menu_bridge.cpp) waits for the browser's choice.
 
-Independent games need an agreed starting point. Creating a room from a running game reloads into a normal boot with a fixed RTC, no personal memory card, deterministic disc completion and 60-Hz rendering. The invitation identifies this boot recipe and the executing build. Player 1 answers the original no-card confirmation with **はい / Yes**, then selects Network Battle or Versus. Each browser's controls map to its authenticated player port.
+Independent games need an agreed starting point. Creating a room from a running game reloads into a normal boot with a fixed RTC, no personal memory card, deterministic disc completion and 60-Hz rendering. The invitation identifies this boot recipe and the executing build. Player 1 uses **Continue without saving**, or selects **はい / Yes** with the controller, then chooses Network Battle or Versus. Each browser's controls map to its authenticated player port.
 
 > [!IMPORTANT]
 > **Normal boot, active battle and round end agreed through tick 13,560.**

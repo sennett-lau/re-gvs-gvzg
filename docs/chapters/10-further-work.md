@@ -26,7 +26,7 @@ The checkout now includes pinned runtime sources, complete adaptive hooks, gener
 ### 2 · Complete multiplayer acceptance
 
 - **Route A · Streaming:** Compare selectable direct/relay ICE and supported media hints, then complete a host-plus-two-client match. Measure latency and recovery. See [the proposed settings](07-host-streaming.md#reduce-streaming-latency-the-proposed-experiment).
-- **Route B · Independent clients:** Measure hash cost separately from input waiting, and choose a shared startup delay from relay timing and jitter. Normal boot and selection now work; prove battle-to-rematch checkpoints across separate devices. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
+- **Route B · Independent clients:** Measure hash cost and tune the measured startup delay using the new input-wait counters. Normal boot and selection now work; prove battle-to-rematch checkpoints across separate devices. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
 
 Investigate the original Network Battle bridge separately before committing to restoration. It is an integration option within route B, not a completed third mode.
 
