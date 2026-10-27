@@ -60,6 +60,8 @@ The fresh-output rebuild on 2026-10-27 produced **byte-identical WASM, JavaScrip
 
 Build the compiler and run its synthetic regressions:
 
+The native tools require Clang, a C++20 standard library with `std::format`, CMake and Ninja. The script selects `clang++` by default; set `CXX` to choose a compatible Clang installation. The retained runtime uses Clang vector builtins that GCC does not provide.
+
 ```sh
 python3 scripts/game/tools.py
 python3 scripts/game/regenerate.py --disc /path/to/disc.iso
