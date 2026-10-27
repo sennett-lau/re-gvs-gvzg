@@ -1,0 +1,8 @@
+--- a/runtime/src/vif.cpp
++++ b/runtime/src/vif.cpp
+@@ -403,3 +403,5 @@
+ }
+ 
+ }
++
++namespace ps2::vif { void research_prepare_vu_thread() { g_vu_side = g_units[1]; } }

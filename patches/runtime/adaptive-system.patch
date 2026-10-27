@@ -1,0 +1,16 @@
+--- a/runtime/src/system.cpp
++++ b/runtime/src/system.cpp
+@@ -1,3 +1,4 @@
++#include "full_game_web_hooks.hpp"
+ #include "dmac.hpp"
+ #include "gs/gif.hpp"
+ #include "vif.hpp"
+@@ -82,7 +83,7 @@
+     set_budget(c, slice);
+ }
+ 
+-std::uint64_t frame_cycles() { return kEeClock / (g_options.pal ? 50u : 60u); }
++std::uint64_t frame_cycles() { return research_adaptive_frame_cycles(); }
+ 
+ void dump_frame() {
+     std::vector<std::uint32_t> rgba;

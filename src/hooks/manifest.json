@@ -1,0 +1,11 @@
+{
+  "retained_build_id": "22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c51075c4464f8a56c8252f",
+  "files_sha256": {
+    "src/hooks/adaptive_phase.hpp": "ca74a73a826113430c9fb326af6610bc2595b675e5a7be47dee598b4acec7e77",
+    "src/hooks/full_game_interpolation.cpp": "f1cff46f7782ba01b6781b1f725e52f1ca0afa0fb3f64e1ee9a5eb832b17ed8f",
+    "src/hooks/full_game_web_hooks.cpp": "b8741660b008fad22ff8d700234a7205e4e1660fa04e0286a30ccbff4664dd5d",
+    "src/hooks/full_game_web_hooks.hpp": "ccbb1cb486dc9a0edbffade9deb1500a6a54150a20a3c6d8858c360cee298ff6",
+    "src/hooks/render_math.hpp": "cc4b70aa248fba2a00c2ecf0d6d9904fb645b57b302e0de672d3f5ee48ad7255",
+    "src/hooks/scene_snapshot.hpp": "9850a9e3c88d2484508e58c0b8b601abc302bcceaf6384926e0318ec865f3bea"
+  }
+}
