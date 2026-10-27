@@ -6,7 +6,7 @@ This project is in initial development. Its future compatibility contract will c
 
 ## The 0.1 series should show its fixes
 
-Mobile and browser fixes do not have to disappear into one large `v0.2.0` release. The agreed plan now explicitly allows a `v0.1.x` maintenance series. The following table is a **reconstruction plan**, not a claim that these versions already existed or have passed acceptance:
+Mobile and browser fixes do not have to disappear into one large `v0.2.0` release. The agreed plan allows a `v0.1.x` maintenance series. The table preserves the **reconstruction plan** for early milestones. Only `v0.3.0-alpha.1` is assigned to the first public release; the earlier rows remain candidates:
 
 | Candidate version | Intended change | Required evidence before assigning the tag |
 | --- | --- | --- |
@@ -34,10 +34,10 @@ The available progression is `v0.3.0-alpha.1` → `v0.3.0-alpha.2` → `v0.3.0-b
 | Normal 0.3.0 | Declared scope and package verified; no promise of 120 Hz on every phone |
 | 1.0.0 | Supported inputs, compatibility contract, clean setup and complete declared flows are mature |
 
-GitHub's prerelease flag is separate from the spelling of a tag. When publication is eventually authorized, preview releases should be marked as prereleases explicitly. Published package contents should not be replaced in place with different bytes; issue a new version.
+GitHub's prerelease flag is separate from the spelling of a tag. Mark preview releases as prereleases explicitly. Published package contents should not be replaced in place with different bytes; issue a new version.
 
 ## Current repository status
 
-The report, reader, complete retained game source, matched adaptive package, selected measurements and media are committed locally. The above-60 proof of concept and source rebuild are established. Historical baseline/optimization milestones still need their own reconstruction before version tags are assigned. The [research goal](chapters/04-frame-rate.md) defines the measured capability; further pacing refinement is optional.
+The report, reader, complete retained game source, matched adaptive package, selected measurements and media form the first public release, `v0.3.0-alpha.1`. The above-60 proof of concept and source rebuild are established. Historical baseline/optimization milestones still need their own reconstruction before version tags are assigned. The [research goal](chapters/04-frame-rate.md) defines the measured capability; further pacing refinement is optional.
 
-There are no game release tags or published assets in this repository. A future GitHub Release should carry meaningful version notes, a matched playable package where applicable, a build manifest and checksums. A dummy `v0.0.0` is not needed to store large files. See [current delivery status](REPOSITORY.md#current-delivery-status) and [Derived artifacts](DERIVED.md).
+[v0.3.0-alpha.1](https://github.com/sennett-lau/re-gvs-gvzg/releases/tag/v0.3.0-alpha.1) is marked as a prerelease. Its browser ZIP contains the matched WASM, companion files, local server, build manifest and notices. A separate ZIP contains the static Wiki, and `SHA256SUMS` identifies both downloads. The original ISO/ROM is excluded. See [current delivery status](REPOSITORY.md#current-delivery-status) and [Derived artifacts](DERIVED.md).

@@ -21,6 +21,9 @@ files=[*sorted((ROOT/'apps/game/prebuilt').iterdir()),
        *sorted((ROOT/'docs/license').iterdir())]
 readme='''# re-gvs-gvzg playable package
 
+The public website hosts the research Wiki, not a playable game:
+https://sennett-lau.github.io/re-gvs-gvzg/
+
 Hosted players only open the game URL in a browser supporting WebGPU, JSPI,
 Wasm exceptions, SIMD and cross-origin isolation. They do not supply an ISO.
 

@@ -1,10 +1,14 @@
 # Run and rebuild the game
 
-The checkout includes the generated C++, runtime patches, adaptive hooks and one matched browser package. **Only the Wiki is planned for public hosting; game deployment is deferred.** See the [hosting scope](REPOSITORY.md#stable-wiki-hosting). The instructions below remain available for local use and self-hosting.
+The checkout includes the generated C++, runtime patches, adaptive hooks and one matched browser package. **The public website hosts the Wiki only; game deployment is deferred.** See the [hosting scope](REPOSITORY.md#stable-wiki-hosting). The instructions below remain available for local use and self-hosting.
 
 Hosted players open the game URL without supplying an ISO. The server operator supplies the supported disc separately. The ISO, ROM and personal runtime state remain excluded from Git and the downloadable code package.
 
 The target is the Japanese PS2 release of [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en.wikipedia.org/wiki/Mobile_Suit_Gundam:_Gundam_vs._Zeta_Gundam), serial `SLPS-25419`, executable CRC `435D8236`. The server and builder verify the main executable SHA-256 against `upstream.lock` before using it.
+
+## Download the browser package
+
+The [v0.3.0-alpha.1 release](https://github.com/sennett-lau/re-gvs-gvzg/releases/tag/v0.3.0-alpha.1) includes `re-gvs-gvzg-v0.3.0-alpha.1-browser.zip` and `SHA256SUMS`. Verify the download, extract it and follow the host command below. This matched HTML/JS/WASM/data package includes the local server and notices. Supply the disc separately on the host. The release also provides a static Wiki archive for local reading.
 
 ## Play a hosted game
 

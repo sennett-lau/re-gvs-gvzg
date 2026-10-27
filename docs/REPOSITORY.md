@@ -24,7 +24,7 @@ This repository contains the research Wiki, complete retained C++ translation, r
 | `scripts/game/package.py` | Local playable ZIP and SHA-256 generation | Exported; no publishing action |
 | `.local/release-builds/` | Ignored temporary packaging output | Created only when needed |
 
-There is no `distribution/` or `releases/` source folder. Future GitHub Release pages hold the version notes and download assets. A release is a versioned software delivery, not a dummy tag created solely to bypass a file limit.
+There is no `distribution/` or `releases/` source folder. [GitHub Releases](https://github.com/sennett-lau/re-gvs-gvzg/releases) hold the version notes and download assets. A release is a versioned software delivery, not a dummy tag created solely to bypass a file limit.
 
 ## Current delivery status
 
@@ -32,7 +32,7 @@ The 2026-10-27 source export reproduced the measured engine's WASM, JavaScript a
 
 The source build uses a fresh output directory and the existing pinned SDK; it does not consume the original workspace's object files. The original workspace remains an archive of broader experiments. A current recompiler pass differs from the retained generated input, and the lockstep fixture is not exported. [Setup](GAME_FILES.md) describes these boundaries.
 
-All changes are local commits. No remote, pull request, tag or GitHub Release is created by the preparation or packaging scripts.
+The first public research release is [v0.3.0-alpha.1](https://github.com/sennett-lau/re-gvs-gvzg/releases/tag/v0.3.0-alpha.1). It includes the matched browser package, a static Wiki archive and download checksums. The repository retains the complete exported source. The preparation and packaging scripts remain local-only; publishing is a separate maintainer action.
 
 ## Code and data boundaries
 
@@ -66,16 +66,16 @@ Markdown remains complete with captions, limitations and static figures. The Wik
 
 ## Stable Wiki hosting
 
-**Only the Wiki is selected for public hosting.** Game hosting, extracted asset packages and external storage are deferred. The existing game source, matched browser package and local setup remain available in the repository.
+**Only the Wiki is publicly hosted.** Game hosting, extracted asset packages and external storage are deferred. The existing game source, matched browser package and local setup remain available in the repository.
 
-The Cloudflare review tunnel has been stopped. The intended permanent reader uses [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages), which serves static HTML, CSS and JavaScript.
+Read the report at [sennett-lau.github.io/re-gvs-gvzg](https://sennett-lau.github.io/re-gvs-gvzg/). The earlier Cloudflare review tunnel has been stopped.
 
-The prepared `.github/workflows/wiki-pages.yml` workflow builds and checks the reader, then uploads only `.local/wiki/`. This includes articles, figures, selected videos, evidence and the linked research excerpts. It excludes the playable game package, generated game translation and disc. It needs neither Git LFS nor an asset bucket.
+The `.github/workflows/wiki-pages.yml` workflow builds and checks the reader, then uploads only `.local/wiki/`. This includes articles, figures, selected videos, evidence and the linked research excerpts. It excludes the playable game package, generated game translation and disc. It needs neither Git LFS nor an asset bucket.
 
-The workflow runs manually on `main`; pushes and pull requests do not deploy the site. The separate research-check workflow remains validation-only. After repository publication is approved:
+The workflow runs manually on `main`; pushes and pull requests do not deploy the site. The separate research-check workflow remains validation-only. For an approved Wiki update:
 
-1. Set **Settings → Pages → Source** to **GitHub Actions** in the approved repository.
+1. Confirm **Settings → Pages → Source** is **GitHub Actions** in the approved repository.
 2. Open **Actions → Publish research Wiki → Run workflow**, selecting `main`.
 3. Review the deployment result and open its reported Pages URL.
 
-The reader uses relative links for repository-subpath hosting. Check the deployed overview, chapter navigation, videos and source downloads. The local build and checks do not establish a successful hosted deployment. Repository publication and the first hosted workflow run remain pending.
+The reader uses relative links for repository-subpath hosting. Check the deployed overview, chapter navigation, videos and source downloads after each deployment. The [Pages workflow history](https://github.com/sennett-lau/re-gvs-gvzg/actions/workflows/wiki-pages.yml) records hosted deployment results.
