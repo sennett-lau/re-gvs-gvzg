@@ -12,7 +12,7 @@ Each result names its test scope. A fixture, a native test, a browser session an
 
 These labels apply to a claim, not to the entire game. The evidence index also identifies the support type: measured, reported, inspected or proposed.
 
-The historical game records were reviewed on 2026-10-25. The initial 2026-10-26 revision checked source code, exported visuals and reran the portable input regression. A later session on October 26 UTC, ending October 27 local time, added **new PC game tests, desktop video and aligned OS presentation traces**. It did not rerun phone or multiplayer tests. Chapter-specific conditions remain beside each result.
+The historical game records were reviewed on 2026-10-25. The initial 2026-10-26 revision checked source code, exported visuals and reran the portable input regression. A later session on October 26 UTC, ending October 27 local time, added **new PC game tests, desktop video and aligned OS presentation traces**. It did not rerun phone or multiplayer tests. The October 27 multiplayer integration session added normal-boot, active-input and streaming browser trials in a separate source build. [Its record](evidence/multiplayer-integration.json) identifies those tests. Chapter-specific conditions remain beside each result.
 
 ## What the records mean
 

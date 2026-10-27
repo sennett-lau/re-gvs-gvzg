@@ -1,0 +1,324 @@
+{
+  "date": "2026-10-27",
+  "status": "local development; not published",
+  "scope": "Normal-boot integration, original Network Battle menu handoff, bounded active Versus battles and original round-end/re-entry observations. No original online-service restoration or WAN latency claim.",
+  "published_package": "v0.3.0-alpha.1 is unchanged; build the --multiplayer source profile for this work.",
+  "menu_bridge": {
+    "guest_entry": "0x00211180",
+    "original_mode": 7,
+    "continue_mode": 4,
+    "continue_variant": 1,
+    "cancel_mode": 2,
+    "original_generated_source_modified": false
+  },
+  "first_active_battle_trial": {
+    "build": "incremental development link at -O1 from O3 objects and verified baseline archives",
+    "wasm_sha256": "d7e08138e014441848990235c68347048494d02111a96899ce7c53c191bf53cb",
+    "route_b": {
+      "normal_boot": true,
+      "private_state_fixture": false,
+      "memory_card": false,
+      "rtc": "2026-01-01T00:00:00Z plus emulated time",
+      "simulation_hz": 60,
+      "input_delay": 3,
+      "checkpoint_interval": 120,
+      "checkpoint_algorithm": "FNV-1a 64-bit over all 32 MiB EE RAM before input",
+      "matched_checkpoint": 5040,
+      "matched_hash": "ace10c70e3ed9283",
+      "final_ticks": [
+        5077,
+        5075
+      ],
+      "final_scenes": [
+        {
+          "mode": 4,
+          "state": 1,
+          "stage": 3,
+          "initialized": 1,
+          "phase": 2,
+          "humanMask": 3,
+          "paused": 0,
+          "splitActive": 1,
+          "splitPending": 1,
+          "menuVariant": 1,
+          "substate": 0,
+          "viewIndex": 1,
+          "cameraKind": 2,
+          "teamHumansA": 1,
+          "teamHumansB": 1,
+          "configurationValid": 1
+        },
+        {
+          "mode": 4,
+          "state": 1,
+          "stage": 3,
+          "initialized": 1,
+          "phase": 2,
+          "humanMask": 3,
+          "paused": 0,
+          "splitActive": 1,
+          "splitPending": 1,
+          "menuVariant": 1,
+          "substate": 0,
+          "viewIndex": 1,
+          "cameraKind": 2,
+          "teamHumansA": 1,
+          "teamHumansB": 1,
+          "configurationValid": 1
+        }
+      ],
+      "inputs": "P2 Start in original preparation; both players Ready; alternating movement and firing from both devices",
+      "audio_contexts": [
+        [
+          "running"
+        ],
+        [
+          "running"
+        ]
+      ]
+    },
+    "route_a": {
+      "host_local_port": 0,
+      "remote_port": 1,
+      "native_menu_handoff": true,
+      "two_human_opposing_teams": true,
+      "stream_decoded_frames": 2378,
+      "stream_seconds": 44.148295,
+      "same_port_rejoin": true,
+      "audio_contexts": [
+        "running"
+      ]
+    }
+  },
+  "ui_checks": {
+    "passed": true,
+    "checks": [
+      "390px no overflow",
+      "invitation copy clickable over startup overlay",
+      "dialog keyboard isolation",
+      "native choice returns Versus mode",
+      "dismiss clears dialog",
+      "host room reopen",
+      "Escape closes",
+      "desktop layout"
+    ],
+    "errors": []
+  },
+  "limits": [
+    "Both clients ran on the same PC in separate browser contexts.",
+    "Second-battle checkpoint acceptance, a full streamed round and physical-phone/WAN acceptance remain.",
+    "Checkpoint agreement covers EE RAM; the bounded integration run did not export and compare full CPU/IOP/device snapshots.",
+    "Player-view cropping renders both original cameras and clips the selected half."
+  ],
+  "reproduce": "tests/browser/multiplayer-smoke.cjs; setup in docs/GAME_FILES.md#multiplayer-integration",
+  "optimized_browser_trial": {
+    "build": "incremental -O3 link from O3 objects and verified baseline archives; not a fresh full-source rebuild",
+    "engine_files": {
+      "index.wasm": {
+        "sha256": "8ff77024d4331afae493d8c342869e70438336819960e66ef6bb88580e240cec",
+        "bytes": 95094601
+      },
+      "index.js": {
+        "sha256": "f58529e5c876ec74da833b146cbc2e8cde41687fee402728af86848437a7edc9",
+        "bytes": 153752
+      },
+      "index.data": {
+        "sha256": "5022376bdf70c8fac649657d3b90bc88b8c5621aa751ba98bd64393e2ba2496b",
+        "bytes": 6149694
+      }
+    },
+    "build_identity": "e901ca43a5ad5ae305d8408cb2045021d61edc68fe582da784ed8e4909b4cbe5",
+    "browser": "156.0.8078.48",
+    "browser_output_muted": true,
+    "audio_engine_running": true,
+    "route_b": {
+      "passed": true,
+      "matched_checkpoint": {
+        "frame": 4800,
+        "hash": "59b6b229eaaf713c"
+      },
+      "final_ticks": [
+        4870,
+        4870
+      ],
+      "player_views": [
+        "1",
+        "2"
+      ],
+      "pause_full_screen_and_resume_player_view": true,
+      "audio_rings_advanced": true,
+      "page_errors": []
+    },
+    "route_a_dedicated": {
+      "passed": true,
+      "one_game_host_two_streaming_contexts": true,
+      "two_human_opposing_teams": true,
+      "video_receivers": [
+        {
+          "seconds": 55.605796,
+          "decodedFrames": 2970
+        },
+        {
+          "seconds": 55.605796,
+          "decodedFrames": 2968
+        }
+      ],
+      "hidden_host_continued": true,
+      "invitation_access_during_battle": true,
+      "p2_rejoin_preserved_p1": true,
+      "audio_ring_advanced": true,
+      "page_errors": []
+    }
+  },
+  "checks": {
+    "javascript_tests": 76,
+    "python_multiplayer_tests": 26,
+    "native_hooks": "passed",
+    "http_range_and_isolation": "passed",
+    "published_prebuilt_fingerprints": "unchanged and verified",
+    "wiki_layout": {
+      "layoutChecks": 54,
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "themes": [
+        "dark",
+        "light"
+      ],
+      "images": "decoded and fit",
+      "errors": [],
+      "http": []
+    }
+  },
+  "screenshots": {
+    "docs/media/multiplayer-native-menu.png": {
+      "sha256": "ad8a36184bccfb792bd8fbcb60ed79b4756df04325c66d4e1d5603fbd0a38f7b",
+      "bytes": 77905,
+      "transform": "Unedited browser screenshot"
+    },
+    "docs/media/multiplayer-player1.png": {
+      "sha256": "d8d627459214aa08b2b430b912359266e24245f295c1bb4c1ee72019797a30eb",
+      "bytes": 474168,
+      "transform": "Unedited browser screenshot"
+    },
+    "docs/media/multiplayer-player2.png": {
+      "sha256": "3e11540f2d00e8f9eb62e1cc8a820e2fda4b64b061fd35f9ed9389d4907a307d",
+      "bytes": 535198,
+      "transform": "Unedited browser screenshot"
+    },
+    "docs/media/multiplayer-stream-host.png": {
+      "sha256": "0b97ccc4c7d11d7a49b57f86e36e8d05055f0c727f46b965f8cb0d7df71934af",
+      "bytes": 1150135,
+      "transform": "Unedited browser screenshot"
+    },
+    "docs/media/multiplayer-returned-preparation.png": {
+      "sha256": "9b6cbb1861b2d78d3dac47d7111fe56a3dc9ee4fc8d61598ba653a684ae80939",
+      "bytes": 596222,
+      "transform": "Unedited browser screenshot"
+    },
+    "docs/media/multiplayer-second-briefing.png": {
+      "sha256": "adf70a07ae09844aaf76673ad229bbd74dfad2038fe584c2e81e1d145c228f95",
+      "bytes": 808923,
+      "transform": "Unedited browser screenshot"
+    }
+  },
+  "round_end_trial": {
+    "build_identity": "4bc0d493d25c1c45df1f0ca3d1af19134ee62e526712ceac06ec65d7f47bf1fd",
+    "code_commit": "2771e1b",
+    "normal_boot": true,
+    "active_input_then_natural_round_end": true,
+    "matched_checkpoint": {
+      "frame": 13560,
+      "hash": "7a9452445ef53cd9"
+    },
+    "final_ticks": [
+      13625,
+      13627
+    ],
+    "post_battle_scene": {
+      "mode": 4,
+      "stage": 4,
+      "phase": 5,
+      "splitActive": 0
+    },
+    "player_views": [
+      "full",
+      "full"
+    ],
+    "audio_contexts": [
+      [
+        "running"
+      ],
+      [
+        "running"
+      ]
+    ],
+    "scope": "Round-end transition reached. This observation ends during the original ending sequence, before the results/rematch screens."
+  },
+  "reentry_observation": {
+    "code_commit": "2771e1b",
+    "build_identity": "4bc0d493d25c1c45df1f0ca3d1af19134ee62e526712ceac06ec65d7f47bf1fd",
+    "retained_pair": [
+      {
+        "scene": {
+          "mode": 4,
+          "state": 1,
+          "stage": 0,
+          "initialized": 1,
+          "phase": 2,
+          "humanMask": 3,
+          "paused": 0,
+          "splitActive": 0,
+          "splitPending": 0,
+          "menuVariant": 1,
+          "substate": 0,
+          "viewIndex": 2,
+          "cameraKind": 1,
+          "teamHumansA": 1,
+          "teamHumansB": 1,
+          "configurationValid": 1
+        },
+        "ticks": 13806,
+        "checkpoint": {
+          "frame": 13800,
+          "hash": "9170708046eddf63"
+        },
+        "view": "full"
+      },
+      {
+        "scene": {
+          "mode": 4,
+          "state": 1,
+          "stage": 0,
+          "initialized": 1,
+          "phase": 2,
+          "humanMask": 3,
+          "paused": 0,
+          "splitActive": 0,
+          "splitPending": 0,
+          "menuVariant": 1,
+          "substate": 0,
+          "viewIndex": 2,
+          "cameraKind": 1,
+          "teamHumansA": 1,
+          "teamHumansB": 1,
+          "configurationValid": 1
+        },
+        "ticks": 13805,
+        "checkpoint": {
+          "frame": 13800,
+          "hash": "9170708046eddf63"
+        },
+        "view": "full"
+      }
+    ],
+    "method": "After normal round completion, both players returned to preparation. P1 Down + Circle and P2 Up + Circle entered the original operation briefing numbered 002. No guest state was edited.",
+    "capture_limit": "The parent capture closed its browsers during the second briefing countdown. A separate controller driver waiting for second-battle entry then reported browser closure; that driver did not pass. Second-battle checkpoint acceptance remains.",
+    "screenshots": [
+      "docs/media/multiplayer-returned-preparation.png",
+      "docs/media/multiplayer-second-briefing.png"
+    ]
+  }
+}

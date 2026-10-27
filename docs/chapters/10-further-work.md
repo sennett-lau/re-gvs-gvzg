@@ -17,16 +17,16 @@
 >
 > The [120-render PC result](06-adaptive-rendering.md#the-latest-paired-pc-result) meets the above-60 research goal. Further pacing refinement is optional.
 >
-> The matched game-code export now rebuilds the measured engine. The next delivery work is multiplayer integration and resolving fresh compiler-regeneration differences.
+> The matched game-code export now rebuilds the measured engine. The next delivery work is multiplayer acceptance and resolving fresh compiler-regeneration differences.
 
 ### 1 · Preserve reproducibility
 
 The checkout now includes pinned runtime sources, complete adaptive hooks, generated units and a matched web package. A fresh source build reproduced the measured executable files byte for byte, and the silent browser acceptance passed. Keep those checks running as the code changes. Resolve the current disc-to-C++ regeneration differences before replacing the retained generated input. [Packaging and export scope](../REPOSITORY.md#rebuild-acceptance)
 
-### 2 · Integrate the two multiplayer routes
+### 2 · Complete multiplayer acceptance
 
 - **Route A · Streaming:** Compare selectable direct/relay ICE and supported media hints, then complete a host-plus-two-client match. Measure latency and recovery. See [the proposed settings](07-host-streaming.md#reduce-streaming-latency-the-proposed-experiment).
-- **Route B · Independent clients:** Measure hash cost separately from input waiting, and choose a shared startup delay from relay timing and jitter. Add agreed selection and prove battle-to-rematch checkpoints. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
+- **Route B · Independent clients:** Measure hash cost separately from input waiting, and choose a shared startup delay from relay timing and jitter. Normal boot and selection now work; prove battle-to-rematch checkpoints across separate devices. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
 
 Investigate the original Network Battle bridge separately before committing to restoration. It is an integration option within route B, not a completed third mode.
 

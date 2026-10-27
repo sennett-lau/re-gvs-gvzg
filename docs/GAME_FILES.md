@@ -71,11 +71,35 @@ The second command extracts the supported executable and 325 MWo3 modules into i
 
 **Fresh regeneration differs from the retained translation.** The current patched compiler produced two additional unit files and changed 52 existing files in the export audit. `comparison.json` records the differences, and the command returns a nonzero status instead of silently replacing the supported inputs. Resolving that generator-history difference is separate from rebuilding the included, verified C++.
 
-## Multiplayer prototypes
+## Multiplayer integration
 
-**Route A — streaming:** use `--remote .local/turn.json` with your own WebRTC `iceServers` configuration. The included host/remote UI and `poc/streaming/remote_play.py` provide invitations and two controller ports. The retained policy requires TURN relay transport. Credentials are not bundled.
+The `--multiplayer` source profile adds the original-menu handoff and normal-boot input synchronization. The published `v0.3.0-alpha.1` browser package remains the earlier adaptive build; it does not contain this integration.
 
-**Route B — independent clients:** `poc/lockstep/` contains the relay, browser transport/lobby, native adapters and controller sequences. Its protocol tests run independently. The private versus save-state fixture is excluded, so this source-only POC is not a selectable mode in the included normal-boot package. Fixture recreation and full-game integration remain work described in [Chapter 08](chapters/08-independent-clients.md).
+```sh
+python3 scripts/game/build.py --disc /path/to/disc.iso --emsdk /path/to/emsdk --work .local/multiplayer-build --multiplayer
+python3 scripts/game/serve.py --disc /path/to/disc.iso --build .local/multiplayer-build/web --remote .local/ice.json --netplay
+```
+
+For a local direct-connect test, `.local/ice.json` can contain `{"iceServers": [], "iceTransportPolicy": "all"}`. Internet use needs the host's STUN/TURN configuration and HTTPS. Credentials belong in the private config file. Setting `iceTransportPolicy` to `relay` requires TURN.
+
+Start the game and select **通信対戦 / Network Battle**, or open **Multiplayer** from the toolbar. The connection desk offers two routes:
+
+- **Share this game:** the host plays as P1 and invites P2. Select the separate-host option when both players will connect remotely. Copy the invitation, continue to Versus, then let P2 press Start. Each player selects Ready in the original preparation screen.
+- **Run on both devices:** create a room or open its invitation. Both devices press **Start together**. This starts the same normal boot at 60 Hz without personal saves. At the memory-card confirmation, Player 1 selects **はい / Yes**. Choose Network Battle or Versus, let P2 press Start, then both select Ready. The Session desk switches between the player's battle view and the full game screen.
+
+Invitations contain room access, never the host's owner token. Closing a streaming room permits another room without reloading. Independent games stop when synchronization fails; create a fresh room after a session ends.
+
+The earlier fixture-based POC remains under `poc/lockstep/` as a research reference. The new build reuses its transport and native input adapter with normal-boot RTC/disc handling; no private save-state fixture is needed. See [Route A](chapters/07-host-streaming.md) and [Route B](chapters/08-independent-clients.md) for measured scope and remaining work.
+
+Run the optional silent GPU acceptance against a server with both services enabled:
+
+```sh
+node tests/browser/multiplayer-smoke.cjs http://127.0.0.1:8629/ .local/multiplayer-stream stream
+node tests/browser/multiplayer-smoke.cjs http://127.0.0.1:8629/ .local/multiplayer-dedicated stream --dedicated
+node tests/browser/multiplayer-smoke.cjs http://127.0.0.1:8629/ .local/multiplayer-lockstep lockstep
+```
+
+Set `PLAYWRIGHT_MODULE` and `CHROME_PATH` if needed. The test uses two isolated browser contexts (three with `--dedicated`), normal game input and muted browser output with audio processing active. It checks native menu entry, opposing-player preparation, active battle and route-specific behavior. Add `--round` to continue through the original battle timer into the round-end sequence. Results/rematch need separate coverage. These are bounded same-PC acceptance tests, not WAN benchmarks.
 
 ## Check and package locally
 

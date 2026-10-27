@@ -6,7 +6,7 @@
 >
 > - **Question:** What did the experiments establish, and what did the workflow teach us?
 > - **Result:** Recompilation, reverse engineering and runtime tests solved different parts of the problem. Rendering and multiplayer prototypes now have evidence from limited tests.
-> - **Still open:** Current-phone throughput, complete game flows and end-to-end multiplayer remain unverified.
+> - **Still open:** Current-phone throughput, full selection-to-rematch flows and multiplayer across physical devices remain open.
 
 Recompilation made the original game executable in a new environment. Reverse engineering made specific behavior understandable enough to change. The rendering and multiplayer prototypes have evidence from limited tests.
 
@@ -28,8 +28,8 @@ Ghidra with the PS2 extension helped recover those meanings from the original ex
 | 🟡 [Browser port](02-browser-port.md) | Executable game paths, ordinary controls and tested save persistence | Every mode and a portable clean setup for every reader |
 | ✅ [Above-60 rendering PoC](06-adaptive-rendering.md) | Distinct native intermediate images. About 120 renders and OS display updates/s, with 60 gameplay updates/s, in bounded PC combat. | More game modes and sustained current-build phone use; further pacing refinement is optional |
 | 🟡 [Phone](06-adaptive-rendering.md) | Earlier saved-battle Auto capture: about 78 computed and 72 browser-observed updates/s at normal speed | Latest full-game high-refresh throughput or a fixed main-menu slowdown |
-| 🟡 [Streaming](07-host-streaming.md) | Implemented two-controller/media transport and a user's two-device observation | A retained full match with separate host and two clients, measured latency and recovery |
-| 🟡 [Independent clients](08-independent-clients.md) | Actor ownership, bounded deterministic trials and 2,640-tick browser agreement with delayed disc delivery | Full selection-to-rematch integration, adaptive cross-rate agreement or restored original online service |
+| 🟡 [Streaming](07-host-streaming.md) | Native menu entry, two streaming clients, active battle and same-port rejoin on one PC | A retained full match with separate host and two clients, measured latency and recovery |
+| 🟡 [Independent clients](08-independent-clients.md) | Normal boot, original selection, active two-human battle, round-end agreement and re-entry observations | Full selection-to-rematch integration, adaptive cross-rate agreement or restored original online service |
 
 The chapter links above explain each result. [Evidence conventions](../EVIDENCE.md) define the labels; the [evidence index](../evidence/README.md) lists records and runnable exports.
 

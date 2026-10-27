@@ -16,13 +16,13 @@ A **65-second fullscreen battle** on a confirmed 180-Hz desktop reached **120.02
 
 [See the measured rates and game capture](docs/chapters/06-adaptive-rendering.md#the-latest-paired-pc-result).
 
-### 23 matching checkpoints · through tick 2,640
+### Normal boot to round end · matching tick 13,560
 
-**✅ Verified · Two-browser fixture**
+**✅ Verified · Same-PC browser pair**
 
-Two instances on one PC agreed across **44 guest seconds**, with neutral inputs. Full matches between separate devices remain to be tested.
+Two browsers started normally, selected opposing human players and remained in sync through active battle and the original round-end sequence. Separate physical devices remain to be tested.
 
-[Read the lockstep experiment](docs/chapters/08-independent-clients.md#what-the-longer-browser-test-proves).
+[Read the lockstep experiment](docs/chapters/08-independent-clients.md#move-from-the-fixture-into-the-full-game).
 
 ### 0 failures · 1,265 input phases
 
@@ -107,7 +107,7 @@ Use the [Evidence index](docs/evidence/README.md) to trace a finding to its sele
 > [!NOTE]
 > **A research record with working prototypes.**
 >
-> This repository contains the report, Wiki, retained generated C++, adaptive runtime sources and one matched playable web package. Multiplayer prototypes remain separate. Each chapter explains what worked, what was tested and what remains unfinished.
+> This repository contains the report, Wiki, retained generated C++, adaptive runtime sources and one matched playable web package. The multiplayer source profile now connects the original menu to streamed or synchronized Versus play; the published browser package remains the adaptive build. Each chapter explains what worked, what was tested and what remains unfinished.
 
 The [game setup guide](docs/GAME_FILES.md) covers local play, self-hosting and rebuilding the included source. The public site hosts the research Wiki; an online playable demo is deferred.
 

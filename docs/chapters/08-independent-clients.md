@@ -5,10 +5,10 @@
 > **At a glance**
 >
 > - **Question:** Can each player run the game locally while both copies agree on the match?
-> - **Result:** The 60-Hz input-sync prototype passed bounded state comparisons after disc-completion timing was corrected.
-> - **Still open:** Selection, results and rematch are not integrated. Restoring the original Network Battle service is an option within this route, not a completed feature.
+> - **Result:** Two browsers now start from a normal boot, use the original menus and enter a two-human Versus battle. The longer trial agreed through checkpoint 13,560 at round end.
+> - **Still open:** Second-battle checkpoint acceptance, separate-device Internet play and mobile checkpoint cost remain to be tested. The original online service has not been restored.
 
-**🟡 Partially verified · A synchronized battle fixture works; the full game flow is unfinished.** Route B runs a copy of the game on each device. A relay exchanges inputs and state checks. It sends no video. The prototype uses the original local two-player Arcade challenge fixture. The main menu's **通信対戦 / Network Battle** service remains separate.
+**🟡 Partially verified · Normal boot, native selection and active two-player battle tested.** Route B runs a copy of the game on each device. A relay exchanges inputs and state checks, with no video stream. The original Arcade challenge fixture established the transport; the new source profile also works without that private fixture.
 
 ## Start with two independently controlled players
 
@@ -22,7 +22,7 @@ These tests establish actor ownership and a bounded deterministic baseline. They
 
 The transport assigns player slots and agrees on build and initial-state identities. It buffers future inputs. Both copies wait for the shared input pair before each 60 Hz simulation tick. This approach is called lockstep.
 
-**The retained release already uses a three-frame input delay.** Its `netplay-manifest.json` sets `runtime_config.input_delay` to `3`, matching the transport defaults. This is about 50 ms of intentional scheduling lead at 60 Hz, not a measured end-to-end latency. The first delayed ticks are primed with neutral input. The server accepts a session delay from 0 to 30 frames; three is the retained default, not the only supported setting. [Inspected source and manifest](../evidence/implementation-review.json)
+**The retained prototype already uses a three-frame input delay.** Its `netplay-manifest.json` sets `runtime_config.input_delay` to `3`, matching the transport defaults. This is about 50 ms of intentional scheduling lead at 60 Hz, not a measured end-to-end latency. The first delayed ticks are primed with neutral input. The server accepts a session delay from 0 to 30 frames; three is the retained default, not the only supported setting. [Inspected source and manifest](../evidence/implementation-review.json)
 
 At checkpoints, it compares full-RAM hashes from both copies at the same gameplay tick. Missing input pauses progress. Mismatches stop the session. There is no rollback or mid-match resynchronization.
 
@@ -62,6 +62,42 @@ Choose delay during session setup from measured relay-path round trips and jitte
 
 First measure snapshot size, save/restore time and a replay checksum in the existing fixed-60 fixture. Retain a full-state reference snapshot before testing incremental pages. A correct rollback design must also handle speculative audio and presentation. The current lockstep implementation waits for missing input instead of predicting it.
 
+## Move from the fixture into the full game
+
+The new profile intercepts the original **通信対戦 / Network Battle** selection at `0x211180`. A short browser connection desk creates or joins an invitation-only room. It closes when play resumes; character selection, team assignment, readiness and combat remain original game screens.
+
+```text
+Original Network Battle selection
+  → choose shared host or independent games
+  → private invitation and controller ownership
+  → original Versus preparation
+  → P2 presses Start; both players select Ready
+  → two-human battle
+```
+
+The menu hook returns mode `4` for Versus and changes the selected-mode byte to `1`, matching the original Versus path. Cancel returns mode `2`. The original generated file stays intact; [the build adapter](../../scripts/game/multiplayer.py) prepares an override, and [the native bridge](../../src/multiplayer/menu_bridge.cpp) waits for the browser's choice.
+
+Independent games need an agreed starting point. Creating a room from a running game reloads into a normal boot with a fixed RTC, no personal memory card, deterministic disc completion and 60-Hz rendering. The invitation identifies this boot recipe and the executing build. Player 1 answers the original no-card confirmation with **はい / Yes**, then selects Network Battle or Versus. Each browser's controls map to its authenticated player port.
+
+> [!IMPORTANT]
+> **Normal boot, active battle and round end agreed through tick 13,560.**
+>
+> Two isolated browser contexts on the same PC reached original preparation, joined opposing teams and entered battle with two human players. Both movement and firing were exercised. The longer optimized-build run reached the round-end sequence with shared hash `7a9452445ef53cd9`.
+>
+> Audio processing stayed active. This extends the earlier neutral fixture to ordinary startup, selection and combat. [Integration evidence](../evidence/multiplayer-integration.json).
+
+The optimized build also passed pause/resume checks: pause showed the full menu, then each browser returned to its player view. A later observation followed the original round-end flow back to preparation and into the next operation briefing. The recording ended during that briefing; second-battle checkpoint acceptance remains.
+
+The player-view option crops the original split screen only during an active, unpaused two-human Versus battle. Menus and pause screens use the full picture. Both cameras are still rendered; cropping is a presentation choice, not a new camera renderer.
+
+![Player 1 view during the optimized independent-client test](../media/multiplayer-player1.png)
+
+*Player 1 sees the left half of the original picture. [Player 2 sees the right half](../media/multiplayer-player2.png). The narrow view and shared timer remain properties of the original split screen.*
+
+![Original operation briefing numbered 002 after both players readied again](../media/multiplayer-second-briefing.png)
+
+*The original game returned to [two-player preparation](../media/multiplayer-returned-preparation.png), then accepted both Ready inputs. This shows the next briefing, before its battle started.*
+
 ## How the original online mode differs
 
 The second main-menu entry, **対戦 / VS. Battle**, is local Versus. The second-last entry, **通信対戦 / Network Battle**, has its own online lifecycle. Offline analysis verified this dispatch chain:
@@ -81,7 +117,7 @@ There are two ways to integrate the game's online menu within route B:
 
 | Integration option | Work needed | Current status |
 | --- | --- | --- |
-| Browser-owned lobby | Intercept the menu handoff, agree on settings, then launch the existing input-sync route | The shorter proposed path. It is not integrated. |
+| Browser-owned lobby | Intercept the menu handoff, agree on settings, then launch the existing input-sync route | Implemented in the normal-boot source profile; native selection and battle tested. |
 | Restore the original lobby | Bridge the original network/session calls to a compatible backend | Original behavior has been inspected. No working connection has been demonstrated. |
 
 Both belong to the independent-client route. An invitation should identify the chosen server and room, while a short code would only make sense within that server.
@@ -94,6 +130,6 @@ Rendering interpolation is useful observability, but positions alone are not a r
 
 ## What to integrate and test next
 
-First expose the proven 60 Hz fixture through a full-game launcher entry. Replace its fixed battle start with agreed selection/settings, then prove a complete battle, results, rematch and cancellation with matching checkpoints. Repeat with delayed loading and an actual phone. Personal memory-card state must not silently alter initialization.
+Carry the next briefing into a second battle with matching checkpoints, then test cancellation and session restart. Repeat on separate devices, delayed networks and an actual phone. The current normal-boot profile already excludes personal memory cards and agrees on the initial settings. Session interruption stops safely; in-match resynchronization remains future work.
 
 Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. In parallel, trace the original online requests and prove an isolated lobby connection before choosing restoration as the long-term route. A successful login alone will not establish a playable online mode.

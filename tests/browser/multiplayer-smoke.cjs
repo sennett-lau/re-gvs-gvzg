@@ -169,11 +169,11 @@ async function startBattle(host, playerOne, guest) {
       await sleep(5000);
     }
     const end = await Promise.all(gamePages.map(snapshot));
-    if (end.some(value => value.scene.mode !== 4 || value.scene.stage === 3)) throw Error('Round did not reach its results stage within five minutes');
+    if (end.some(value => value.scene.mode !== 4 || value.scene.stage === 3)) throw Error('Round did not leave active battle within five minutes');
     await sleep(5000);
     if (route === 'lockstep') await Promise.all(gamePages.map(p => p.waitForFunction(() => document.body.dataset.playerView === 'full')));
     save('round-end', await Promise.all(gamePages.map(snapshot)));
-    progress('original round completed');
+    progress('original round-end sequence reached');
   }
   await Promise.all(pages.map((p,i) => p.screenshot({path:path.join(out,'battle-'+i+'.png')})));
   if (errors.length) throw Error(errors.join('; '));

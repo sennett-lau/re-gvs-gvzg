@@ -1,6 +1,6 @@
 # Repository design and export scope
 
-This repository contains the research Wiki, complete retained C++ translation, runtime/compiler patches, adaptive hooks, one matched playable web package and separate multiplayer POC sources. [Run and rebuild the game](GAME_FILES.md) gives the supported setup.
+This repository contains the research Wiki, complete retained C++ translation, runtime/compiler patches, adaptive hooks, one matched playable web package, multiplayer POC sources and a normal-boot multiplayer build profile. [Run and rebuild the game](GAME_FILES.md) gives the supported setup.
 
 ## Where content belongs
 
@@ -16,11 +16,11 @@ This repository contains the research Wiki, complete retained C++ translation, r
 | `scripts/` | Reader, game build/server, verification, packaging and numeric analysis | Yes |
 | `apps/game/` | Game UI, input, diagnostics and one matched `prebuilt/` set | Exported; measured adaptive engine |
 | `generated/` | Complete retained generated C++ and translation tables | 1,186 fingerprinted files |
-| `src/hooks/`, `patches/` | Game-specific hooks and runtime/compiler changes | Exported with regressions |
+| `src/hooks/`, `src/multiplayer/`, `patches/` | Game-specific hooks and runtime/compiler changes | Exported with regressions |
 | `vendor/` | Unmodified pinned compiler/runtime source and notices | Exported with per-file hashes |
 | `research/source/` | Selected RE scripts, address maps and useful exports | Input regression, hook preparation and address map |
-| `docs/media/` | Selected real captures with provenance captions | Early mobile demo, labeled native comparison, filmstrip, PC screenshot and desktop 60/120-fps viewing copies |
-| `poc/streaming/`, `poc/lockstep/` | Multiplayer source and isolated protocol tests | Streaming support; source-only lockstep POC |
+| `docs/media/` | Selected real captures with provenance captions | Early mobile demo, labeled native comparison, filmstrip, PC screenshot desktop 60/120-fps viewing copies and multiplayer integration screenshots |
+| `poc/streaming/`, `poc/lockstep/` | Multiplayer source and isolated protocol tests | Transport reference reused by the normal-boot multiplayer profile |
 | `scripts/game/package.py` | Local playable ZIP and SHA-256 generation | Exported; no publishing action |
 | `.local/release-builds/` | Ignored temporary packaging output | Created only when needed |
 
@@ -30,7 +30,7 @@ There is no `distribution/` or `releases/` source folder. [GitHub Releases](http
 
 The 2026-10-27 source export reproduced the measured engine's WASM, JavaScript and data byte for byte. Both base archives and all ten replacement objects also matched. A silent PC browser test passed normal boot, menu input, Versus entry, active audio consumption, pause/resume and fullscreen. The [acceptance record](evidence/rebuild-acceptance.json) identifies the exact scope.
 
-The source build uses a fresh output directory and the existing pinned SDK; it does not consume the original workspace's object files. The original workspace remains an archive of broader experiments. A current recompiler pass differs from the retained generated input, and the lockstep fixture is not exported. [Setup](GAME_FILES.md) describes these boundaries.
+The source build uses a fresh output directory and the existing pinned SDK; it does not consume the original workspace's object files. The original workspace remains an archive of broader experiments. A current recompiler pass differs from the retained generated input, and the old lockstep fixture is not exported. The new multiplayer profile starts from normal boot and does not require that fixture. [Setup](GAME_FILES.md) describes these boundaries.
 
 The first public research release is [v0.3.0-alpha.1](https://github.com/sennett-lau/re-gvs-gvzg/releases/tag/v0.3.0-alpha.1). It includes the matched browser package, a static Wiki archive and download checksums. The repository retains the complete exported source. The preparation and packaging scripts remain local-only; publishing is a separate maintainer action.
 

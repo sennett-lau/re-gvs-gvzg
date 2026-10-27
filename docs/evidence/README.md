@@ -88,7 +88,7 @@ Read [04 · The frame-rate goal](../chapters/04-frame-rate.md) for the metric de
 
 ## Multiplayer: two different routes
 
-The [current implementation review](implementation-review.json) checks suggestions against actual source: GPU/CLUT batching, relay-only streaming, configurable lockstep delay and the live FNV-1a hash/wait path. It records source inspection, not a new performance result.
+The [2026-10-26 implementation review](implementation-review.json) checks suggestions against actual source: GPU/CLUT batching, relay-only streaming, configurable lockstep delay and the live FNV-1a hash/wait path. It records source inspection, not a new performance result.
 
 | Route / question | Selected record | What it supports | What it leaves open |
 | --- | --- | --- | --- |
@@ -96,6 +96,8 @@ The [current implementation review](implementation-review.json) checks suggestio
 | [B · A game on each device](../chapters/08-independent-clients.md) | [Network findings](network-findings.json): `native_actor_control`, `native_lockstep`, `negative_control` | Actor ownership and bounded agreement, including a deliberately incorrect-input test | General agreement across devices and complete game flows |
 | Why did browser state diverge? | [Network findings](network-findings.json): `disc_readiness_causality`, `checkpoint240_complete_ram_comparison`, `browser_release_stress` | Controlled disc-readiness failure and agreement after the timing correction | Rollback, mid-match resynchronization and long internet sessions |
 | Can the original Network Battle flow be restored? | [Network findings](network-findings.json): `original_online`, `coop_anything` | Inspected dispatch/UI/server behavior and the assessment of an external approach | A working original lobby connection and complete browser integration |
+
+The later [multiplayer integration record](multiplayer-integration.json) adds original-menu handoff, normal boot, active two-human battles, own-player cropping and a dedicated streaming host with two clients. Its optimized-build checks used separate browser contexts on one PC. The [setup guide](../GAME_FILES.md#multiplayer-integration) includes the repeatable GPU harness.
 
 ## Finding the original record
 

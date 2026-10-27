@@ -27,7 +27,7 @@ async function list(dir) {
 }
 const docs = await list("docs");
 const research = await list("research/source");
-const analysisScripts = ["scripts/plot-pc-cadence.py", "scripts/plot-pc-display.py", "scripts/build-comparison-media.py"];
+const analysisScripts = ["scripts/plot-pc-cadence.py", "scripts/plot-pc-display.py", "scripts/build-comparison-media.py", "scripts/game/multiplayer.py", "src/multiplayer/menu_bridge.cpp"];
 const markdown = [
   "README.md",
   "CONTRIBUTING.md",
