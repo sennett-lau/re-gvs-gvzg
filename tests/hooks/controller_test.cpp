@@ -105,4 +105,5 @@ int main(int argc,char **argv) {
         for(int stat=0;stat<19;++stat)if(stat!=16)std::cout<<','<<ps2web_experiment_stat(stat);
         std::cout<<','<<research_interpolation_enabled()<<','<<research_render_only()<<'\n';
     }
+    return 0;
 }
