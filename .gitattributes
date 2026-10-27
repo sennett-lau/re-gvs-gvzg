@@ -10,3 +10,6 @@ apps/game/prebuilt/** -text linguist-generated=true
 *.ttf binary
 # A unified diff uses a single space for an unchanged blank context line.
 *.patch whitespace=-blank-at-eol
+# Preserve the upstream IPU notice verbatim, including its original whitespace.
+vendor/ps2-web-recomp/runtime/src/ipu/NOTICE whitespace=-blank-at-eol
+apps/game/prebuilt/LICENSES.txt whitespace=-blank-at-eol

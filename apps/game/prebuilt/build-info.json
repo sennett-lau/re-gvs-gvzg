@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "profile": "full-game-adaptive",
+  "engine_build_id": "22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c51075c4464f8a56c8252f",
+  "packaging_changes": [
+    "Removed two links to unbundled experimental workspace routes and the redundant normal-game link. Runtime JS/WASM/data and supporting assets are byte-identical to the measured build."
+  ],
+  "config": {
+    "boot": "normal-elf-and-disc",
+    "forced_state": null,
+    "simulation_hz": 60,
+    "default_mode": "auto",
+    "rates": [
+      60,
+      72,
+      80,
+      90,
+      100,
+      110,
+      120
+    ],
+    "mobile_initial_target_hz": 80,
+    "desktop_initial_target_hz": 120,
+    "before_boot_hz": 60,
+    "unverified_modes_hz": 60,
+    "memory_card_default": true,
+    "memory_card_path": "/memcard/Mcd001.ps2",
+    "memory_card_storage": "existing-origin-IDBFS-mount",
+    "interpolation": "native-mode-gated-with-generation-reset",
+    "adaptive_battle_scope": "single-human Arcade and single-camera local VS battle; other scenes retain60Hz",
+    "input_policy": "ordinary-host-to-IOP",
+    "gpu_upload_policy": "original-runtime",
+    "presentation_pacing_candidate": {
+      "policy": "bounded-cadence-credit",
+      "default_enabled": true,
+      "control_query": "?cadenceDebt=0",
+      "applied_video_rate_stat": 8,
+      "max_extra_slots_per_refresh": 1,
+      "work_burst_ms": 8,
+      "debt_limit_frames": "frozen calibrated quota +2",
+      "healthy_raf_streak": 3,
+      "minimum_raf_ratio_to_observed_idle": 0.9,
+      "maximum_healthy_interval_ms": 25,
+      "target_ratio_to_calibrated_quota_capacity": [
+        0.9,
+        1.15
+      ],
+      "native_clock_and_queue_backpressure": "unchanged"
+    },
+    "input_poll_policy": "original226D30 only on canonical simulation iterations",
+    "scene_snapshot": {
+      "stat": 19,
+      "schema": "gundam-scene-v1",
+      "bits": 48,
+      "invalid": -1,
+      "consistency": "one EE observation, one atomic uint64 store/load",
+      "decoder": "scene-snapshot.js"
+    },
+    "game_vblank_clock_policy": {
+      "game_function": "0x21C688",
+      "field": "context+0x58",
+      "increment": "canonical simulation iterations only; all other interrupt work unchanged",
+      "diagnostic_stat": 20,
+      "invalid": -1,
+      "range": "uint32",
+      "publication": "EE-published atomic value, independent of scene stat19"
+    }
+  },
+  "emscripten": "6.0.11",
+  "files": {
+    "adaptive-render-policy.js": {
+      "bytes": 3333,
+      "sha256": "d5ce21aaed97df5e3e73910c93c5b86ea679a658717ad7bdc8f416289bb6c12b"
+    },
+    "cadence-debt-pacing.js": {
+      "bytes": 14828,
+      "sha256": "6ded57a73ecf4289a1a161a288c581804dd19909e20d051167555e15a594d0c1"
+    },
+    "experimental-pacing.js": {
+      "bytes": 10821,
+      "sha256": "461573d76adbe68ac8e340c4c89c8c51ab0a1db3afb3b10d2f122cf843a9247e"
+    },
+    "full-game-adaptive-render.js": {
+      "bytes": 4963,
+      "sha256": "8958ddf3eea6bd5bca3ebddef63845c37ccfa45c612c5170729a59f75fb3e40d"
+    },
+    "index.data": {
+      "bytes": 6149694,
+      "sha256": "5022376bdf70c8fac649657d3b90bc88b8c5621aa751ba98bd64393e2ba2496b"
+    },
+    "index.html": {
+      "bytes": 52399,
+      "sha256": "2b927dcd13d5f6b66c9ac07f0bb9599a99ef5fc3f1a3f03be1b79ec48d5d7062"
+    },
+    "index.js": {
+      "bytes": 152059,
+      "sha256": "f85a837ef2981f25d160db3725713ea589ae682ae1a5b2b883a3c8afdeafa81e"
+    },
+    "index.wasm": {
+      "bytes": 95090068,
+      "sha256": "2c44be21390cdddcb46ac396a0f86a24c4cce10137da88acd340ddbec9845f59"
+    },
+    "local-game-visibility.js": {
+      "bytes": 6625,
+      "sha256": "6fea727b06a9533fdd1e653c7c80a0a6980ca0095ae4428cec715f4adfc0211b"
+    },
+    "remote-client.js": {
+      "bytes": 6975,
+      "sha256": "1ae9777e87fd9e047917dda07559e33b8e9c72e5595813cbf95e7adc5e5afaa7"
+    },
+    "remote-common.js": {
+      "bytes": 1519,
+      "sha256": "93960e41fd2163e2ed610a557d1fdee498887c7c0ab6eac3a2c08c8c75ad3afe"
+    },
+    "remote-host.js": {
+      "bytes": 5079,
+      "sha256": "cd2fc57c350b16e4e8c2cdf53f1c1d12cd778533fee6ed5d725104f9f1e34f66"
+    },
+    "remote.html": {
+      "bytes": 4321,
+      "sha256": "105f00137cae669f5e4989a2b1aa5614b8fcb41afe9581e3a18784fa46020bec"
+    },
+    "runtime-support.js": {
+      "bytes": 2620,
+      "sha256": "02e5b1a9553ff599e673074387081cf72dd24f4abd22568a1d8053bd66a13bc5"
+    },
+    "scene-snapshot.js": {
+      "bytes": 869,
+      "sha256": "03fe5fdf97ae244a5b3e07ffb0c32d4e7d79e678ce12bc7cfb4fab322036c883"
+    },
+    "LICENSES.txt": {
+      "bytes": 2574,
+      "sha256": "c3bed54a772c4802f0c25cd4849cdc985de1d6d6046f7a14d4909fbc372cc247"
+    }
+  }
+}
