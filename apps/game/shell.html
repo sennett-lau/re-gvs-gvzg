@@ -174,6 +174,7 @@ function showProblem(text) {
 }
 function fatalError(text) {
   if (typeof Module !== 'undefined' && Module) {
+    if (Module.netplayFailure && /Netplay stopped:/.test(text)) text = 'Game stopped: ' + Module.netplayFailure.message;
     if (!Module.failure) Module.failure = { message: text, at: new Date().toISOString(), stats: document.getElementById('stats').textContent };
     Module.failed = true;
   }
@@ -378,6 +379,7 @@ function onTouch(e) {
   for (const id of [...fingers.keys()]) if (!seen.has(id)) fingers.delete(id);
   if (!stick) knob.style.transform = '';
   touchPad = { buttons, x: sx, y: sy, stick };
+  if (typeof Module !== 'undefined' && Module?.netplaySession) pollInput();
   touchRoot.querySelectorAll('[data-btn]').forEach((el) => el.classList.toggle('on', (buttons & Number(el.dataset.btn)) !== 0));
   touchRoot.querySelectorAll('[data-dir]').forEach((el) => el.classList.toggle('on', (buttons & Number(el.dataset.dir)) !== 0));
 }
@@ -606,8 +608,8 @@ const keys = new Set();
 const keyMap = { ArrowUp: 4, ArrowRight: 5, ArrowDown: 6, ArrowLeft: 7, KeyZ: 14, KeyX: 13, KeyA: 15, KeyS: 12,
                  KeyQ: 10, KeyW: 11, Digit1: 8, Digit2: 9, Enter: 3, Backspace: 0 };
 const stickKeys = new Set(['KeyI', 'KeyJ', 'KeyK', 'KeyL']);
-window.addEventListener('keydown', (e) => { if (!Module.multiplayerInputBlocked && (e.code in keyMap || stickKeys.has(e.code))) { keys.add(e.code); e.preventDefault(); } });
-window.addEventListener('keyup', (e) => { keys.delete(e.code); });
+window.addEventListener('keydown', (e) => { if (!Module.multiplayerInputBlocked && (e.code in keyMap || stickKeys.has(e.code))) { keys.add(e.code); e.preventDefault(); if (Module.netplaySession) pollInput(); } });
+window.addEventListener('keyup', (e) => { keys.delete(e.code); if (Module.netplaySession) pollInput(); });
 const padButtons = [[0, 14], [1, 13], [2, 15], [3, 12], [4, 10], [5, 11], [6, 8], [7, 9], [8, 0], [9, 3], [10, 1], [11, 2],
                     [12, 4], [13, 6], [14, 7], [15, 5]];
 const axis = (v) => Math.max(0, Math.min(255, Math.round((v + 1) * 127.5)));
@@ -970,6 +972,11 @@ var Module = {
 };
 
 Module.clearMultiplayerInput = () => { keys.clear(); fingers.clear(); touchPad = {buttons:0, x:0, y:0, stick:false}; };
+function pollNetplayControls() {
+  if (Module.running && Module.netplaySession && !Module.failed) pollInput();
+  requestAnimationFrame(pollNetplayControls);
+}
+requestAnimationFrame(pollNetplayControls);
 updateControls();
 if (missing.length) {
   const help = document.getElementById('help');
@@ -1008,7 +1015,7 @@ setInterval(() => {
 }, 2000);
 document.getElementById('diagnostics').addEventListener('click', () => {
   const report = {
-    build: 'gundam-full-game-adaptive-1', boot: 'normal', memoryCardEnabled: !Module.noCard, mode: renderMode, buildInfo: Module.buildInfo || null, adaptive: Module.adaptiveRendering ? Module.adaptiveRendering.snapshot() : null, visibility: Module.localVisibility ? Module.localVisibility.snapshot() : null, presentationPacing: Module.presentationPacing ? Module.presentationPacing.snapshot() : null, experimentFps, experimentSamples, userAgent: navigator.userAgent, mobileMode,
+    build: 'gundam-full-game-adaptive-1', boot: 'normal', multiplayer: Module.multiplayer?.snapshot(), memoryCardEnabled: !Module.noCard, mode: renderMode, buildInfo: Module.buildInfo || null, adaptive: Module.adaptiveRendering ? Module.adaptiveRendering.snapshot() : null, visibility: Module.localVisibility ? Module.localVisibility.snapshot() : null, presentationPacing: Module.presentationPacing ? Module.presentationPacing.snapshot() : null, experimentFps, experimentSamples, userAgent: navigator.userAgent, mobileMode,
     mobileOverride: params.get('mobile'), coarsePointer, maxTouchPoints: navigator.maxTouchPoints,
     hostMode, failed: !!Module.failed, failure: Module.failure || null,
     cores: navigator.hardwareConcurrency, deviceMemoryGB: navigator.deviceMemory,

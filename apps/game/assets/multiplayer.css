@@ -26,6 +26,10 @@
 #multiplayer-dialog [hidden] { display: none !important; }
 body.multiplayer-open .controls { visibility: hidden; }
 #multiplayer-open { white-space: nowrap; }
+#multiplayer-boot-help { position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); z-index: 5; width: min(540px, calc(100vw - 32px)); box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border: 1px solid #536466; border-radius: 6px; background: #10191df2; color: #edf2ee; font: 14px/1.5 system-ui,sans-serif; }
+#multiplayer-boot-help span { flex: 1; min-width: 180px; }
+#multiplayer-boot-help button { padding: 10px 14px; min-height: 44px; border: 0; border-radius: 4px; background: #b8e5c6; color: #10251c; font: inherit; cursor: pointer; }
+#multiplayer-boot-help[hidden], #multiplayer-boot-help button[hidden], body.multiplayer-open #multiplayer-boot-help { display: none; }
 body.fullscreen #multiplayer-open { display: block; position: fixed; top: calc(8px + env(safe-area-inset-top)); left: calc(8px + env(safe-area-inset-left)); z-index: 3; opacity: .65; }
 @media(max-width:480px) { #multiplayer-dialog header, #multiplayer-dialog footer, #multiplayer-dialog .mp-body { padding-left: 18px; padding-right: 18px; } }
 @media(prefers-reduced-motion:no-preference) { #multiplayer-dialog[open] { animation: mp-open .16s ease-out; } @keyframes mp-open { from { opacity:0; transform: translateY(8px); } } }

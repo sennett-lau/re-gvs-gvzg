@@ -26,6 +26,7 @@ const snapshot = page => page.evaluate(() => ({
   checkpoint: Module.multiplayer?.game?.lastCheckpoint,
   error: Module.multiplayer?.game?.error?.message || Module.failure || null,
   running: !!Module.running, failed: !!Module.failed, playerView: document.body.dataset.playerView,
+  network: Module.multiplayer?.snapshot(),
   audioContexts: window.testAudioContexts.map(a => a.state),
   audioRing: Array.from(new Int32Array(Module.HEAPU8.buffer, Module._ps2web_audio_ring(), 4)),
 }));
@@ -35,6 +36,8 @@ async function mainMenu(page) {
     const s = GundamSceneSnapshot.decode(Module._ps2web_experiment_stat(19));
     return s?.mode === 0 && s.state === 2 && s.stage === 3;
   }, undefined, {timeout:90000});
+  if (process.argv.includes('--boot-helper')) await page.locator('#multiplayer-boot-help button:visible').click();
+  else {
   // The scene ID changes before the original dialog has finished appearing.
   // Retry its normal Yes input while still in boot, never after title entry.
   for (let i = 0; i < 30; i++) {
@@ -44,6 +47,7 @@ async function mainMenu(page) {
       await press(page, 'ArrowLeft'); await press(page, 'KeyX');
     }
     await sleep(1500);
+  }
   }
   await page.waitForFunction(() => GundamSceneSnapshot.decode(Module._ps2web_experiment_stat(19))?.mode === 1);
   for (let i = 0; i < 12; i++) {

@@ -3,7 +3,7 @@
   'use strict';
   const STORAGE = 'gundam-full-game-session-v1';
   function attach(Module, canvas) {
-    let stream, game, pendingChoice, started = false, busy = false, invite = '', manifest;
+    let stream, game, pendingChoice, started = false, busy = false, measuring = false, invite = '', manifest;
     const dialog = document.createElement('dialog');
     dialog.id = 'multiplayer-dialog';
     dialog.setAttribute('aria-labelledby', 'mp-title');
@@ -21,6 +21,22 @@
       <div class="mp-actions"><button id="mp-continue" class="mp-primary" hidden>Continue to Versus</button></div></div>
       <footer><small>Invitation only · no public matchmaking</small><button id="mp-dismiss">Back to game</button></footer>`;
     document.body.append(dialog);
+    const bootHelp = document.createElement('aside');
+    bootHelp.id = 'multiplayer-boot-help'; bootHelp.hidden = true;
+    bootHelp.innerHTML = '<span></span><button type="button">Continue without saving</button>';
+    document.body.append(bootHelp);
+    const atNoCardPrompt = () => {
+      const scene = root.GundamSceneSnapshot.decode(Module._ps2web_experiment_stat?.(19));
+      return scene?.mode === 0 && scene.state === 2 && scene.stage === 3;
+    };
+    bootHelp.querySelector('button').onclick = () => {
+      if (!started || game?.error || game?.transport.session.player !== 0 || !atNoCardPrompt()) return;
+      // Controller input, synchronized through the same relay as both players.
+      // Tick-length holds survive slow frames; no direct guest-state edit.
+      const sequence = [...Array.from({length:32},()=>PS2Netplay.neutral()), ...[0,128,0,8192,0].flatMap(buttons => Array.from({length:4},()=>({
+        ...PS2Netplay.neutral(), buttons, pressure:Array.from({length:16},(_,i)=>buttons & (1<<i) ? 255 : 0)})))];
+      if (game.queueInputSequence(sequence)) bootHelp.querySelector('span').textContent = 'Player 1 is confirming Yes…';
+    };
     const el = id => dialog.querySelector('#mp-' + id);
     const toolbar = document.getElementById('multiplayer-open');
     const message = text => { el('status').textContent = text; };
@@ -83,12 +99,27 @@
       el('invite').previousElementSibling.hidden = own !== 0;
       el('continue').textContent = 'Start together'; el('continue').disabled = true;
       storeSession();
+      if (new URLSearchParams(location.search).has('netplay') && !Module.running) {
+        const current = game; measuring = true;
+        message('Loading the game, then checking both connections…');
+        (async () => {
+          const deadline = performance.now() + 300000;
+          while (!Module._ps2web_netplay_stat || document.getElementById('start').disabled) {
+            if (game !== current) return;
+            if (Module.failed || performance.now() > deadline) throw Error('Game loading did not complete. Reload before creating a new room.');
+            await new Promise(resolve => setTimeout(resolve, 250));
+          }
+          if (game === current) await current.transport.measureLatency();
+        })().catch(error => { if (game === current) { current.connectionCheckError = error.message; message(error.message); } })
+          .finally(() => { if (game === current) { measuring = false; status(current.transport.lastStatus || {}); } });
+      }
     }
     function status(value) {
       if (!game || started) return;
-      const ready = value.status === 'running' && value.players?.every(Boolean);
+      if (game.connectionCheckError) { el('continue').disabled = true; message(game.connectionCheckError); return; }
+      const ready = value.status === 'running' && value.players?.every(Boolean) && value.delay_ready && !measuring;
       el('continue').disabled = !ready;
-      message(ready ? 'Both players connected. Press Start together on each device.' : 'Waiting for your friend to join.');
+      message(ready ? 'Both players connected · input buffer ' + value.input_delay + ' frames (' + Math.round(value.input_delay * 1000 / 60) + ' ms). Press Start together on each device.' : value.players?.every(Boolean) ? 'Checking both connections…' : 'Waiting for your friend to join.');
     }
     el('stream').onclick = () => action(async () => {
       if (!(await config).streaming) throw Error('Streaming is not enabled.');
@@ -109,7 +140,7 @@
     }
     el('lockstep').onclick = () => action(async () => {
       if (!(await config).lockstep) throw Error('Independent games are not enabled.');
-      game = await PS2NetplayGame.GameSession.create({identity:await identity(), checkpointInterval:120, inputDelay:3, onStatus:status});
+      game = await PS2NetplayGame.GameSession.create({identity:await identity(), checkpointInterval:120, inputDelay:3, adaptiveDelay:true, onStatus:status});
       readyRoom();
       if (Module.running || !new URLSearchParams(location.search).has('netplay')) reloadForLockstep();
     });
@@ -144,7 +175,7 @@
       if (started) { dismiss(); return; }
       await action(async () => {
         const state = await game.transport.call('status');
-        if (state.status !== 'running' || !state.players?.every(Boolean)) throw Error('Wait for both players before starting.');
+        if (state.status !== 'running' || !state.players?.every(Boolean) || !state.delay_ready || measuring) throw Error('Wait for both connection checks before starting.');
         if (!Module._ps2web_netplay_stat) throw Error('Wait for the game to finish loading.');
         if (document.getElementById('start').disabled) throw Error('The game is still loading. Try again in a moment.');
         game.attach(Module); started = true; sessionStorage.removeItem(STORAGE);
@@ -152,7 +183,12 @@
       });
       if (started) { dismiss(); document.getElementById('start')?.click(); }
     };
-    Module.onNetplayError = error => { open(); const detail = String(error); message(/hash|mismatch|sync/i.test(detail) ? 'The games lost sync. End this session and start a new one.' : 'The connection stopped. End this session and create a new one with your friend.'); el('continue').disabled = true; };
+    Module.onNetplayError = error => {
+      const detail = game?.transport.clean(error) || String(error);
+      Module.netplayFailure ||= {message:detail, checkpoint:game?.lastCheckpoint || null};
+      bootHelp.hidden = true; open();
+      message(detail + ' End this session and create a new one with your friend.'); el('continue').disabled = true;
+    };
     window.addEventListener('pagehide', () => {
       if (!started || !game?.transport.session) return;
       const {room, token, player} = game.transport.session;
@@ -184,6 +220,11 @@
         if (!started) status(await game.transport.call('status'));
         else {
           const scene = root.GundamSceneSnapshot.decode(Module._ps2web_experiment_stat(19));
+          bootHelp.hidden = !!game.error || !!Module.failed || !atNoCardPrompt();
+          const owner = game.transport.session.player;
+          bootHelp.querySelector('button').hidden = owner !== 0;
+          bootHelp.querySelector('button').disabled = !!game.inputSequence.length;
+          if (!game.inputSequence.length) bootHelp.querySelector('span').textContent = owner === 0 ? 'No memory card · choose Yes to continue. Keyboard: ← then X (○).' : 'Player 1 chooses Yes to continue without saving.';
           const split = root.PS2PlayerView.split(scene, game.transport.session.player, Module.playerViewPreference);
           if (Module.playerViewSplit !== split) { Module.playerViewSplit = split; Module.fitMultiplayerView?.(); }
           document.body.dataset.playerView = split ? String(game.transport.session.player + 1) : 'full';
@@ -193,7 +234,11 @@
         }
       } catch (error) { message(error.message); }
     }, 1500);
-    return {open, get game() { return game; }, get stream() { return stream; }, get started() { return started; }};
+    return {open, snapshot:() => game ? {route:'independent', started, checkpoint:game.lastCheckpoint || null,
+      failure:Module.netplayFailure || (game.error ? {message:game.transport.clean(game.error)} : null),
+      nativeSteps:Module._ps2web_netplay_stat?.(0), nativeWaitMs:Module._ps2web_netplay_stat?.(1),
+      transport:game.transport.snapshot()} : {route:stream ? 'streaming' : 'local'},
+      get game() { return game; }, get stream() { return stream; }, get started() { return started; }};
   }
   root.PS2Multiplayer = {attach};
 })(window);
