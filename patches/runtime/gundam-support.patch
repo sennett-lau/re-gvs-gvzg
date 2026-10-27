@@ -1,0 +1,208 @@
+diff --git a/runtime/src/gs/gpu/gpu.cpp b/runtime/src/gs/gpu/gpu.cpp
+index dc1f3b2..e8e5dc6 100644
+--- a/runtime/src/gs/gpu/gpu.cpp
++++ b/runtime/src/gs/gpu/gpu.cpp
+@@ -2,6 +2,9 @@
+ #include "ps2/system.hpp"
+ 
+ #include <webgpu/webgpu.h>
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++#endif
+ #ifndef __EMSCRIPTEN__
+ #include <webgpu/wgpu.h>
+ #endif
+@@ -716,6 +719,10 @@ void flush_all() {
+ 
+ void on_error(WGPUDevice const *, WGPUErrorType type, WGPUStringView message, void *, void *) {
+     std::fprintf(stderr, "[gpu] error %d: %.*s\n", static_cast<int>(type), static_cast<int>(message.length == WGPU_STRLEN ? std::strlen(message.data) : message.length), message.data);
++#ifdef __EMSCRIPTEN__
++    const std::string text(message.data, message.length == WGPU_STRLEN ? std::strlen(message.data) : message.length);
++    EM_ASM({ if (Module.onGpuError) Module.onGpuError(UTF8ToString($0)); }, text.c_str());
++#endif
+ }
+ 
+ void pump() {
+@@ -1147,6 +1154,15 @@ bool init(Mode m) {
+         dd.requiredFeatures = &timestamp_feature;
+     }
+     dd.uncapturedErrorCallbackInfo.callback = on_error;
++    dd.deviceLostCallbackInfo.mode = WGPUCallbackMode_AllowSpontaneous;
++    dd.deviceLostCallbackInfo.callback = [](WGPUDevice const *, WGPUDeviceLostReason reason, WGPUStringView message, void *, void *) {
++        if (reason == WGPUDeviceLostReason_Destroyed) return;
++        const std::string text(message.data ? message.data : "", message.data ? (message.length == WGPU_STRLEN ? std::strlen(message.data) : message.length) : 0);
++        std::fprintf(stderr, "[gpu] device lost: %s\n", text.c_str());
++#ifdef __EMSCRIPTEN__
++        EM_ASM({ if (Module.onGpuError) Module.onGpuError('GPU device lost: ' + UTF8ToString($0)); }, text.c_str());
++#endif
++    };
+     bool device_done = false;
+     WGPURequestDeviceCallbackInfo dcb = WGPU_REQUEST_DEVICE_CALLBACK_INFO_INIT;
+     dcb.mode = WGPUCallbackMode_AllowSpontaneous;
+diff --git a/runtime/src/iop/cdvd.cpp b/runtime/src/iop/cdvd.cpp
+index 218cbda..ebbb8d3 100644
+--- a/runtime/src/iop/cdvd.cpp
++++ b/runtime/src/iop/cdvd.cpp
+@@ -161,7 +161,8 @@ bool cd_busy() { return g_cd.busy; }
+ 
+ }
+ 
+-std::int32_t load_module(const std::string &path, const std::string &args, std::function<void(int, int)> done) {
++std::int32_t load_module(const std::string &path, const std::string &args, std::function<void(int, int)> done,
++                         bool start, int allocation_mode) {
+     std::vector<std::uint8_t> data;
+     std::string lower = path;
+     for (char &ch : lower) ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+@@ -169,7 +170,7 @@ std::int32_t load_module(const std::string &path, const std::string &args, std::
+     if (data.empty() && lower.rfind("rom0:", 0) != 0) {
+         std::fprintf(stderr, "[iop] cannot read module %s\n", path.c_str());
+     }
+-    return load_module_buffer(data, path, args, std::move(done));
++    return load_module_buffer(data, path, args, std::move(done), start, allocation_mode);
+ }
+ 
+ }
+diff --git a/runtime/src/iop/iop.hpp b/runtime/src/iop/iop.hpp
+index bbcc121..626f88b 100644
+--- a/runtime/src/iop/iop.hpp
++++ b/runtime/src/iop/iop.hpp
+@@ -70,9 +70,11 @@ void vblank(bool start);
+ bool idle();
+ void dump();
+ 
+-std::int32_t load_module(const std::string &path, const std::string &args, std::function<void(int, int)> done = {});
++std::int32_t load_module(const std::string &path, const std::string &args, std::function<void(int, int)> done = {},
++                         bool start = true, int allocation_mode = 0);
+ std::int32_t load_module_buffer(const std::vector<std::uint8_t> &data, const std::string &path, const std::string &args,
+-                                std::function<void(int, int)> done = {});
++                                std::function<void(int, int)> done = {}, bool start = true, int allocation_mode = 0);
++std::int32_t start_module(int id, const std::string &path, const std::string &args, std::function<void(int, int)> done = {});
+ void set_trace(bool modules, bool hle);
+ 
+ }
+diff --git a/runtime/src/iop/kernel.cpp b/runtime/src/iop/kernel.cpp
+index a98698e..34b70a0 100644
+--- a/runtime/src/iop/kernel.cpp
++++ b/runtime/src/iop/kernel.cpp
+@@ -628,7 +628,7 @@ void dump() {
+ void raise_interrupt(unsigned line) { hw::raise_interrupt(line); }
+ 
+ std::int32_t load_module_buffer(const std::vector<std::uint8_t> &data, const std::string &path, const std::string &args,
+-                                std::function<void(int, int)> done) {
++                                std::function<void(int, int)> done, bool start, int allocation_mode) {
+     using namespace kernel;
+     const std::string name = module_name_of(path);
+     auto hle = g_hle_modules.find(name);
+@@ -636,9 +636,7 @@ std::int32_t load_module_buffer(const std::vector<std::uint8_t> &data, const std
+         if (g_trace_modules) std::fprintf(stderr, "[iop] %s handled natively\n", name.c_str());
+         const int id = g_next_module++;
+         g_modules[id] = Module{id, name, 0, 0, 0, 0};
+-        if (hle->second) hle->second();
+-        if (done) done(id, 0);
+-        return id;
++        return start ? start_module(id, path, args, std::move(done)) : id;
+     }
+     if (data.size() < 52 || std::memcmp(data.data(), "\x7f" "ELF", 4) != 0) {
+         std::fprintf(stderr, "[iop] %s is not an ELF module\n", path.c_str());
+@@ -665,7 +663,7 @@ std::int32_t load_module_buffer(const std::vector<std::uint8_t> &data, const std
+     }
+     const std::uint32_t entry = elf.u32(iopmod + 4), gp = elf.u32(iopmod + 8);
+     const std::uint32_t total = std::max(mem_size, elf.u32(iopmod + 12) + elf.u32(iopmod + 16) + elf.u32(iopmod + 20));
+-    const std::uint32_t base = alloc(total + 0x40u);
++    const std::uint32_t base = alloc(total + 0x40u, allocation_mode);
+     if (!base) return -1;
+     std::memset(ram_ptr(base), 0, total);
+     std::memcpy(ram_ptr(base), data.data() + load_off, load_size);
+@@ -676,6 +674,21 @@ std::int32_t load_module_buffer(const std::vector<std::uint8_t> &data, const std
+     g_modules[id] = Module{id, name, base, total, base + entry, base + gp};
+     if (g_trace_modules) std::fprintf(stderr, "[iop] module %d %s at 0x%08X size 0x%X entry 0x%08X\n", id, name.c_str(), base, total, base + entry);
+ 
++    return start ? start_module(id, path, args, std::move(done)) : id;
++}
++
++std::int32_t start_module(int id, const std::string &path, const std::string &args, std::function<void(int, int)> done) {
++    using namespace kernel;
++    const auto module = g_modules.find(id);
++    if (module == g_modules.end()) return -202;
++    const Module &m = module->second;
++    const auto hle = g_hle_modules.find(m.name);
++    if (hle != g_hle_modules.end()) {
++        if (hle->second) hle->second();
++        if (done) done(id, 0);
++        return id;
++    }
++
+     std::vector<std::string> argv{path};
+     std::size_t start = 0;
+     while (start < args.size()) {
+@@ -687,6 +700,7 @@ std::int32_t load_module_buffer(const std::vector<std::uint8_t> &data, const std
+     std::uint32_t argv_size = 4u * static_cast<std::uint32_t>(argv.size() + 1);
+     for (const auto &s : argv) argv_size += static_cast<std::uint32_t>(s.size() + 1);
+     const std::uint32_t argv_at = alloc(argv_size);
++    if (!argv_at) return -400;
+     std::uint32_t text = argv_at + 4u * static_cast<std::uint32_t>(argv.size() + 1);
+     for (std::size_t i = 0; i < argv.size(); ++i) {
+         set_ram32(argv_at + 4u * static_cast<std::uint32_t>(i), text);
+@@ -695,7 +709,7 @@ std::int32_t load_module_buffer(const std::vector<std::uint8_t> &data, const std
+     }
+     set_ram32(argv_at + 4u * static_cast<std::uint32_t>(argv.size()), 0);
+ 
+-    const int tid = create_thread(base + entry, 0x4000u, kDefaultModulePriority, base + gp, 0x02000000u, 0);
++    const int tid = create_thread(m.entry, 0x4000u, kDefaultModulePriority, m.gp, 0x02000000u, 0);
+     Thread *t = thread(tid);
+     t->on_exit = [id, tid, argv_at, done]() {
+         const std::uint32_t result = thread(tid)->context.r[2];
+diff --git a/runtime/src/iop/libs.cpp b/runtime/src/iop/libs.cpp
+index a1d7569..0fd3f28 100644
+--- a/runtime/src/iop/libs.cpp
++++ b/runtime/src/iop/libs.cpp
+@@ -983,6 +983,29 @@ void install_stdio() {
+ 
+ void install_modload() {
+     register_hle_library("modload", 0x0102);
++    def("modload", 8, "StartModule", [](Cpu &c) {
++        if (!current() || in_interrupt()) { c.r[2] = static_cast<std::uint32_t>(-100); return; }
++        const int caller = current()->id;
++        const int id = static_cast<int>(arg(c, 0));
++        const std::string path = ram_string(arg(c, 1));
++        const std::uint32_t length = arg(c, 2), at = phys(arg(c, 3)), result_at = arg(c, 4);
++        if (at > kRamSize || length > kRamSize - at) { c.r[2] = static_cast<std::uint32_t>(-1); return; }
++        const std::string args(reinterpret_cast<const char *>(ram_ptr(at)), length);
++        // Module entry points may block, so run them on a loader thread and wake the caller on return.
++        block(c, kWaitHle, id);
++        const int loaded = start_module(id, path, args, [caller, result_at](int module, int result) {
++            if (result_at) write32(result_at, static_cast<std::uint32_t>(result));
++            if (Thread *t = thread(caller)) {
++                // HLE modules finish immediately, before the scheduler saves the caller's CPU.
++                if (current() == t) g_cpu.r[2] = static_cast<std::uint32_t>(module);
++                wake(*t, static_cast<std::uint32_t>(module));
++            }
++        });
++        if (loaded < 0) {
++            c.r[2] = static_cast<std::uint32_t>(loaded);
++            wake(*thread(caller), c.r[2]);
++        }
++    });
+     def("modload", 13, "SetCheckKelfPathCallback", [](Cpu &c) { c.r[2] = 0; });
+     def("modload", 16, "GetModuleIdList", [](Cpu &c) {
+         std::uint32_t n = 0;
+@@ -1020,6 +1043,19 @@ void install_modload() {
+         write32(p + 0x4C, it->second.size);
+         c.r[2] = 0;
+     });
++    def("modload", 19, "LoadModuleWithOption", [](Cpu &c) {
++        const std::string path = ram_string(arg(c, 0));
++        const std::uint32_t option = arg(c, 1);
++        const unsigned position = read8(option), access = read8(option + 1);
++        // The disc loader supports the normal low/high allocations and standard file access.
++        if (position > 1 || (access != 1 && access != 2 && access != 4) || read32(option + 4) ||
++            read32(option + 8) || read32(option + 12)) {
++            std::fprintf(stderr, "[iop] unsupported LoadModuleWithOption for %s (position %u, access %u)\n", path.c_str(), position, access);
++            c.r[2] = static_cast<std::uint32_t>(-1);
++            return;
++        }
++        c.r[2] = static_cast<std::uint32_t>(load_module(path, "", {}, false, static_cast<int>(position)));
++    });
+     def("modload", 22, "SearchModuleByName", [](Cpu &c) {
+         std::string name = ram_string(arg(c, 0), 64);
+         for (const auto &[id, m] : modules()) {
