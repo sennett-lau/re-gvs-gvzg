@@ -113,4 +113,4 @@ The chapters reconstruct retained research. [Evidence conventions](docs/EVIDENCE
 
 This project builds on [ps2-web-recomp](https://github.com/snuri00/ps2-web-recomp). No original ISO, ROM or compressed disc backup is included.
 
-See [Third-party notices](docs/license/THIRD_PARTY_NOTICES.md) and [Content notice](docs/license/CONTENT_NOTICE.md) for attribution and the scope of this local draft.
+Independently written code and documentation use the [MIT License](docs/license/LICENSE). See [Third-party notices](docs/license/THIRD_PARTY_NOTICES.md) and [Content notice](docs/license/CONTENT_NOTICE.md) for attribution and the scope of this local draft.
