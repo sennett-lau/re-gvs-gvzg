@@ -191,3 +191,20 @@ test('actual presentation pacer fallback cannot wake a hidden native continuatio
   assert.equal(pacer.snapshot().completedPresentations, 2);
   visibility.dispose(); pacer.dispose();
 });
+
+test('a session can keep a hidden host running, then restore local suspension', async () => {
+  const e = environment();
+  e.hidden(true);
+  let count = 0;
+  const first = nativeYield(e.module, () => ++count);
+  e.adapter.setKeepRunning(true); e.allTasks(); await first;
+  assert.equal(count, 1);
+  e.hidden(true);
+  const second = nativeYield(e.module, () => ++count);
+  e.allTasks(); await second; assert.equal(count, 2);
+  e.adapter.setKeepRunning(false);
+  const third = nativeYield(e.module, () => ++count);
+  e.allTasks(); await microtasks(); assert.equal(count, 2);
+  e.hidden(false); e.allTasks(); await third; assert.equal(count, 3);
+  e.adapter.dispose();
+});

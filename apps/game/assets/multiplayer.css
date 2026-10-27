@@ -1,0 +1,31 @@
+/* A transient connection desk; the original game owns the play screen. */
+#multiplayer-dialog { color-scheme: dark; box-sizing: border-box; width: min(620px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; padding: 0; border: 1px solid #536466; border-radius: 8px; background: #10191d; color: #edf2ee; box-shadow: 0 30px 100px #0009; font: 15px/1.5 system-ui, sans-serif; }
+#multiplayer-dialog::backdrop { background: #03090ddd; }
+#multiplayer-dialog * { box-sizing: border-box; }
+#multiplayer-dialog header { padding: 24px 28px 18px; border-bottom: 1px solid #35444a; }
+#multiplayer-dialog .mp-eyebrow { margin: 0 0 8px; font: 11px/1.5 ui-monospace, monospace; letter-spacing: .14em; color: #8fbfae; text-transform: uppercase; }
+#multiplayer-dialog h2 { margin: 0; font-size: clamp(24px, 5vw, 34px); font-weight: 600; letter-spacing: -.03em; }
+#multiplayer-dialog p { margin: 10px 0; }
+#multiplayer-dialog .mp-body { padding: 20px 28px; }
+#multiplayer-dialog .mp-description { color: #afbdc1; }
+#multiplayer-dialog .mp-routes { display: grid; gap: 10px; margin: 20px 0; }
+#multiplayer-dialog button { font: inherit; cursor: pointer; border-radius: 4px; padding: 10px 16px; background: #26383e; color: #edf2ee; border: 1px solid #52666d; min-height: 44px; }
+#multiplayer-dialog button:focus-visible, #multiplayer-dialog input:focus-visible { outline: 2px solid #a3e2bd; outline-offset: 3px; }
+#multiplayer-dialog button:disabled { opacity: .4; cursor: default; }
+#multiplayer-dialog .mp-route { display: grid; grid-template-columns: 30px 1fr; gap: 3px 12px; text-align: left; padding: 15px; background: #19272d; }
+#multiplayer-dialog .mp-route:hover:not(:disabled) { border-color: #a3e2bd; background: #203339; }
+#multiplayer-dialog .mp-route span:first-child { grid-row: span 2; color: #a3e2bd; font: 14px/1.8 ui-monospace, monospace; }
+#multiplayer-dialog .mp-route small { color: #afbdc1; font-size: 13px; }
+#multiplayer-dialog label { display: block; margin: 14px 0 6px; color: #b9c8ce; font-size: 13px; }
+#multiplayer-dialog input[type=url], #multiplayer-dialog input[readonly] { width: 100%; min-width: 0; color: #edf2ee; border: 1px solid #52666d; border-radius: 4px; padding: 12px; background: #090f13; font: 13px/1.4 ui-monospace, monospace; }
+#multiplayer-dialog .mp-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+#multiplayer-dialog .mp-primary { background: #b8e5c6; color: #10251c; border-color: #b8e5c6; }
+#multiplayer-dialog #mp-status { border-left: 2px solid #a3e2bd; padding-left: 12px; }
+#multiplayer-dialog footer { padding: 16px 28px; border-top: 1px solid #35444a; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+#multiplayer-dialog footer small { color: #afbdc1; }
+#multiplayer-dialog [hidden] { display: none !important; }
+body.multiplayer-open .controls { visibility: hidden; }
+#multiplayer-open { white-space: nowrap; }
+body.fullscreen #multiplayer-open { display: block; position: fixed; top: calc(8px + env(safe-area-inset-top)); left: calc(8px + env(safe-area-inset-left)); z-index: 3; opacity: .65; }
+@media(max-width:480px) { #multiplayer-dialog header, #multiplayer-dialog footer, #multiplayer-dialog .mp-body { padding-left: 18px; padding-right: 18px; } }
+@media(prefers-reduced-motion:no-preference) { #multiplayer-dialog[open] { animation: mp-open .16s ease-out; } @keyframes mp-open { from { opacity:0; transform: translateY(8px); } } }

@@ -4,7 +4,7 @@ const welcome = document.getElementById('welcome'), join = document.getElementBy
 const invitation = new URLSearchParams(location.hash.slice(1));
 const keys = new Set(), pointers = new Map();
 const keyMap = {ArrowUp:4,ArrowDown:6,ArrowLeft:7,ArrowRight:5,KeyZ:14,KeyX:13,KeyA:15,KeyS:12,KeyQ:10,KeyW:11,Digit1:8,Digit2:9,Enter:3,Backspace:0};
-let stickX = 128, stickY = 128, channel, active = false, session, pc;
+let stickX = 128, stickY = 128, channel, active = false, session, pc, generation = 0;
 const axis = x => Math.max(0, Math.min(255, Math.round((x+1)*127.5)));
 function currentPad() {
   let buttons = 0, lx = stickX, ly = stickY, rx = 128, ry = 128;
@@ -63,23 +63,29 @@ document.getElementById('fullscreen').onclick = async () => {
 };
 const leave = () => {
   if (!active) return;
-  release(); active = false; pc?.close();
+  release(); active = false; ++generation;
+  if (pc) { pc.onconnectionstatechange = null; pc.close(); }
+  video.srcObject = null; channel = null;
   if (session) PS2Remote.api('leave', session, true).catch(() => {});
 };
 window.addEventListener('pagehide', leave);
+document.getElementById('leave').onclick = () => { leave(); welcome.hidden = false; join.disabled = false; statusEl.textContent = 'Disconnected'; };
 join.onclick = async () => {
+  const ownGeneration = ++generation;
+  const current = () => ownGeneration === generation;
   join.disabled = true;
   const message = document.getElementById('join-message');
   message.textContent = 'Connecting to the host…';
   try {
     if (!window.RTCPeerConnection) throw new Error('This browser does not support remote play.');
     session = await PS2Remote.api('join', {room: invitation.get('room'), invite: invitation.get('invite')});
+    if (!current()) { PS2Remote.api('leave', session, true).catch(() => {}); return; }
     active = true;
-    pc = new RTCPeerConnection({iceServers: session.iceServers, iceTransportPolicy: 'relay'});
+    pc = new RTCPeerConnection({iceServers: session.iceServers, iceTransportPolicy: session.iceTransportPolicy || 'all'});
     const candidates = [];
     const signal = data => PS2Remote.api('signal', {...session,message:data});
     pc.onicecandidate = event => {if (event.candidate) signal({type:'ice',data:event.candidate.toJSON()}).catch(error => {statusEl.textContent = error.message;});};
-    pc.ontrack = event => {video.srcObject = event.streams[0]; video.play().catch(() => {video.muted = true; document.getElementById('sound').textContent = 'Enable sound'; video.play().catch(() => {});});};
+    pc.ontrack = event => {try { if (new URLSearchParams(location.search).get('latency') === 'responsive') { if ('jitterBufferTarget' in event.receiver) event.receiver.jitterBufferTarget = 0; else if ('playoutDelayHint' in event.receiver) event.receiver.playoutDelayHint = 0; } } catch (_) {} video.srcObject = event.streams[0]; video.play().catch(() => {video.muted = true; document.getElementById('sound').textContent = 'Enable sound'; video.play().catch(() => {});});};
     pc.ondatachannel = event => {channel = event.channel; channel.onopen = () => sendPad();};
     pc.onconnectionstatechange = () => {
       statusEl.textContent = 'Player ' + (session.port+1) + ' · ' + pc.connectionState;
@@ -91,14 +97,14 @@ join.onclick = async () => {
     };
     let lastSend = 0;
     function controls(now) {
-      if (!active) return;
+      if (!active || !current()) return;
       if (now-lastSend >= 16) {sendPad(document.hidden ? PS2Remote.neutral : currentPad()); lastSend = now;}
       requestAnimationFrame(controls);
     }
     requestAnimationFrame(controls);
-    while (active) {
+    while (active && current()) {
       const {messages} = await PS2Remote.api('poll', session);
-      if (!active) break;
+      if (!active || !current()) break;
       for (const event of messages) {
         if (event.type !== 'signal') continue;
         const {type,data} = event.message;
@@ -115,6 +121,7 @@ join.onclick = async () => {
       }
     }
   } catch (error) {
+    if (!current()) return;
     leave(); welcome.hidden = false; join.disabled = false; message.textContent = error.message;
   }
 };

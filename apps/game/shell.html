@@ -4,14 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Gundam · full game with adaptive rendering</title>
+<link rel="stylesheet" href="multiplayer.css">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; height: 100%; background: #0b0b0d; color: #d8d8dc; font: 13px system-ui, sans-serif; }
   body { display: flex; flex-direction: column; }
   #stage { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; background: #000; }
-  canvas { width: 100%; height: 100%; display: block; background: #000; }
-  #bar { display: flex; gap: 16px; align-items: center; padding: 6px 12px; background: #141418; border-top: 1px solid #222; }
-  #status { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #game-viewport { overflow: hidden; flex: none; }
+  canvas { flex: none; width: 100%; height: 100%; display: block; background: #000; }
+  #bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 12px; background: #141418; border-top: 1px solid #222; }
+  #status { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #stats { font-variant-numeric: tabular-nums; color: #9ad; }
   #remote-panel:not([hidden]) { display: flex; align-items: center; gap: 8px; padding: 8px 12px; flex-wrap: wrap; background: #182237; }
   #remote-invite { flex: 1; min-width: 240px; background: #10131b; color: #fff; border: 1px solid #34405a; padding: 8px; }
@@ -90,7 +92,7 @@
 </head>
 <body>
 <pre id="experiment-proof" hidden></pre>
-<div id="stage"><canvas id="canvas" tabindex="0"></canvas></div>
+<div id="stage"><div id="game-viewport"><canvas id="canvas" tabindex="0"></canvas></div></div>
 <div id="touch" class="controls" aria-hidden="true">
   <div class="cluster left">
     <div class="shoulders"><div class="ctl shoulder" data-btn="256">L2</div><div class="ctl shoulder" data-btn="1024">L1</div></div>
@@ -138,18 +140,24 @@
   <button id="import-card" type="button" title="Put a .ps2 memory card file in slot 1">Import card</button>
   <input id="import-file" type="file" accept=".ps2" hidden>
   <button id="fullscreen" type="button" title="Fullscreen (F or double click)">Fullscreen</button></div>
+<button id="multiplayer-open" type="button">Multiplayer</button>
 <button id="exit-fullscreen" type="button">Exit fullscreen</button>
-<div id="remote-panel" hidden><span id="remote-status"></span><input id="remote-invite" readonly aria-label="Invitation link"><button id="remote-copy" type="button">Copy invite</button><button id="remote-stop" type="button">Close session</button></div>
+
 <div id="overlay"><div id="panel">
   <strong>Full game · adaptive rendering</strong>
   <p>Start from the title screen with normal menus and memory-card saves. Menus, loading, and unverified scenes keep their original 60-Hz timing. Supported battles can render at up to 120 fps while gameplay stays at 60 Hz. Auto reduces rendering work when needed.</p>
   <p id="render-rate-description"></p>
+  <button id="multiplayer-launch" type="button">Play with a friend</button>
   <p id="help" hidden></p><button id="start" disabled>Loading…</button></div></div>
 <div id="problem" hidden><p id="problem-text"></p><button id="problem-dismiss" type="button">Dismiss</button> <button id="problem-reload" type="button">Reload game</button></div>
 <script src="runtime-support.js"></script>
 <script src="scene-snapshot.js"></script>
+<script src="player-view.js"></script>
 <script src="remote-common.js"></script>
 <script src="remote-host.js"></script>
+<script src="netplay-transport.js"></script>
+<script src="netplay-game.js"></script>
+<script src="multiplayer.js"></script>
 <script>
 const statusEl = document.getElementById('status');
 const recentLogs = [];
@@ -281,14 +289,16 @@ function experimentProofHistory(samples, adaptive) {
     } : null,
   };
 }
-const hostMode = params.has('host');
+const netplayMode = params.has('netplay');
+const hostMode = params.has('host') || netplayMode;
 const coarsePointer = matchMedia('(pointer: coarse)').matches;
 const mobileMode = PS2WebSupport.mobileModeEnabled(params, navigator, coarsePointer);
 const allowedRenderRates = [60,72,80,90,100,110,120];
-const requestedRenderRate = Number(params.get('fps'));
+const requestedRenderRate = netplayMode ? 60 : Number(params.get('fps'));
 const renderMode = allowedRenderRates.includes(requestedRenderRate) ? 'fixed' : 'auto';
 experimentFps = renderMode === 'fixed' ? requestedRenderRate : (mobileMode ? 80 : 120);
 const renderRateSelect = document.getElementById('render-rate');
+if (netplayMode) for (const id of ['render-rate','scale','aspect','import-card','export-card']) document.getElementById(id).disabled = true;
 renderRateSelect.value = renderMode === 'auto' ? 'auto' : String(experimentFps);
 document.getElementById('render-rate-description').textContent = 'Original 60-Hz menus and gameplay / ' + (renderMode === 'auto' ? 'adaptive battle rendering, initial target ' + experimentFps : 'battle rendering target ' + experimentFps) + ' fps. Rate changes reload the game.';
 renderRateSelect.addEventListener('change', () => { const url = new URL(location.href); url.searchParams.set('fps', renderRateSelect.value); location.href = url.href; });
@@ -374,7 +384,7 @@ function onTouch(e) {
 for (const type of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) touchRoot.addEventListener(type, onTouch, { passive: false });
 
 const scaleSelect = document.getElementById('scale');
-let scale = params.get('PS2_SCALE');
+let scale = netplayMode ? '1' : params.get('PS2_SCALE');
 if (!scale && !mobileMode && !hostMode) {
   try { scale = localStorage.getItem('ps2web-scale'); } catch (e) {}
 }
@@ -392,7 +402,7 @@ let aspect = params.get('aspect');
 if (!aspect) {
   try { aspect = localStorage.getItem('ps2web-aspect'); } catch (e) {}
 }
-aspect = aspect === '16:9' ? '16:9' : '4:3';
+aspect = !netplayMode && aspect === '16:9' ? '16:9' : '4:3';
 aspectSelect.value = aspect;
 document.body.classList.toggle('wide', aspect === '16:9');
 aspectSelect.addEventListener('change', () => {
@@ -436,10 +446,16 @@ function fitCanvas() {
   // Keep letterboxing in CSS, outside the GPU surface. On an ultrawide phone
   // the controls can occupy the side bars without allocating/rendering them.
   const ratio = aspect === '16:9' ? 16 / 9 : 4 / 3;
-  const cssWidth = boundedDisplay ? Math.min(stage.clientWidth, stage.clientHeight * ratio) : stage.clientWidth;
-  const cssHeight = boundedDisplay ? cssWidth / ratio : stage.clientHeight;
-  canvas.style.width = boundedDisplay ? cssWidth + 'px' : '100%';
-  canvas.style.height = boundedDisplay ? cssHeight + 'px' : '100%';
+  const cropped = !!Module.playerViewSplit;
+  const layout = PS2PlayerView.layout(stage.clientWidth, stage.clientHeight, ratio, cropped, Module.netplaySession?.player);
+  const cssWidth = boundedDisplay || cropped ? layout.canvasWidth : stage.clientWidth;
+  const cssHeight = boundedDisplay || cropped ? layout.height : stage.clientHeight;
+  const viewport = document.getElementById('game-viewport');
+  viewport.style.width = (cropped ? layout.width : cssWidth) + 'px';
+  viewport.style.height = cssHeight + 'px';
+  canvas.style.width = cssWidth + 'px';
+  canvas.style.height = cssHeight + 'px';
+  canvas.style.transform = 'translateX(' + layout.shift + ')';
   const [width, height] = PS2WebSupport.canvasSize(cssWidth, cssHeight, window.devicePixelRatio, boundedDisplay, displayDetail === 'sharp' ? 640 : 480);
   if (canvas.width !== width || canvas.height !== height) {
     canvas.width = width;
@@ -494,7 +510,7 @@ fullscreenButton.addEventListener('click', toggleFullscreen);
 document.getElementById('exit-fullscreen').addEventListener('click', toggleFullscreen);
 canvas.addEventListener('dblclick', toggleFullscreen);
 window.addEventListener('keydown', (e) => {
-  if (e.code !== 'KeyF' || e.repeat || e.target.tagName === 'SELECT') return;
+  if (Module.multiplayerInputBlocked || e.code !== 'KeyF' || e.repeat || e.target.tagName === 'SELECT') return;
   e.preventDefault();
   toggleFullscreen();
 });
@@ -580,7 +596,7 @@ audioButton.addEventListener('click', async () => {
 // The local visibility helper below suspends the native continuation too.
 // Remote streaming hosts retain their existing background behavior.
 document.addEventListener('visibilitychange', () => {
-  if (hostMode) { lastFrameAt = performance.now(); if (document.hidden) clearAudioPacing(); }
+  if (hostMode || Module.streamingActive) { lastFrameAt = performance.now(); if (document.hidden) clearAudioPacing(); }
 });
 document.addEventListener('pointerdown', () => {
   if (audio && !muted && audio.state === 'suspended') audio.resume().catch(logRuntime);
@@ -590,7 +606,7 @@ const keys = new Set();
 const keyMap = { ArrowUp: 4, ArrowRight: 5, ArrowDown: 6, ArrowLeft: 7, KeyZ: 14, KeyX: 13, KeyA: 15, KeyS: 12,
                  KeyQ: 10, KeyW: 11, Digit1: 8, Digit2: 9, Enter: 3, Backspace: 0 };
 const stickKeys = new Set(['KeyI', 'KeyJ', 'KeyK', 'KeyL']);
-window.addEventListener('keydown', (e) => { if (e.code in keyMap || stickKeys.has(e.code)) { keys.add(e.code); e.preventDefault(); } });
+window.addEventListener('keydown', (e) => { if (!Module.multiplayerInputBlocked && (e.code in keyMap || stickKeys.has(e.code))) { keys.add(e.code); e.preventDefault(); } });
 window.addEventListener('keyup', (e) => { keys.delete(e.code); });
 const padButtons = [[0, 14], [1, 13], [2, 15], [3, 12], [4, 10], [5, 11], [6, 8], [7, 9], [8, 0], [9, 3], [10, 1], [11, 2],
                     [12, 4], [13, 6], [14, 7], [15, 5]];
@@ -657,9 +673,12 @@ function pollPlayer(port, gamepad, own) {
   }
 }
 function pollInput() {
-  const pads = [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter((pad) => pad);
+  // A connection dialog owns local controls only. A streamed friend's input
+  // must keep reaching its controller while the host copies an invitation.
+  if (Module.multiplayerInputBlocked) keys.clear();
+  const pads = Module.multiplayerInputBlocked ? [] : [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter((pad) => pad);
   for (let port = 0; port < 2; ++port) {
-    const remote = Module.remotePads && Module.remotePads[port];
+    const remote = Module.remotePads?.[port] || (Module.remoteReserved?.[port] ? {lastSeen:0} : null);
     const remotePad = remote && (performance.now() - remote.lastSeen < 750 ? remote.gamepad : PS2Remote.gamepad(PS2Remote.neutral));
     pollPlayer(port, remotePad || pads[port] || null, port === 0 && !remote);
   }
@@ -752,11 +771,11 @@ const countShown = () => {
 requestAnimationFrame(countShown);
 var Module = {
   canvas,
-  arguments: ['/game/core.elf'].concat(params.has('arg') ? ['--arg', params.get('arg')] : [], aspect === '16:9' ? ['--widescreen'] : [], params.getAll('press').flatMap((p) => p.split(',').flatMap((x) => ['--press', x]))),
+  arguments: netplayMode ? ['/game/core.elf'] : ['/game/core.elf'].concat(params.has('arg') ? ['--arg', params.get('arg')] : [], aspect === '16:9' ? ['--widescreen'] : [], params.getAll('press').flatMap((p) => p.split(',').flatMap((x) => ['--press', x]))),
   discUrl: '/disc.iso',
   stateUrl: null,
   noSurface: params.has('nosurface'),
-  noCard: params.has('nocard'),
+  noCard: netplayMode || params.has('nocard'),
   presentCopy: params.has('copy'),
   readDiscRange: PS2WebSupport.readDiscRange,
   discPending: 0,
@@ -787,7 +806,7 @@ var Module = {
         targetHz: renderMode === 'auto' ? 120 : experimentFps,
         cadenceDebt: params.get('cadenceDebt') !== '0',
         getAppliedHz: () => Module._ps2web_experiment_stat(8),
-        isVisible: () => !document.hidden,
+        isVisible: () => !document.hidden || !!Module.streamingActive,
       });
       pacing.attach(Module);
       Module.presentationPacing = pacing;
@@ -850,7 +869,7 @@ var Module = {
         console.warn('memory card: browser storage is not available', e);
       }
     }
-    for (const [key, value] of params) if (key.startsWith('PS2_')) Module.ENV[key] = value;
+    for (const [key, value] of params) if (!netplayMode && key.startsWith('PS2_')) Module.ENV[key] = value;
     Module.ENV.PS2_SCALE = scale;
     Module.ENV.PS2_EXPERIMENT_FPS = String(experimentFps);
     Module.ENV.PS2_RENDER_AUTO = renderMode === 'auto' ? '1' : '0';
@@ -950,6 +969,7 @@ var Module = {
   noInitialRun: true,
 };
 
+Module.clearMultiplayerInput = () => { keys.clear(); fingers.clear(); touchPad = {buttons:0, x:0, y:0, stick:false}; };
 updateControls();
 if (missing.length) {
   const help = document.getElementById('help');
@@ -959,6 +979,7 @@ if (missing.length) {
 }
 
 document.getElementById('start').addEventListener('click', async () => {
+  if (netplayMode && !Module.multiplayer?.started) { Module.multiplayer.open(); return; }
   document.getElementById('start').disabled = true;
   try { await PS2WebSupport.withTimeout(startAudio, 5000, 'Audio startup timed out'); }
   catch (e) {
@@ -973,14 +994,14 @@ document.getElementById('start').addEventListener('click', async () => {
   fitCanvas();
   statusEl.textContent = 'Running' + (mobileMode ? ' in phone mode' : '') + ', ' + Module.gpuInfo;
   Module.running = true;
-  if (params.has('host')) PS2RemoteHost.start(Module, canvas).catch(error => showProblem('Hosting failed: ' + error.message));
+  if (params.has('host')) Module.multiplayer.open();
   lastFrameAt = performance.now();
   try { await Module.callMain(Module.arguments); }
   catch (e) { fatalError('Game stopped: ' + String(e)); }
 });
 
 setInterval(() => {
-  if (!Module.running || Module.failed || document.hidden || stallReported || performance.now() - lastFrameAt < 12000) return;
+  if (!Module.running || Module.failed || Module.multiplayerMenuWaiting || document.hidden || stallReported || performance.now() - lastFrameAt < 12000) return;
   stallReported = true;
   const waiting = Module.discPending ? ' Waiting for ' + Module.discPending + ' disc request(s); check Tailscale.' : '';
   showProblem('No new frame for 12 seconds.' + waiting + ' If it stays frozen, save diagnostics before reloading.');
@@ -1009,6 +1030,12 @@ document.getElementById('diagnostics').addEventListener('click', () => {
 <script src="adaptive-render-policy.js"></script>
 <script src="full-game-adaptive-render.js"></script>
 <script src="local-game-visibility.js"></script>
+<script>
+Module.fitMultiplayerView = fitCanvas;
+Module.multiplayer = PS2Multiplayer.attach(Module, canvas);
+const moveSessionButton = () => (document.fullscreenElement ? document.body : document.getElementById('bar')).append(document.getElementById('multiplayer-open'));
+document.addEventListener('fullscreenchange', moveSessionButton); moveSessionButton();
+</script>
 {{{ SCRIPT }}}
 </body>
 </html>

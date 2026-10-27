@@ -35,6 +35,7 @@ def supported_disc(path):
 def handler(build, disc):
     build, disc = Path(build).resolve(), Path(disc).resolve()
     class Handler(http.server.BaseHTTPRequestHandler):
+        multiplayer_modes = {"streaming": False, "lockstep": False}
         def target(self):
             name = unquote(urlsplit(self.path).path)
             if name == '/disc.iso':
@@ -87,7 +88,15 @@ def handler(build, disc):
                 pass
 
         def do_HEAD(self): self.send_file(head=True)
-        def do_GET(self): self.send_file()
+        def do_GET(self):
+            if urlsplit(self.path).path == '/multiplayer-config.json':
+                data = json.dumps(self.multiplayer_modes).encode()
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(data)))
+                self.send_header('Cache-Control', 'no-store')
+                self.end_headers(); self.wfile.write(data)
+            else: self.send_file()
         def log_message(self, *_): pass
     return Handler
 
@@ -111,6 +120,7 @@ def main():
     if args.netplay:
         from netplay import handler_with_netplay
         base = handler_with_netplay(base)
+    base.multiplayer_modes = {"streaming": bool(args.remote), "lockstep": bool(args.netplay) and (build / "netplay-manifest.json").is_file()}
     server = http.server.ThreadingHTTPServer((args.host, args.port), base)
     print(f'Game ready at http://{args.host}:{server.server_port}/', flush=True)
     try: server.serve_forever()

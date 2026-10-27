@@ -13,7 +13,7 @@
   function attach(Module, options = {}) {
     if (options.skip) return {
       snapshot: () => ({enabled: false, skipped: true, disposed: false, pendingContinuations: 0}),
-      dispose() {},
+      dispose() {}, setKeepRunning() {},
     };
     const document = options.document || globalThis.document;
     const lifecycle = options.window || globalThis;
@@ -31,6 +31,7 @@
     let channel = null;
     let disposed = false;
     let cached = false;
+    let keepRunning = false;
     let forwarded = null;
     let hidden = !!document.hidden;
     let hiddenEvents = 0, visibleEvents = 0, resumedContinuations = 0;
@@ -124,7 +125,7 @@
 
     function reconcile(event) {
       if (disposed) return;
-      const next = cached || !!document.hidden;
+      const next = cached || (!keepRunning && !!document.hidden);
       if (next !== hidden) {
         hidden = next;
         if (hidden) { ++hiddenEvents; notify('onHidden', event); }
@@ -174,7 +175,7 @@
     lifecycle.addEventListener('pagehide', pageHide);
     lifecycle.addEventListener('pageshow', pageShow);
     if (hidden) { ++hiddenEvents; notify('onHidden', {type: 'attach', persisted: false}); }
-    return {snapshot, dispose};
+    return {snapshot, dispose, setKeepRunning(value) { keepRunning = !!value; reconcile({type:'session'}); }};
   }
 
   return {attach};
