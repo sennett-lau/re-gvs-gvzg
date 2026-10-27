@@ -1,6 +1,6 @@
 # 01 · From a PS2 disc to C++
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/01-disc-to-code.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/01-disc-to-code.html).
 
 > **At a glance**
 >

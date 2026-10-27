@@ -1,6 +1,6 @@
 # 02 · From C++ to a browser game
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/02-browser-port.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/02-browser-port.html).
 
 > **At a glance**
 >

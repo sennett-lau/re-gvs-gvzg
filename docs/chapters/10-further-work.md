@@ -1,6 +1,6 @@
 # 10 · Further work
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/10-further-work.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/10-further-work.html).
 
 > **At a glance**
 >

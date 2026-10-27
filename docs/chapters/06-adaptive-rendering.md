@@ -1,6 +1,6 @@
 # 06 · Adaptive rendering: results and limits
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/06-adaptive-rendering.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/06-adaptive-rendering.html).
 
 > **At a glance**
 >

@@ -4,7 +4,7 @@ This section is for contributors and coding agents. It contains development proc
 
 ## Review the existing Wiki first
 
-Review the current [Wiki](.local/wiki/index.html) before editing. If no reader is running, [build it locally](#run-the-reader-locally).
+Review the current [Wiki](https://sennett-lau.github.io/re-gvs-gvzg/) before editing. To preview local changes, [build the reader locally](#run-the-reader-locally).
 
 Then read the source [overview](README.md), the relevant chapter and its evidence.
 
@@ -81,7 +81,7 @@ Reader checks do not establish new game-performance results. Keep game tests sil
 
 Run `npm run verify:research` to execute the input-edge regression, verify the render-hook export and regenerate both PC figures. The display analysis also checks selected per-frame intervals and endpoint counters. The figures should leave no diff after regeneration. These checks need Python 3, but no disc, GPU or original capture archive.
 
-The local `.github/workflows/research.yml` recipe runs these checks, builds the Wiki and checks its links on pushes and pull requests once published. Actions are pinned to commit hashes, permissions are read-only, and the workflow does not deploy. Its commands were checked locally; a hosted CI run remains pending publication.
+The `.github/workflows/research.yml` recipe runs these checks, builds the Wiki and checks its links on pushes and pull requests. Actions are pinned to commit hashes, permissions are read-only, and the workflow does not deploy. See [Research checks](https://github.com/sennett-lau/re-gvs-gvzg/actions/workflows/research.yml) for hosted run results.
 
 Regenerating the video is a separate FFmpeg task that requires the original capture archive. Preserve the source fingerprints and cumulative-image-count checks in `scripts/build-comparison-media.py`.
 

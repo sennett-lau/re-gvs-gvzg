@@ -1,6 +1,6 @@
 # 04 · Understanding the frame-rate goal
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/04-frame-rate.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/04-frame-rate.html).
 
 > **At a glance**
 >

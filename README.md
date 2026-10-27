@@ -2,7 +2,7 @@
 
 This project studies how [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en.wikipedia.org/wiki/Mobile_Suit_Gundam:_Gundam_vs._Zeta_Gundam) can run in a browser. It follows the work from recompilation to performance improvements, higher refresh rates and multiplayer experiments.
 
-> Prefer the illustrated reader? [Open the Wiki](.local/wiki/index.html).
+> Prefer the illustrated reader? [Open the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/).
 
 ## Results at a glance
 
@@ -109,7 +109,9 @@ Use the [Evidence index](docs/evidence/README.md) to trace a finding to its sele
 >
 > This repository contains the report, Wiki, retained generated C++, adaptive runtime sources and one matched playable web package. Multiplayer prototypes remain separate. Each chapter explains what worked, what was tested and what remains unfinished.
 
-The [game setup guide](docs/GAME_FILES.md) covers local play, self-hosting and rebuilding the included source. The public site is planned as a research Wiki; an online playable demo is deferred.
+The [game setup guide](docs/GAME_FILES.md) covers local play, self-hosting and rebuilding the included source. The public site hosts the research Wiki; an online playable demo is deferred.
+
+[Download v0.3.0-alpha.1](https://github.com/sennett-lau/re-gvs-gvzg/releases/tag/v0.3.0-alpha.1) for the matched browser package and a downloadable Wiki. The browser package includes WASM and its companion files. It requires the supported disc for local play; no ISO or ROM is included.
 
 The chapters reconstruct retained research. [Evidence conventions](docs/EVIDENCE.md) define the result labels, review dates and measurement limits.
 

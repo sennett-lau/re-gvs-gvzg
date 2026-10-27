@@ -1,6 +1,6 @@
 # 08 · Multiplayer route B: a game on each device
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/08-independent-clients.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/08-independent-clients.html).
 
 > **At a glance**
 >

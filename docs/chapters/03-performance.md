@@ -1,6 +1,6 @@
 # 03 · Making the browser build faster
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/03-performance.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/03-performance.html).
 
 > **At a glance**
 >

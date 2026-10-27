@@ -1,6 +1,6 @@
 # 05 · Separating gameplay from rendering
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/05-rendering-boundary.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/05-rendering-boundary.html).
 
 > **At a glance**
 >

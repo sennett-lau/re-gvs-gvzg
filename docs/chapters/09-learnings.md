@@ -1,6 +1,6 @@
 # 09 · Findings and lessons
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/09-learnings.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/09-learnings.html).
 
 > **At a glance**
 >

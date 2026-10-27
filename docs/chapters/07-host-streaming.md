@@ -1,6 +1,6 @@
 # 07 · Multiplayer route A: one host, two controllers
 
-> Prefer the illustrated reader? [Read this chapter in the Wiki](../../.local/wiki/07-host-streaming.html).
+> Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/07-host-streaming.html).
 
 > **At a glance**
 >
