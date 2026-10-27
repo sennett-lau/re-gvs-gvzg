@@ -12,6 +12,9 @@
       this.startupTimeoutMs = startupTimeoutMs;
       this.startupPollMs = startupPollMs;
       this.localPad = transportAPI.neutral();
+      this.pressedButtons = 0;
+      this.pressedPressure = Array(16).fill(0);
+      this.inputSequence = [];
       this.nextFrame = 0;
       this.inStep = false;
       this.attached = false;
@@ -21,9 +24,9 @@
       this.failure.catch(() => {});
     }
 
-    static async create({identity, endpoint, checkpointInterval = 120, inputDelay = 3, onStatus}) {
+    static async create({identity, endpoint, checkpointInterval = 120, inputDelay = 3, adaptiveDelay = false, onStatus}) {
       const transport = new transportAPI.LockstepTransport({endpoint, onStatus});
-      await transport.create(identity, checkpointInterval, inputDelay);
+      await transport.create(identity, checkpointInterval, inputDelay, adaptiveDelay);
       return new GameSession(transport);
     }
 
@@ -123,12 +126,14 @@
       // input to the authenticated owner's game port on both simulations.
       Module._ps2web_pad = (port, buttons, lx, ly, rx, ry) => {
         if (port !== 0) return;
+        this.pressedButtons |= buttons;
         Object.assign(this.localPad, {buttons, lx, ly, rx, ry});
       };
       Module._ps2web_pad_connected = () => {};
       Module._ps2web_pressure = (port, ...packed) => {
         if (port !== 0) return;
         this.localPad.pressure = Array.from({length: 16}, (_, i) => (packed[i >> 2] >>> ((i & 3) * 8)) & 255);
+        this.pressedPressure = this.pressedPressure.map((p,i)=>Math.max(p,this.localPad.pressure[i]));
       };
       if (rumble) Module._ps2web_rumble = port => port === 0 ? rumble(owner) : 0;
       Module.netplayCheckpointInterval = this.transport.session.checkpoint_interval;
@@ -137,6 +142,20 @@
         inputDelay: this.transport.session.input_delay, checkpointInterval: this.transport.session.checkpoint_interval};
       this.attached = true;
       return Module.netplaySession;
+    }
+
+    queueInputSequence(pads) {
+      if (!this.attached || this.error || this.inputSequence.length || pads.length > 60) return false;
+      this.inputSequence = pads.map(pad=>JSON.parse(JSON.stringify(pad)));
+      return true;
+    }
+
+    captureInput() {
+      const pad = this.inputSequence.length ? this.inputSequence.shift() : {...this.localPad,
+        buttons:this.localPad.buttons | this.pressedButtons,
+        pressure:this.localPad.pressure.map((p,i)=>Math.max(p,this.pressedPressure[i]))};
+      this.pressedButtons = 0; this.pressedPressure.fill(0);
+      return pad;
     }
 
     async step(frame, hash) {
@@ -150,7 +169,7 @@
           await Promise.race([this.transport.checkpoint(frame, hash), this.failure]);
           this.lastCheckpoint = {frame, hash};
         }
-        this.transport.enqueue(frame + this.transport.session.input_delay, this.localPad).catch(error => this.fail(error));
+        this.transport.enqueue(frame + this.transport.session.input_delay, this.captureInput()).catch(error => this.fail(error));
         const pair = await Promise.race([this.transport.next(), this.failure]);
         if (this.error) throw this.error;
         ++this.nextFrame;

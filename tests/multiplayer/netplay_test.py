@@ -229,5 +229,46 @@ class AbandonedRooms(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'capacity'):
             rooms.call('create', {'identity': IDENTITY})
 
+
+class AdaptiveDelay(unittest.TestCase):
+    def test_both_paths_are_measured_before_delay_is_locked(self):
+        rooms = Rooms()
+        a = rooms.call('create', {'identity': IDENTITY, 'adaptive_delay': True})
+        b = rooms.call('join', {'room':a['room'], 'invite':a['invite'], 'identity':IDENTITY})
+        auth = lambda owner: {'room':owner['room'], 'token':owner['token']}
+        self.assertFalse(rooms.call('status', auth(a))['delay_ready'])
+        with self.assertRaisesRegex(ValueError, 'latency'):
+            rooms.call('checkpoint', dict(auth(a), frame=0, hash='a'*16))
+        self.assertFalse(rooms.call('latency', dict(auth(a), rtt_ms=20))['delay_ready'])
+        ready = rooms.call('latency', dict(auth(b), rtt_ms=150))
+        self.assertTrue(ready['delay_ready'])
+        self.assertEqual(ready['input_delay'], 20)
+        self.assertEqual(rooms.call('status', auth(a))['input_delay'], 20)
+        rooms.call('checkpoint', dict(auth(a), frame=0, hash='a'*16))
+        rooms.call('checkpoint', dict(auth(b), frame=0, hash='a'*16))
+        with self.assertRaisesRegex(ValueError, 'fixed after startup'):
+            rooms.call('latency', dict(auth(b), rtt_ms=200))
+        self.assertEqual(rooms.call('latency', dict(auth(b), rtt_ms=150))['input_delay'], 20)
+
+
+class InputReceipts(unittest.TestCase):
+    def test_lost_input_reply_can_retry_after_poll_history_is_pruned(self):
+        rooms = Rooms()
+        a = rooms.call('create', {'identity':IDENTITY})
+        b = rooms.call('join', {'room':a['room'], 'invite':a['invite'], 'identity':IDENTITY})
+        auth = lambda owner: {'room':owner['room'], 'token':owner['token']}
+        for owner in [a,b]: rooms.call('checkpoint', dict(auth(owner), frame=0, hash='a'*16))
+        batch = [{'frame':f, 'pad':NEUTRAL} for f in range(3)]
+        for owner in [a,b]: rooms.call('inputs', dict(auth(owner), inputs=batch))
+        for owner in [a,b]: rooms.call('poll', dict(auth(owner), **{'from':0,'wait':0}))
+        for owner in [a,b]: rooms.call('poll', dict(auth(owner), **{'from':3,'wait':0}))
+        self.assertEqual(rooms.rooms[a['room']]['history'], {})
+        retry = rooms.call('inputs', dict(auth(a), inputs=batch))
+        self.assertTrue(retry['duplicate'])
+        self.assertEqual(retry['accepted'], 2)
+        with self.assertRaisesRegex(ValueError, 'Conflicting duplicate'):
+            rooms.call('input', dict(auth(a), frame=0, pad=dict(NEUTRAL,buttons=16)))
+        self.assertEqual(rooms.call('status', auth(a))['input_next'], 3)
+
 if __name__ == '__main__':
     unittest.main()

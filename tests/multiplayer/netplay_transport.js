@@ -166,3 +166,31 @@ test('game bridge owns local controls, batches future inputs and feeds identical
   assert.deepEqual(histories[0][10].pads[1].pressure.slice(0, 4), [1, 2, 3, 4]);
   await transports[0].close();
 });
+
+test('measured delay and prefetch keep two simulations moving over a delayed round trip', async () => {
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+  const delayed = async (url,init) => {await sleep(60);const response=await fetch(url,init);await sleep(60);return response;};
+  const transports=[0,1].map(()=>new LockstepTransport({endpoint,fetch:delayed}));
+  const room=await transports[0].create(identity,120,3,true);
+  try {
+    await transports[1].join(room.room,room.invite,identity);
+    await Promise.all(transports.map(t=>t.measureLatency()));
+    await Promise.all(transports.map(t=>t.call('status')));
+    assert.equal(transports[0].session.input_delay,transports[1].session.input_delay);
+    assert.ok(transports[0].session.input_delay>=17);
+    const sessions=transports.map(t=>new GameSession(t)), history=[[],[]], sums=[0,0];
+    await Promise.all(sessions.map(s=>s.step(0,digest(0))));
+    const start=performance.now();
+    await Promise.all(sessions.map(async(s,owner)=>{
+      for(let frame=1;frame<=120;frame++) {
+        const at=performance.now();s.localPad.buttons=frame%3?owner+1:0;
+        const pair=await s.step(frame,frame%120===0?digest(sums[owner]):null);
+        history[owner].push(pair);sums[owner]+=pair.pads[0].buttons+pair.pads[1].buttons;
+        await sleep(Math.max(0,1000/60-(performance.now()-at)));
+      }
+    }));
+    assert.deepEqual(history[0],history[1]);
+    assert.ok(performance.now()-start<4500,'120 ticks should not wait for a round trip every few frames');
+    assert.ok(transports.every(t=>t.snapshot().failure===null));
+  } finally {await transports[0].close();transports.forEach(t=>t.stopHeartbeat());}
+});

@@ -89,6 +89,8 @@ class Rooms:
     def _summary(self, room):
         return {'status': self._status(room), 'next_frame': room['next_frame'],
                 'checkpoint_frame': room['checkpoint_frame'],
+                'input_delay': room['input_delay'],
+                'delay_ready': not room['adaptive_delay'] or all(p and p['rtt_ms'] is not None for p in room['players']),
                 'players': [bool(p and p['connected']) for p in room['players']],
                 'reason': room['reason']}
 
@@ -115,7 +117,7 @@ class Rooms:
 
     def call(self, action, data):
         allowed = {
-            'create': ('identity', 'checkpoint_interval', 'input_delay'),
+            'create': ('identity', 'checkpoint_interval', 'input_delay', 'adaptive_delay'),
             'join': ('room', 'invite', 'identity'),
             'input': ('room', 'token', 'frame', 'pad'),
             'inputs': ('room', 'token', 'inputs'),
@@ -123,6 +125,7 @@ class Rooms:
             'checkpoint': ('room', 'token', 'frame', 'hash', 'wait'),
             'resume': ('room', 'token'), 'leave': ('room', 'token'),
             'status': ('room', 'token'), 'close': ('room', 'token'),
+            'latency': ('room', 'token', 'rtt_ms'),
         }
         if action not in allowed:
             raise ProtocolError('Unknown action')
@@ -137,6 +140,9 @@ class Rooms:
                 ident = identity(data.get('identity'))
                 interval = integer(data.get('checkpoint_interval', 60), 1, 120, 'checkpoint interval')
                 delay = integer(data.get('input_delay', 3), 0, 30, 'input delay')
+                adaptive = data.get('adaptive_delay', False)
+                if type(adaptive) is not bool:
+                    raise ProtocolError('Invalid adaptive delay flag')
                 # Terminal sessions no longer consume playable slots. Retain
                 # recent records so peers still receive the useful close or
                 # desync reason, but never evict an active/waiting session.
@@ -147,13 +153,13 @@ class Rooms:
                 if sum(room['terminal'] is None for room in self.rooms.values()) >= self.max_rooms:
                     raise ProtocolError('Room capacity reached')
                 room_id, token, invite = (secrets.token_urlsafe(24) for _ in range(3))
-                player = {'token': token, 'seen': now, 'connected': True, 'ack': -1, 'delivered': -1, 'input_next': 0}
+                player = {'token': token, 'seen': now, 'connected': True, 'ack': -1, 'delivered': -1, 'input_next': 0, 'rtt_ms': None, 'receipts': {}}
                 self.rooms[room_id] = {'identity': ident, 'invite': invite, 'active': now,
                     'players': [player, None], 'pending': {}, 'history': {}, 'next_frame': 0,
-                    'checkpoint_frame': 0, 'checkpoint_interval': interval, 'input_delay': delay, 'checkpoints': {},
+                    'checkpoint_frame': 0, 'checkpoint_interval': interval, 'input_delay': delay, 'adaptive_delay': adaptive, 'checkpoints': {},
                     'terminal': None, 'reason': None}
                 return {'room': room_id, 'token': token, 'invite': invite, 'player': 0,
-                        'identity': ident, 'checkpoint_interval': interval, 'input_delay': delay}
+                        'identity': ident, 'checkpoint_interval': interval, 'input_delay': delay, 'adaptive_delay': adaptive}
             room_id = data.get('room')
             if not isinstance(room_id, str) or room_id not in self.rooms:
                 raise ProtocolError('Room expired or not found')
@@ -168,11 +174,11 @@ class Rooms:
                 if room['players'][1] is not None or room['terminal']:
                     raise ProtocolError('Room already has two owners; resume with your original token')
                 token = secrets.token_urlsafe(24)
-                room['players'][1] = {'token': token, 'seen': now, 'connected': True, 'ack': -1, 'delivered': -1, 'input_next': 0}
+                room['players'][1] = {'token': token, 'seen': now, 'connected': True, 'ack': -1, 'delivered': -1, 'input_next': 0, 'rtt_ms': None, 'receipts': {}}
                 room['active'] = now
                 self.changed.notify_all()
                 return {'room': room_id, 'token': token, 'player': 1, 'identity': room['identity'],
-                        'checkpoint_interval': room['checkpoint_interval'], 'input_delay': room['input_delay']}
+                        'checkpoint_interval': room['checkpoint_interval'], 'input_delay': room['input_delay'], 'adaptive_delay': room['adaptive_delay']}
             index, player = self._authenticate(room, data.get('token'))
             room['active'] = now
             player['seen'] = now
@@ -194,13 +200,29 @@ class Rooms:
                 return self._summary(room)
             if action == 'status':
                 return dict(self._summary(room), player=index, identity=room['identity'],
-                            input_next=player['input_next'], checkpoint_interval=room['checkpoint_interval'],
-                            input_delay=room['input_delay'])
+                            input_next=player['input_next'], checkpoint_interval=room['checkpoint_interval'])
+            if action == 'latency':
+                measured = integer(data.get('rtt_ms'), 0, 5000, 'round-trip time')
+                if room['terminal'] or not room['adaptive_delay']:
+                    raise ProtocolError('Room does not accept delay negotiation')
+                if room['checkpoint_frame'] or any(p and p['input_next'] for p in room['players']):
+                    if measured != player['rtt_ms']:
+                        raise ProtocolError('Input delay is fixed after startup')
+                    return self._summary(room)
+                player['rtt_ms'] = measured
+                worst = max(p['rtt_ms'] or 0 for p in room['players'] if p)
+                # Cover input batching plus the return path, with two ticks of
+                # jitter margin. This HTTP fallback trades input lag for speed.
+                room['input_delay'] = min(30, max(3, (worst * 2 * 60 + 999) // 1000 + 2))
+                self.changed.notify_all()
+                return self._summary(room)
             if room['terminal']:
                 return self._summary(room)
             if not player['connected']:
                 return self._summary(room)
             if action in ('input', 'inputs'):
+                if not self._summary(room)['delay_ready']:
+                    raise ProtocolError('Wait for both latency measurements before startup')
                 items = [{'frame': data.get('frame'), 'pad': data.get('pad')}] if action == 'input' else data.get('inputs')
                 if not isinstance(items, list) or not 1 <= len(items) <= 64:
                     raise ProtocolError('Expected one to sixty-four inputs')
@@ -214,7 +236,9 @@ class Rooms:
                     previous = frame
                     old = room['history'].get(frame)
                     pair = room['pending'].get(frame)
-                    existing = old['pads'][index] if old else (pair[index] if pair else None)
+                    existing = player['receipts'].get(frame)
+                    if existing is None:
+                        existing = old['pads'][index] if old else (pair[index] if pair else None)
                     if existing is not None:
                         if existing != value:
                             raise ProtocolError('Conflicting duplicate input')
@@ -230,10 +254,17 @@ class Rooms:
                 # Validate the complete batch before mutating any frame.
                 for frame, value in planned:
                     room['pending'].setdefault(frame, [None, None])[index] = value
+                    player['receipts'][frame] = value
                 player['input_next'] = expected
+                # Poll acknowledgements can prune game history before an HTTP
+                # input reply arrives. Retain the latest two maximum batches
+                # independently so retries remain verifiable and idempotent.
+                player['receipts'] = {frame: value for frame, value in player['receipts'].items() if frame >= expected - 128}
                 self._release(room)
                 return dict(self._summary(room), accepted=items[-1]['frame'], duplicate=not planned)
             if action == 'checkpoint':
+                if not self._summary(room)['delay_ready']:
+                    raise ProtocolError('Wait for both latency measurements before startup')
                 frame = integer(data.get('frame'), 0, 0x7fffffff, 'checkpoint frame')
                 digest = data.get('hash')
                 if not isinstance(digest, str) or not re.fullmatch('(?:[0-9a-f]{16}|[0-9a-f]{64})', digest):

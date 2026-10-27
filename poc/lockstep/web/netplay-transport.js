@@ -28,16 +28,28 @@
       this.closed = false;
       this.heartbeat = null;
       this.heartbeatBusy = false;
+      this.receiving = null;
+      this.receiveError = null;
+      this.requests = [];
+      this.failure = null;
+      this.waitCount = 0;
+      this.waitMs = 0;
     }
 
     async call(action, values = {}, authenticated = true) {
       const body = {...(authenticated && this.session ? {room: this.session.room, token: this.session.token} : {}), ...values};
       // Identical input/checkpoint retries are checked by the relay. Creating a
       // room or claiming its second slot is not idempotent and is never retried.
-      const safe = ['status', 'resume', 'input', 'inputs', 'poll', 'checkpoint', 'leave', 'close'].includes(action);
+      const safe = ['status', 'resume', 'input', 'inputs', 'poll', 'checkpoint', 'latency', 'leave', 'close'].includes(action);
       const payload = JSON.stringify(body);
       const now = () => root.performance.now();
       const deadline = now() + this.retryBudgetMs;
+      const record = {action, startedMs: now()};
+      if (Number.isInteger(values.frame)) record.frame = values.frame;
+      if (Number.isInteger(values.from)) record.from = values.from;
+      if (values.inputs?.length) { record.firstInput = values.inputs[0].frame; record.lastInput = values.inputs[values.inputs.length-1].frame; }
+      this.requests.push(record);
+      if (this.requests.length > 24) this.requests.shift();
       for (let attempt = 0; ; ++attempt) {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), Math.max(1, Math.min(this.timeoutMs, deadline - now())));
@@ -55,17 +67,25 @@
           retryable = false;
           if (result.error) throw new Error(result.error);
           if (result.status) { this.lastStatus = result; this.onStatus(result); }
+          if (this.session && this.nextInput === 0 && Number.isInteger(result.input_delay)) this.session.input_delay = result.input_delay;
           if (result.status === 'desynced' || result.status === 'closed') {
             this.closed = true;
             this.stopHeartbeat();
             if (action !== 'close') throw new Error(result.reason || result.status);
           }
+          record.elapsedMs = now() - record.startedMs;
+          record.status = result.status || 'ok';
+          if (Number.isInteger(result.accepted)) record.accepted = result.accepted;
+          if (Number.isInteger(result.next_frame)) record.nextFrame = result.next_frame;
           return result;
         } catch (error) {
           const delay = this.retryDelayMs * (attempt + 1);
           if (!safe || !retryable || this.closed || attempt >= this.retryLimit || now() + delay >= deadline) {
             const detail = error.name === 'AbortError' ? 'request timed out' : String(error.message || error);
-            throw new Error('Netplay ' + action + ': ' + detail);
+            const message = this.clean('Netplay ' + action + ': ' + detail);
+            record.elapsedMs = now() - record.startedMs; record.error = message;
+            if (!this.failure) this.failure = {action, message};
+            throw new Error(message);
           }
           this.retryEvents.push({action, attempt: attempt + 1, httpStatus,
             reason: controller.signal.aborted ? 'timeout' : httpStatus ? 'gateway' : 'network'});
@@ -77,9 +97,37 @@
       }
     }
 
-    async create(identity, checkpointInterval = 60, inputDelay = 3) {
+    clean(error) {
+      let value = String(error?.message || error);
+      for (const key of ['room','token','invite']) {
+        const secret = this.session?.[key];
+        if (!secret) continue;
+        if (secret.length >= 8) value = value.split(secret).join('[' + key + ']');
+        else value = value.split(/(\s+)/).map(word=>word === secret ? '[' + key + ']' : word).join('');
+      }
+      return value.replace(/https?:\/\/\S+/g, '[url]').slice(0,600);
+    }
+
+    snapshot() {
+      return {player:this.session?.player, inputDelay:this.session?.input_delay, nextInput:this.nextInput,
+        nextFrame:this.nextFrame, bufferedFrames:this.pendingFrames.length, queuedInputs:this.outbox.length,
+        inputWaitCount:this.waitCount, inputWaitMs:this.waitMs, latency:this.latency || null,
+        failure:this.failure, retries:this.retryEvents.slice(), requests:this.requests.map(r=>({...r}))};
+    }
+
+    async measureLatency() {
+      const samples = [];
+      for (let i = 0; i < 5; i++) {
+        const at = root.performance.now(); await this.call('status'); samples.push(root.performance.now() - at);
+      }
+      const sorted = samples.slice().sort((a,b)=>a-b);
+      this.latency = {samplesMs:samples, medianMs:sorted[2], highMs:sorted[4]};
+      return this.call('latency', {rtt_ms:Math.min(5000, Math.ceil(sorted[4]))});
+    }
+
+    async create(identity, checkpointInterval = 60, inputDelay = 3, adaptiveDelay = false) {
       if (this.session) throw new Error('Transport already owns a player');
-      this.session = await this.call('create', {identity, checkpoint_interval: checkpointInterval, input_delay: inputDelay}, false);
+      this.session = await this.call('create', {identity, checkpoint_interval: checkpointInterval, input_delay: inputDelay, adaptive_delay:adaptiveDelay}, false);
       this.startHeartbeat();
       return this.session;
     }
@@ -171,11 +219,12 @@
       this.requireSession();
       if (this.nextBusy) throw new Error('Only one frame consumer may run at once');
       this.nextBusy = true;
+      const at = root.performance.now(), waiting = !this.pendingFrames.length;
+      if (waiting) ++this.waitCount;
       try {
         while (!this.pendingFrames.length) {
-          const result = await this.call('poll', {from: this.nextFrame, wait: 20});
-          if (result.status === 'paused') throw new Error('Netplay paused; resume both players before continuing');
-          this.pendingFrames = result.frames || [];
+          if (this.receiveError) throw this.receiveError;
+          await this.prefetchFrames();
         }
         const value = this.pendingFrames.shift();
         if (value.frame !== this.nextFrame || !Array.isArray(value.pads) || value.pads.length !== 2) {
@@ -183,10 +232,34 @@
           throw new Error('Invalid frame sequence from relay');
         }
         ++this.nextFrame;
+        this.prefetchFrames().catch(() => {});
         return value;
+      } catch (error) {
+        // A GameSession makes errors terminal. A raw transport may explicitly
+        // resume the original owner and retry the same undelivered cursor.
+        if (this.receiveError === error) this.receiveError = null;
+        throw error;
       } finally {
+        if (waiting) this.waitMs += root.performance.now() - at;
         this.nextBusy = false;
       }
+    }
+
+    prefetchFrames() {
+      if (this.receiving) return this.receiving;
+      if (this.closed || this.receiveError || this.pendingFrames.length > Math.max(8, this.session?.input_delay || 0)) return Promise.resolve();
+      const cursor = this.nextFrame + this.pendingFrames.length;
+      this.receiving = (async () => {
+        const result = await this.call('poll', {from:cursor, wait:20});
+        if (result.status === 'paused') throw new Error('Netplay paused; resume both players before continuing');
+        const frames = result.frames || [];
+        if (frames.length > 64 || frames.some((value,i) => value.frame !== cursor+i || !Array.isArray(value.pads) || value.pads.length !== 2)) {
+          this.closed = true; this.stopHeartbeat();
+          throw new Error('Invalid frame sequence from relay');
+        }
+        this.pendingFrames.push(...frames);
+      })().catch(error => { this.receiveError = error; throw error; }).finally(() => { this.receiving = null; });
+      return this.receiving;
     }
 
     // Submit neutral inputs for the agreed input-delay window before running.
@@ -197,7 +270,7 @@
       for (let frame = 0; frame < delayFrames; ++frame) await this.submit(frame, neutral());
     }
 
-    async resume() { this.requireSession(); const result = await this.call('resume'); this.startHeartbeat(); return result; }
+    async resume() { this.requireSession(); const result = await this.call('resume'); this.receiveError = null; this.startHeartbeat(); return result; }
     async leave() { this.requireSession(); this.stopHeartbeat(); return this.call('leave'); }
     async close() {
       if (!this.session) throw new Error('No netplay session');
