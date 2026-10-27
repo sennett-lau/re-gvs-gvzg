@@ -109,7 +109,7 @@ Use the [Evidence index](docs/evidence/README.md) to trace a finding to its sele
 >
 > This repository contains the report, Wiki, retained generated C++, adaptive runtime sources and one matched playable web package. Multiplayer prototypes remain separate. Each chapter explains what worked, what was tested and what remains unfinished.
 
-The [game setup guide](docs/GAME_FILES.md) separates hosted play, running your own host and rebuilding the included source. Hosted visitors do not need to supply an ISO.
+The [game setup guide](docs/GAME_FILES.md) covers local play, self-hosting and rebuilding the included source. The public site is planned as a research Wiki; an online playable demo is deferred.
 
 The chapters reconstruct retained research. [Evidence conventions](docs/EVIDENCE.md) define the result labels, review dates and measurement limits.
 

@@ -65,6 +65,8 @@ Open **http://127.0.0.1:8768/**. Stop the server with Ctrl+C. The server binds t
 
 Git ignores generated output in `.local/wiki/`. Rebuild after changing the Markdown, navigation, template or styles. The Markdown remains readable without a build.
 
+For the prepared manual GitHub Pages workflow, see [Stable Wiki hosting](docs/REPOSITORY.md#stable-wiki-hosting). Its deployment artifact contains only the reader output.
+
 ## Check the change
 
 1. Check the diff for repeated explanations, changed claims and misplaced maintenance content.

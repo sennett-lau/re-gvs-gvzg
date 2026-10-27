@@ -66,6 +66,16 @@ Markdown remains complete with captions, limitations and static figures. The Wik
 
 ## Stable Wiki hosting
 
-The current quick tunnel is a temporary review link. A restart can change its address. For a stable public Wiki, build `.local/wiki/` and deploy that static output to an approved GitHub Pages project. [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages) serves static HTML, CSS and JavaScript from a repository.
+**Only the Wiki is selected for public hosting.** Game hosting, extracted asset packages and external storage are deferred. The existing game source, matched browser package and local setup remain available in the repository.
 
-The reader uses relative asset links. Before deployment, check it under the intended repository subpath as well as at `/`. Keep game hosting and its cross-origin isolation requirements separate from this static report. The research-check workflow only validates content; it contains no deployment step. Selecting the account, repository and public URL remains a publication decision.
+The Cloudflare review tunnel has been stopped. The intended permanent reader uses [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages), which serves static HTML, CSS and JavaScript.
+
+The prepared `.github/workflows/wiki-pages.yml` workflow builds and checks the reader, then uploads only `.local/wiki/`. This includes articles, figures, selected videos, evidence and the linked research excerpts. It excludes the playable game package, generated game translation and disc. It needs neither Git LFS nor an asset bucket.
+
+The workflow runs manually on `main`; pushes and pull requests do not deploy the site. The separate research-check workflow remains validation-only. After repository publication is approved:
+
+1. Set **Settings → Pages → Source** to **GitHub Actions** in the approved repository.
+2. Open **Actions → Publish research Wiki → Run workflow**, selecting `main`.
+3. Review the deployment result and open its reported Pages URL.
+
+The reader uses relative links for repository-subpath hosting. Check the deployed overview, chapter navigation, videos and source downloads. The local build and checks do not establish a successful hosted deployment. Repository publication and the first hosted workflow run remain pending.
