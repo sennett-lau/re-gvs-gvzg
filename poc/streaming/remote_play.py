@@ -7,8 +7,11 @@ from urllib.parse import urlsplit
 
 
 class Rooms:
-    def __init__(self, ice_servers):
+    def __init__(self, ice_servers, ice_policy="all"):
         self.ice_servers = ice_servers
+        if ice_policy not in ("all", "relay"):
+            raise ValueError("Invalid ICE transport policy")
+        self.ice_policy = ice_policy
         self.rooms = {}
         self.changed = threading.Condition()
 
@@ -26,9 +29,12 @@ class Rooms:
             if action == 'create':
                 if len(self.rooms) >= 4:
                     raise ValueError('Four sessions are already open. Close an old host session first.')
+                reserved = data.get('reserved', [])
+                if not isinstance(reserved, list) or any(type(p) is not int or p not in (0, 1) for p in reserved) or len(set(reserved)) > 1:
+                    raise ValueError('Reserve at most one local controller port')
                 room_id, host, invite = (secrets.token_urlsafe(24) for _ in range(3))
-                self.rooms[room_id] = dict(host=host, invite=invite, players={}, queues={host: []}, seen={host: now}, active=now)
-                return dict(room=room_id, token=host, invite=invite, iceServers=self.ice_servers)
+                self.rooms[room_id] = dict(host=host, invite=invite, reserved=reserved, players={}, queues={host: []}, seen={host: now}, active=now)
+                return dict(room=room_id, token=host, invite=invite, iceServers=self.ice_servers, iceTransportPolicy=self.ice_policy)
             room_id = data.get('room')
             room = self.rooms.get(room_id)
             if not room:
@@ -36,7 +42,7 @@ class Rooms:
             if action == 'join':
                 if not secrets.compare_digest(str(data.get('invite', '')), room['invite']):
                     raise ValueError('Invalid invitation')
-                free = [port for port in range(2) if port not in room['players']]
+                free = [port for port in range(2) if port not in room['players'] and port not in room['reserved']]
                 if not free:
                     raise ValueError('Both player slots are occupied.')
                 port, token = free[0], secrets.token_urlsafe(24)
@@ -46,7 +52,7 @@ class Rooms:
                 room['queues'][room['host']].append(dict(type='joined', port=port))
                 room['active'] = now
                 self.changed.notify_all()
-                return dict(room=room_id, token=token, port=port, iceServers=self.ice_servers)
+                return dict(room=room_id, token=token, port=port, iceServers=self.ice_servers, iceTransportPolicy=self.ice_policy)
             token = data.get('token')
             if not isinstance(token, str) or token not in room['queues']:
                 raise ValueError('Invalid session token')
@@ -93,7 +99,7 @@ class Rooms:
 
 
 def handler_with_remote(base, config):
-    rooms = Rooms(config['iceServers'])
+    rooms = Rooms(config.get('iceServers', []), config.get('iceTransportPolicy', 'all'))
 
     class RemoteHandler(base):
         def do_POST(self):

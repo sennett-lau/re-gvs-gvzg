@@ -57,5 +57,30 @@ class RemotePlay(unittest.TestCase):
             self.rooms.call('poll', a, wait=0)
 
 
+class SessionReservations(unittest.TestCase):
+    def test_local_host_owns_player_one_and_reconnect_keeps_player_two(self):
+        rooms = Rooms([])
+        host = rooms.call('create', {'reserved': [0]})
+        guest = rooms.call('join', host)
+        self.assertEqual(guest['port'], 1)
+        self.assertEqual(guest['iceTransportPolicy'], 'all')
+        with self.assertRaisesRegex(ValueError, 'occupied'):
+            rooms.call('join', host)
+        rooms.call('leave', guest)
+        self.assertEqual(rooms.call('join', host)['port'], 1)
+
+    def test_reserved_port_cannot_be_claimed_by_join_payload(self):
+        rooms = Rooms([], 'relay')
+        host = rooms.call('create', {'reserved': [0]})
+        guest = rooms.call('join', dict(host, port=0))
+        self.assertEqual(guest['port'], 1)
+        self.assertEqual(guest['iceTransportPolicy'], 'relay')
+
+    def test_invalid_reservations_and_policy(self):
+        rooms = Rooms([])
+        for value in ([0,1], [False], [2], '0'):
+            with self.assertRaises(ValueError): rooms.call('create', {'reserved':value})
+        with self.assertRaises(ValueError): Rooms([], 'invalid')
+
 if __name__ == '__main__':
     unittest.main()

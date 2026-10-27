@@ -71,6 +71,11 @@ class Rooms:
         for player in room['players']:
             if player and now - player['seen'] > self.lease_seconds:
                 player['connected'] = False
+        owners = [player for player in room['players'] if player]
+        if owners and not any(player['connected'] for player in owners) and all(
+                now - player['seen'] > max(60, self.lease_seconds * 2) for player in owners):
+            room['terminal'], room['reason'] = 'closed', 'Abandoned session expired'
+            self.changed.notify_all()
 
     def _status(self, room):
         if room['terminal']:
@@ -127,6 +132,8 @@ class Rooms:
             self.rooms = {key: room for key, room in self.rooms.items()
                           if now - room['active'] <= self.room_seconds}
             if action == 'create':
+                for existing in self.rooms.values():
+                    self._refresh(existing, now)
                 ident = identity(data.get('identity'))
                 interval = integer(data.get('checkpoint_interval', 60), 1, 120, 'checkpoint interval')
                 delay = integer(data.get('input_delay', 3), 0, 30, 'input delay')

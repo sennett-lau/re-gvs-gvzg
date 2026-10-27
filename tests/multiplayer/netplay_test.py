@@ -203,5 +203,31 @@ class Netplay(unittest.TestCase):
         self.assertEqual(before, {name: room[name] for name in names})
 
 
+class AbandonedRooms(unittest.TestCase):
+    def test_crashed_owners_release_capacity_after_recovery_grace(self):
+        now = [0.0]
+        rooms = Rooms(max_rooms=1, clock=lambda: now[0])
+        old = rooms.call('create', {'identity': IDENTITY})
+        now[0] = 31
+        with self.assertRaisesRegex(ValueError, 'capacity'):
+            rooms.call('create', {'identity': IDENTITY})
+        status = rooms.call('resume', {'room': old['room'], 'token': old['token']})
+        self.assertEqual(status['status'], 'waiting')
+        now[0] = 92
+        rooms.call('create', {'identity': IDENTITY})
+        status = rooms.call('status', {'room': old['room'], 'token': old['token']})
+        self.assertEqual(status['status'], 'closed')
+        self.assertEqual(status['reason'], 'Abandoned session expired')
+
+    def test_active_creator_waiting_for_friend_is_never_evicted(self):
+        now = [0.0]
+        rooms = Rooms(max_rooms=1, clock=lambda: now[0])
+        old = rooms.call('create', {'identity': IDENTITY})
+        for at in (20,40,60,80):
+            now[0] = at
+            rooms.call('status', {'room': old['room'], 'token': old['token']})
+        with self.assertRaisesRegex(ValueError, 'capacity'):
+            rooms.call('create', {'identity': IDENTITY})
+
 if __name__ == '__main__':
     unittest.main()
