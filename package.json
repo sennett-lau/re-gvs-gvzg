@@ -1,7 +1,7 @@
 {
   "name": "re-gvs-gvzg",
   "private": true,
-  "description": "Local single-source research reader",
+  "description": "Reverse engineering research, adaptive browser game and multiplayer prototypes",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -10,7 +10,11 @@
     "wiki:build": "node scripts/build-wiki.mjs",
     "wiki:serve": "python3 -m http.server 8768 --bind 127.0.0.1 --directory .local/wiki",
     "check": "node scripts/check-report.mjs",
-    "verify:research": "python3 research/source/input-gate/verify.py && python3 research/source/render-hooks/verify.py && python3 scripts/plot-pc-cadence.py && python3 scripts/plot-pc-display.py"
+    "verify:research": "python3 research/source/input-gate/verify.py && python3 research/source/render-hooks/verify.py && python3 scripts/plot-pc-cadence.py && python3 scripts/plot-pc-display.py",
+    "verify:game": "python3 scripts/game/verify.py && python3 scripts/game/test-hooks.py && node --test --test-timeout=60000 tests/web/*.js tests/multiplayer/*.js && python3 -m unittest discover -s tests/multiplayer -p \"*_test.py\" && python3 tests/game-server.py",
+    "check:publication": "python3 scripts/check-publication.py",
+    "game:serve": "python3 scripts/game/serve.py",
+    "game:build": "python3 scripts/game/build.py"
   },
   "devDependencies": {
     "marked": "17.0.5"

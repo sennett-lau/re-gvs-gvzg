@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-27",
+  "scope": "Clean compilation from the exported retained C++ and source patches; no historical object files reused. This is a package reproduction and boot test, not a new performance measurement.",
+  "toolchain": {
+    "emscripten": "6.0.11",
+    "profile": "Release -O3, SIMD, tail calls, Wasm exceptions, pthreads, JSPI, emdawnwebgpu"
+  },
+  "reference_engine_build_id": "22ac74de6d4a4c9d9bc3ce2509225bcf3f8891ea71c51075c4464f8a56c8252f",
+  "source_regeneration": {
+    "mode": "Retained fingerprinted C++ used by supported build",
+    "fresh_EE_comparison": {
+      "added_files": 2,
+      "changed_files": 52,
+      "missing_files": 0
+    },
+    "VU": "Retained recorded VU translation; fresh recording was not repeated"
+  },
+  "fresh_base_archives_match": {
+    "libps2game.a": "78eff5c002c95db5a202a0297be636375aa363eccf1d140d51c2ac01b19aafe4",
+    "libps2runtime.a": "b55a7fe68a220412c637f412f3a9e61250f66f71f6a2cc8abbecce251ccc155f"
+  },
+  "fresh_override_objects_match": {
+    "system.o": "9039f7d9ecfa32555423e6f1b2a18fa9a60a6a87926f3a5e25f6e36612a895e7",
+    "web.o": "64adf15ef1bd8fb8a5b4ba786aaf1ab9e69c389005530010939ce82ce754d751",
+    "full_game_web_hooks.o": "ef77cfa71106056ebb0fa8d32213dcf911ada75ba0893b7e516e2c945ecf7214",
+    "full_game_interpolation.o": "c7ab141f62ac7603adbec1f17dcbc9ff8a309387a88a8a53d48e091a146f7678",
+    "vif.o": "ac4770d900017b98a60773d2cc3818ae228412e7c0e3ff7c32742d6f7dccd9aa",
+    "unit_0044.o": "4e2ef9274f404dd9be2f988c85e85e2a25e86b127dab5b587f3ad14bb04de4c5",
+    "unit_0039.o": "f4928f4539d4b12a4a22b52d9cc20a161fdf28e720f7a0d852d14c7c4d13a5a3",
+    "unit_0049.o": "405c0ff0a63cec33bf89635596b3667855573c22290b46ff3ee79a823c1a5042",
+    "unit_004D.o": "66879546b829c5abc4c07151e36968b5cb20dfe2b639a2f1fe751a1359dd56d9",
+    "unit_0047.o": "3a686bb8b56ddf1532f653070d86fd99a7ecd01a0ff1fa7fe128e16d0e4c9cb4"
+  },
+  "byte_identical_outputs": {
+    "index.wasm": "2c44be21390cdddcb46ac396a0f86a24c4cce10137da88acd340ddbec9845f59",
+    "index.js": "f85a837ef2981f25d160db3725713ea589ae682ae1a5b2b883a3c8afdeafa81e",
+    "index.data": "5022376bdf70c8fac649657d3b90bc88b8c5621aa751ba98bd64393e2ba2496b"
+  },
+  "browser_smoke": {
+    "passed": true,
+    "browser": "156.0.8078.48",
+    "browser_output_muted": true,
+    "audio_engine_states": [
+      "running"
+    ],
+    "checks": [
+      "normal boot",
+      "menu input",
+      "Versus battle",
+      "gameplay clock advances",
+      "active audio consumption",
+      "pause",
+      "resume",
+      "fullscreen",
+      "cross-origin isolation",
+      "no page errors"
+    ],
+    "memory_card": "Default behavior in an isolated disposable browser context",
+    "initial_test_correction": "A no-card test stopped at the original confirmation prompt. The corrected acceptance used the default-card path; no runtime change was needed."
+  },
+  "portable_tests": {
+    "compiler_regressions": 2,
+    "module_loader": "passed",
+    "controller_phase_suites": 63,
+    "controller_predicates_and_scene_transitions": "passed",
+    "render_math": "passed",
+    "interpolation_equivalence_and_allocations": "passed",
+    "web_tests": 51,
+    "multiplayer_javascript_tests": 21,
+    "multiplayer_python_tests": 19
+  },
+  "excluded": "Disc image, personal saves, raw browser profiles, raw process/network logs and private absolute paths"
+}

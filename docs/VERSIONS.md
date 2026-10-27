@@ -38,6 +38,6 @@ GitHub's prerelease flag is separate from the spelling of a tag. When publicatio
 
 ## Current repository status
 
-The report, reader, selected research code, measurements and media are committed locally. The above-60 proof of concept is established; a complete game-code export is still separate work. The [research goal](chapters/04-frame-rate.md) defines the measured capability; further pacing refinement is optional.
+The report, reader, complete retained game source, matched adaptive package, selected measurements and media are committed locally. The above-60 proof of concept and source rebuild are established. Historical baseline/optimization milestones still need their own reconstruction before version tags are assigned. The [research goal](chapters/04-frame-rate.md) defines the measured capability; further pacing refinement is optional.
 
 There are no game release tags or published assets in this repository. A future GitHub Release should carry meaningful version notes, a matched playable package where applicable, a build manifest and checksums. A dummy `v0.0.0` is not needed to store large files. See [current delivery status](REPOSITORY.md#current-delivery-status) and [Derived artifacts](DERIVED.md).

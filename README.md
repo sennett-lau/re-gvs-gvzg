@@ -107,10 +107,12 @@ Use the [Evidence index](docs/evidence/README.md) to trace a finding to its sele
 > [!NOTE]
 > **A research record with working prototypes.**
 >
-> This repository contains the report, Wiki and selected reproducible experiments. Complete game builds remain in the original research workspace. Each chapter explains what worked, what was tested and what remains unfinished.
+> This repository contains the report, Wiki, retained generated C++, adaptive runtime sources and one matched playable web package. Multiplayer prototypes remain separate. Each chapter explains what worked, what was tested and what remains unfinished.
+
+Use the [game setup guide](docs/GAME_FILES.md) to play with your own supported disc or rebuild the included source.
 
 The chapters reconstruct retained research. [Evidence conventions](docs/EVIDENCE.md) define the result labels, review dates and measurement limits.
 
 This project builds on [ps2-web-recomp](https://github.com/snuri00/ps2-web-recomp). No original ISO, ROM or compressed disc backup is included.
 
-Independently written code and documentation use the [MIT License](docs/license/LICENSE). See [Third-party notices](docs/license/THIRD_PARTY_NOTICES.md) and [Content notice](docs/license/CONTENT_NOTICE.md) for attribution and the scope of this local draft.
+Independently written code and documentation use the [MIT License](docs/license/LICENSE). See [Third-party notices](docs/license/THIRD_PARTY_NOTICES.md) and [Content notice](docs/license/CONTENT_NOTICE.md) for attribution and content scope.

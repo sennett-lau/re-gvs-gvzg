@@ -371,7 +371,7 @@ for (const file of files) {
   ) {
     fail(
       file,
-      "disc/ROM/archive or memory-card file is outside this report-only scope",
+      "disc/ROM/archive or memory-card file is outside this publication scope",
     );
   }
   if (/\.md$/i.test(file)) checkMarkdown(file);

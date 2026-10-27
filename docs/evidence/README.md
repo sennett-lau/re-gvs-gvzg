@@ -21,7 +21,7 @@ Run `python3 research/source/input-gate/verify.py` from the repository root. Exp
 
 ### Render-hook export · inspectable and repeatable patches
 
-The [hook package](../../research/source/render-hooks/README.md) contains `render_hooks.hpp`, the shared patch helper, a wrapper with the final input/cue fixes, and a 13-site guest-address map. Run `python3 research/source/render-hooks/verify.py` without game files. With the matching generated inputs, the wrapper reproduces five retained unit hashes. This partial export does not include the complete controller/runtime or game build.
+The [hook package](../../research/source/render-hooks/README.md) contains `render_hooks.hpp`, the shared patch helper, a wrapper with the final input/cue fixes, and a 13-site guest-address map. Run `python3 research/source/render-hooks/verify.py` without game files. With the matching generated inputs, the wrapper reproduces five retained unit hashes. The focused hook export now links to the complete controller/runtime and source build described in [Game setup](../GAME_FILES.md).
 
 ### PC rate plot · repeatable analysis
 
@@ -46,9 +46,9 @@ This reproduces the numeric analysis. Rerunning the game still requires the matc
 
 The [media generator](../../scripts/build-comparison-media.py) verifies all 241 source hashes per sequence before adding labels and making the filmstrip. It requires the retained PPM capture archive; the original images are not reconstructed from the compressed video.
 
-### Full game rebuild · still to export
+### Full game rebuild · reproduced from source
 
-The original workspace contains generated C++, runtime changes, web packages and multiplayer prototypes. This report checkout contains the small exports listed above, not that complete workspace. A reader cannot yet rebuild or launch the complete game from it. See the [export inventory and acceptance criteria](../REPOSITORY.md#rebuild-acceptance).
+The checkout now includes the retained generated C++, pinned runtime, adaptive hooks, matched web package and multiplayer POC sources. The [rebuild acceptance record](rebuild-acceptance.json) records byte-identical executable outputs and a silent normal-boot browser test. See [Game setup](../GAME_FILES.md) for commands and the [export inventory](../REPOSITORY.md#rebuild-acceptance) for boundaries. Raw captures, personal state and the private lockstep fixture remain excluded.
 
 ## Recompilation and performance
 

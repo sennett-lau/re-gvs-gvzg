@@ -63,6 +63,6 @@ The report repository currently records this method. A clean end-user rebuild pa
 <details>
 <summary>Source trail and verification records</summary>
 
-The original working-tree sources are `scripts/mwo.py`, `scripts/build_gundam.sh`, `recomp/main.cpp`, `recomp/elf.cpp`, `recomp/analysis.cpp`, `tests/analysis_tailcall.py`, `games/gundam-vs-z-gundam/port-inputs.json`, and `games/gundam-vs-z-gundam/mwo-modules.tsv`. Their identifiers in the evidence file refer to that retained tree, not to files already exported into this report repository.
+The original working-tree sources are `scripts/mwo.py`, `scripts/build_gundam.sh`, `recomp/main.cpp`, `recomp/elf.cpp`, `recomp/analysis.cpp`, `tests/analysis_tailcall.py`, `games/gundam-vs-z-gundam/port-inputs.json`, and `games/gundam-vs-z-gundam/mwo-modules.tsv`. Those identifiers refer to the original tree. The exported layout keeps the compiler in `vendor/` with explicit patches, extraction in `scripts/game/`, generated input in `generated/` and regressions in `tests/compiler/`; [Game setup](../GAME_FILES.md) explains the reconstruction boundary.
 
 </details>

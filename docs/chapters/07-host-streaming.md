@@ -68,4 +68,4 @@ Use one host and two actual client devices for the next acceptance run:
 4. Return through the normal menus.
 Measure input-to-visible-response latency and dropped video frames. Repeat with a disconnected controller, a hidden client page and a return to the session. Record actual TURN use and negotiated video behavior.
 
-Use the shared [silent timing-test procedure](../EVIDENCE.md#repeatable-tests-to-retain-with-future-code-exports).
+Use the shared [silent timing-test procedure](../EVIDENCE.md#repeatable-game-code-tests).

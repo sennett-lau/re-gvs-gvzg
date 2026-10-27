@@ -1,6 +1,6 @@
 # Repository design and export scope
 
-The Wiki and above-60 rendering proof of concept are ready for review. This local repository contains their evidence and selected runnable research exports. A complete playable game checkout is the next delivery stage; its remaining code still lives in the original workspace.
+This repository contains the research Wiki, complete retained C++ translation, runtime/compiler patches, adaptive hooks, one matched playable web package and separate multiplayer POC sources. [Run and rebuild the game](GAME_FILES.md) gives the supported setup.
 
 ## Where content belongs
 
@@ -13,29 +13,30 @@ The Wiki and above-60 rendering proof of concept are ready for review. This loca
 | `docs/evidence/` | Small curated measurements and source provenance | Yes |
 | `docs/figures/` | Measured plots and retained research figures | Yes |
 | `apps/wiki/` | Reader template, styles, navigation and theme controls | Yes |
-| `scripts/` | Reader build, validation, media generation and repeatable numeric analyses | Yes |
-| `apps/game/` | Game UI, input, diagnostics and one matched `prebuilt/` set | Future export |
-| `generated/` | Selected readable generated C++ and translation tables | Future export |
-| `src/hooks/`, `patches/runtime/` | Our game-specific hooks and runtime/compiler changes | Future export |
-| `research/source/` | Selected RE scripts, address maps and useful exports | Input regression and partial render-hook layer exported |
+| `scripts/` | Reader, game build/server, verification, packaging and numeric analysis | Yes |
+| `apps/game/` | Game UI, input, diagnostics and one matched `prebuilt/` set | Exported; measured adaptive engine |
+| `generated/` | Complete retained generated C++ and translation tables | 1,186 fingerprinted files |
+| `src/hooks/`, `patches/` | Game-specific hooks and runtime/compiler changes | Exported with regressions |
+| `vendor/` | Unmodified pinned compiler/runtime source and notices | Exported with per-file hashes |
+| `research/source/` | Selected RE scripts, address maps and useful exports | Input regression, hook preparation and address map |
 | `docs/media/` | Selected real captures with provenance captions | Early mobile demo, labeled native comparison, filmstrip, PC screenshot and desktop 60/120-fps viewing copies |
-| `poc/streaming/`, `poc/lockstep/` | Independently reproducible multiplayer experiments | Future export |
-| `scripts/release/` | Packaging profiles, manifests and checksum generation | Future export |
+| `poc/streaming/`, `poc/lockstep/` | Multiplayer source and isolated protocol tests | Streaming support; source-only lockstep POC |
+| `scripts/game/package.py` | Local playable ZIP and SHA-256 generation | Exported; no publishing action |
 | `.local/release-builds/` | Ignored temporary packaging output | Created only when needed |
 
 There is no `distribution/` or `releases/` source folder. Future GitHub Release pages hold the version notes and download assets. A release is a versioned software delivery, not a dummy tag created solely to bypass a file limit.
 
 ## Current delivery status
 
-The 2026-10-27 checkout audit found **13 tracked files in `research/source/`**: the input-edge regression and partial render-hook package. The reader, analysis scripts, selected evidence and videos are also committed locally. The hosted Wiki serves the built report; it is not a GitHub code release.
+The 2026-10-27 source export reproduced the measured engine's WASM, JavaScript and data byte for byte. Both base archives and all ten replacement objects also matched. A silent PC browser test passed normal boot, menu input, Versus entry, active audio consumption, pause/resume and fullscreen. The [acceptance record](evidence/rebuild-acceptance.json) identifies the exact scope.
 
-The proposed `apps/game/`, `generated/`, `src/hooks/`, `patches/runtime/` and `poc/` directories contain **no tracked files yet**. Their complete implementations and builds remain in the original `ps2-web-recomp` workspace. This repository has no Git remote configured at the audit date, and no game Release assets have been published from it.
+The source build uses a fresh output directory and the existing pinned SDK; it does not consume the original workspace's object files. The original workspace remains an archive of broader experiments. A current recompiler pass differs from the retained generated input, and the lockstep fixture is not exported. [Setup](GAME_FILES.md) describes these boundaries.
 
-The next export should preserve the existing generated C++, runtime and interpolation changes, matched JS/WASM/data package, and multiplayer prototypes. It needs the [rebuild checks below](#rebuild-acceptance), not another frame-rate target. Keep the agreed small commits and reconstructed milestones; exclude discs, personal runtime state and raw debug captures.
+All changes are local commits. No remote, pull request, tag or GitHub Release is created by the preparation or packaging scripts.
 
 ## Code and data boundaries
 
-The agreed future export includes generated C++, selected reverse-engineered source, our runtime changes and a matched web package. The original ISO/ROM and compressed disc backup are excluded. Ordinary Git is suitable for readable source; one selected prebuilt milestone can live alongside it after checking its individual files. Additional builds and useful optional archives can become Release assets.
+The code export includes generated C++, selected reverse-engineered source, our runtime changes and a matched web package. The original ISO/ROM and compressed disc backup are excluded. Ordinary Git is suitable for readable source; one selected prebuilt package lives alongside it with its file hashes. Additional builds and useful optional archives can become Release assets.
 
 A `.data` package containing the executable is still game-derived content. Generated files must retain their provenance; the project does not describe them as independently written original game source. Our third-party notices and content notice have distinct jobs.
 
@@ -43,17 +44,11 @@ The large raw diagnostic JSON captures are not required for a normal checkout. C
 
 ## Rebuild acceptance
 
-The existing workspace and this checkout have different scopes. Game builds and prototypes exist locally; their complete sources and inputs have not yet been exported here. The portable input regression and [render-hook patch package](../research/source/render-hooks/README.md) are reproducible subsets. The latter exposes the interface, patch generator and address mapping; it still needs the controller, interpolation implementation and runtime to link a game.
+The exported package now provides the pinned vendor source, explicit compatibility patches, generated-unit mappings, hook/controller/interpolation sources, a portable link recipe, and a matched prebuilt package. The local rebuild and browser acceptance are recorded in [rebuild-acceptance.json](evidence/rebuild-acceptance.json).
 
-A complete rebuild package needs:
+For future changes, rerun source and artifact checks, build into a new empty output directory, and test boot, input, pause/resume and a battle silently. Preserve the audio engine's workload. Keep performance conclusions tied to the exact measured binary; a changed artifact needs new acceptance before inheriting a historical result.
 
-1. Pinned upstream runtime, compiler and toolchain versions, including local patches.
-2. A supported input fingerprint and extraction commands for the user's own disc.
-3. Generated-unit mappings, hook sources and exact link order.
-4. One matched JS/WASM/data package with file hashes and build options.
-5. An empty-checkout rebuild and a silent boot, input, pause/resume and match-flow test.
-
-Retain the commands, output hashes and failures from that clean test. Keep performance results tied to their measured build. If a rebuilt binary differs, explain the difference and rerun the corresponding acceptance checks before relabelling it as a historical milestone.
+The compiler-regeneration comparison is intentionally separate: the supported C++ input is retained and fingerprinted, while a fresh disc-to-C++ pass is a research candidate until its differences are resolved.
 
 ## Honest, small commits
 
@@ -61,7 +56,7 @@ The new history records work done now. Do not backdate commits or pretend a reta
 
 The planned implementation sequence is extraction/regeneration, compiler and module-loading fixes, browser boot/input/audio/disc access, diagnostics and pacing, fullscreen cost, VU compilation, extra-render separation, interpolation, allocation reduction, mode/input/clock guards and reproducible packaging. Split independent changes; keep a fix with its relevant validation. Do not create a release for every small commit.
 
-The report commits are separate from that future implementation sequence. No existing game binary is relabelled or moved by writing these chapters.
+The local export commits preserve existing source and name their checks. They do not pretend to recreate the dates or exact intermediate states of uncommitted historical work. No historical binary is relabelled as an earlier baseline.
 
 ## Single-source reading
 

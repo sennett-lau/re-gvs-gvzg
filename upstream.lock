@@ -1,18 +1,26 @@
 {
   "schema": 1,
-  "scope": "research provenance; not a complete reproducible game toolchain lock",
+  "scope": "Pinned compiler/runtime provenance and matched retained-C++ game build; RE toolchain and fresh disc regeneration are separate",
   "ps2_web_recomp": {
     "repository": "https://github.com/snuri00/ps2-web-recomp",
     "revision": "6526f4803d98e10de50bea3af104a4d26e9df033",
-    "local_game_work_includes_uncommitted_changes": true
+    "local_game_work_includes_uncommitted_changes": false,
+    "snapshot_manifest": "vendor/manifest.json",
+    "local_changes": "patches/"
   },
   "emscripten_recorded_version": "6.0.11",
   "ghidra_recorded_version": "12.1.4",
-  "remaining_pins": ["PS2 processor extension revision", "complete game patch set and build profile"],
+  "remaining_pins": [
+    "PS2 processor extension revision for the optional RE environment"
+  ],
   "game": {
     "serial": "SLPS-25419",
     "executable_crc": "435D8236",
     "elf_sha256": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
     "mwo_modules": 325
-  }
+  },
+  "generated_source_manifest": "generated/manifest.json",
+  "prebuilt_manifest": "apps/game/prebuilt/build-info.json",
+  "rebuild_recipe": "scripts/game/build.py",
+  "regeneration_status": "Current EE generation differs from retained input; see docs/GAME_FILES.md"
 }

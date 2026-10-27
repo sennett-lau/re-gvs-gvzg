@@ -28,7 +28,7 @@ Create a new research section only when the material answers a distinct question
 | Cross-project findings and lessons | [Findings and lessons](docs/chapters/09-learnings.md) |
 | Next research experiments | The relevant chapter and [Further work](docs/chapters/10-further-work.md) |
 | Contributor workflow and local reader setup | This guide |
-| Repository structure and future code exports | [Repository design](docs/REPOSITORY.md) |
+| Repository structure and exported code | [Repository design](docs/REPOSITORY.md) |
 | Candidate versions and release acceptance | [Version plan](docs/VERSIONS.md) |
 | Source and binary packaging decisions | [Artifacts and file sizes](docs/DERIVED.md) |
 | Wording and visual emphasis | [Writing and presentation](docs/WRITING.md) |
@@ -83,9 +83,17 @@ The local `.github/workflows/research.yml` recipe runs these checks, builds the 
 
 Regenerating the video is a separate FFmpeg task that requires the original capture archive. Preserve the source fingerprints and cumulative-image-count checks in `scripts/build-comparison-media.py`.
 
+## Game-code validation
+
+Use [Game setup](docs/GAME_FILES.md) for the exact build, server and package commands. Run `npm run verify:game` for source/package fingerprints, controller/interpolation tests, browser policy tests, multiplayer protocol tests and synthetic HTTP range/isolation checks. Compiler regressions are run by `python3 scripts/game/tools.py` in a new workspace.
+
+The CI recipe also runs those portable checks. It does not rebuild the complete game from a private disc or run a GPU browser. Use the optional silent GPU smoke test for changes to the game host, packaging or runtime. Keep raw test output under `.local/` and retain only selected results in `docs/evidence/`.
+
+Before preparing publication, run `python3 scripts/check-publication.py --history`. This checks selected private markers and commit identities across reachable history in addition to current file sizes and excluded payloads. Review its findings; do not remove upstream attribution to conceal provenance.
+
 ## Reader validation
 
-The local checker parses the curated JSON and resolves Markdown and reader links, including anchors. It checks selected privacy markers and rejects accidental game payloads or oversized files. It also checks that chapter summaries and callout text survive conversion to HTML. Each callout must retain its evidence limits inside the same block.
+The local checker parses the curated JSON and resolves Markdown and reader links, including anchors. It checks selected privacy markers and rejects discs, private runtime state and oversized files. The separately approved generated source and matched game package are verified by `npm run verify:game`. It also checks that chapter summaries and callout text survive conversion to HTML. Each callout must retain its evidence limits inside the same block.
 
 These are bounded checks. They do not guarantee exhaustive anonymization. Run `npm run check` after building the reader in a Git checkout. Use `node scripts/check-report.mjs --source-only` to defer reader checks until a build exists. A private comma-separated `REPORT_FORBIDDEN_TERMS` environment value can add wording checks without storing those terms in the report.
 

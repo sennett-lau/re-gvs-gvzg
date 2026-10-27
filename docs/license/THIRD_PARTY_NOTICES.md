@@ -1,6 +1,6 @@
 # Third-party notices
 
-These notices distinguish tools used in research, dependencies of this reader, and software proposed for future game packaging. The compiler and runtime source snapshot is bundled under `vendor/ps2-web-recomp/`. Its exact file hashes are in `vendor/manifest.json`. The referenced replacement server is not bundled.
+These notices distinguish tools used in research, dependencies of this reader, and software bundled in the game package. The compiler and runtime source snapshot is bundled under `vendor/ps2-web-recomp/`. Its exact file hashes are in `vendor/manifest.json`. The referenced replacement server is not bundled.
 
 | Component | Relationship | Recorded version / terms |
 | --- | --- | --- |
@@ -18,3 +18,7 @@ This file is a provenance inventory, not a replacement for dependency license te
 The Wiki self-hosts **Manrope** from the [Google Fonts source distribution](https://github.com/google/fonts/tree/main/ofl/manrope). Copyright 2018 The Manrope Project Authors. The unmodified variable TTF is supplied under the SIL Open Font License 1.1, with the complete original license at `apps/wiki/fonts/OFL.txt`; the reader build copies that license alongside the font. No external font service is contacted by readers.
 
 The bundled file SHA-256 is `3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6`. This is a font-specific license, separate from the MIT license for the project's own contributions.
+
+## IPU implementation
+
+The upstream runtime carries a separate BSD-style notice for its IPU implementation, retained verbatim at `vendor/ps2-web-recomp/runtime/src/ipu/NOTICE`. The playable package reproduces that notice together with the upstream MIT text in `apps/game/prebuilt/LICENSES.txt`.

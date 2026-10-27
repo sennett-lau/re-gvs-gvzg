@@ -40,8 +40,8 @@ The shared helper predates the `0x226D30` input fix and `0x21C688` cue fix. Runn
 
 Local export validation reproduced all five retained output hashes. A changed-input control and an existing-output control were rejected. These are patch-generation checks, not a new game run.
 
-## What this export still needs
+## Complete game integration
 
-This is a **partial hook layer**, not a standalone high-refresh library. The clock/controller, interpolation implementation, runtime changes, remaining generated code and matched link recipe are not included here. The header also depends on upstream `ps2/cpu.hpp`. The original builds linked replacement objects before the generated archive; reproducing that build still requires the [complete export package](../../../docs/REPOSITORY.md#rebuild-acceptance).
+The complete repository now supplies the controller and interpolation in `src/hooks/`, the browser host in `apps/game/`, explicit runtime patches in `patches/`, the pinned runtime in `vendor/`, and the retained generated input in `generated/`. The [game setup guide](../../../docs/GAME_FILES.md) links these pieces through a fresh source build.
 
-The supported executable is identified by SHA-256 in the manifest. Do not apply these addresses to another regional release. The original disc and full generated units are not bundled in this package.
+This directory remains the focused interface/patch package. It is not a generic high-refresh library for other games or regional releases. The original disc is supplied by the user; generated units are included separately in the repository.

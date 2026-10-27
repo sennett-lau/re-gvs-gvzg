@@ -5,7 +5,7 @@
 > **At a glance**
 >
 > - **Question:** What follows the completed high-refresh proof of concept?
-> - **Result:** Above-60 rendering is demonstrated. The next delivery work is a reproducible game-code package, followed by multiplayer integration and broader device coverage.
+> - **Result:** Above-60 rendering is demonstrated. The game package now rebuilds the measured engine. Next are multiplayer integration, regeneration consistency and broader device coverage.
 > - **Still open:** These are proposed experiments. They do not establish new game-performance or multiplayer results.
 
 **Follow-up work beyond the completed rendering proof of concept.** The [findings and lessons](09-learnings.md) describe the existing results.
@@ -13,15 +13,15 @@
 ## What to implement next
 
 > [!TIP]
-> **Package the working code, then build on it.**
+> **Build on the reproduced engine.**
 >
 > The [120-render PC result](06-adaptive-rendering.md#the-latest-paired-pc-result) meets the above-60 research goal. Further pacing refinement is optional.
 >
-> The main delivery gap is a complete game-code export. The two multiplayer approaches remain implementation work.
+> The matched game-code export now rebuilds the measured engine. The next delivery work is multiplayer integration and resolving fresh compiler-regeneration differences.
 
-### 1 · Make the game experiment reproducible
+### 1 · Preserve reproducibility
 
-The checkout now reproduces a bounded input regression and both PC rate analyses, and exports a [partial render-hook layer](../../research/source/render-hooks/README.md). The CI recipe repeats portable checks. It still lacks the complete matched game package. Export pinned runtime sources, game hooks, generated-unit mappings, build commands and checksums together. Test them in an empty checkout before calling the game build reproducible. [Packaging and export scope](../REPOSITORY.md#rebuild-acceptance)
+The checkout now includes pinned runtime sources, complete adaptive hooks, generated units and a matched web package. A fresh source build reproduced the measured executable files byte for byte, and the silent browser acceptance passed. Keep those checks running as the code changes. Resolve the current disc-to-C++ regeneration differences before replacing the retained generated input. [Packaging and export scope](../REPOSITORY.md#rebuild-acceptance)
 
 ### 2 · Integrate the two multiplayer routes
 

@@ -42,7 +42,7 @@ The accepted PresentMon 2.6.0 runs used QPC timestamps and one selected GPU-proc
 
 The desktop video is a separate showcase. Its variable-rate capture did not maintain the requested 180 FPS, and encoding corrected some timestamps. The 60- and 120-fps viewing copies can duplicate or drop source frames. Use the OS trace for timing and the native repeat/interpolate comparison for distinct intermediate-image evidence.
 
-## Repeatable tests to retain with future code exports
+## Repeatable game-code tests
 
 A useful acceptance record identifies the matched build, requested rate, effective mode, internal/display size, physical device and refresh mode, duration, exact measurement window, game speed, frame counters, input sequence, audio production/consumption and failures. Record menu, loading, pause, resume, results and re-entry, not only steady combat.
 
