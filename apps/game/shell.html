@@ -1,0 +1,1014 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Gundam · full game with adaptive rendering</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; height: 100%; background: #0b0b0d; color: #d8d8dc; font: 13px system-ui, sans-serif; }
+  body { display: flex; flex-direction: column; }
+  #stage { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; background: #000; }
+  canvas { width: 100%; height: 100%; display: block; background: #000; }
+  #bar { display: flex; gap: 16px; align-items: center; padding: 6px 12px; background: #141418; border-top: 1px solid #222; }
+  #status { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #stats { font-variant-numeric: tabular-nums; color: #9ad; }
+  #remote-panel:not([hidden]) { display: flex; align-items: center; gap: 8px; padding: 8px 12px; flex-wrap: wrap; background: #182237; }
+  #remote-invite { flex: 1; min-width: 240px; background: #10131b; color: #fff; border: 1px solid #34405a; padding: 8px; }
+  body.touch #bar { flex-wrap: wrap; gap: 6px; }
+  body.touch #status { flex-basis: 100%; white-space: normal; }
+  body.touch #stats { flex-basis: 100%; font-size: 11px; }
+  #problem { position: fixed; z-index: 5; top: 12px; left: 12px; right: 12px; padding: 12px; background: #251a19; border: 1px solid #c68a60; border-radius: 6px; }
+  #problem p { margin: 0 0 10px; }
+  select { background: #2a3a55; color: #fff; border: 0; padding: 5px 8px; border-radius: 4px; }
+  button { background: #2a3a55; color: #fff; border: 0; padding: 6px 14px; border-radius: 4px; cursor: pointer; }
+  #overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.6); padding: 16px; }
+  #panel { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 520px; text-align: center; }
+  #help { margin: 0; line-height: 1.5; color: #e8c37a; }
+  .controls { display: none; }
+  body.touch { overscroll-behavior: none; touch-action: none; -webkit-user-select: none; user-select: none; }
+  body.touch #stage { flex: none; width: 100%; aspect-ratio: 4 / 3; max-height: 60vh; }
+  body.touch.wide #stage { aspect-ratio: 16 / 9; }
+  body.touch .controls {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "mid mid" "left right";
+    gap: 10px 8px; align-content: center; padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    touch-action: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+    --ctl: #1d2433; --ctl-on: #4a6aa5; --ctl-line: #34405a; --ctl-text: #dfe6f3;
+  }
+  .cluster { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .cluster.left { grid-area: left; } .cluster.right { grid-area: right; }
+  .cluster.mid { grid-area: mid; flex-direction: row; gap: 10px; justify-self: center; }
+  .shoulders { display: flex; gap: 8px; width: 100%; max-width: 160px; }
+  .ctl {
+    display: flex; align-items: center; justify-content: center; color: var(--ctl-text);
+    background: var(--ctl); border: 1px solid var(--ctl-line); font-weight: 600;
+  }
+  .ctl.on, .dpad span.on { background: var(--ctl-on); }
+  .shoulder { flex: 1; height: 38px; border-radius: 12px 12px 6px 6px; }
+  .small { padding: 0 12px; height: 30px; border-radius: 15px; font-size: 12px; font-weight: 500; }
+  .face { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); }
+  .face .ctl { border-radius: 50%; font-size: 20px; }
+  .face .tri { grid-area: 1 / 2; } .face .sq { grid-area: 2 / 1; }
+  .face .ci { grid-area: 2 / 3; } .face .cr { grid-area: 3 / 2; }
+  .dpad { width: 120px; height: 120px; display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); }
+  .dpad span {
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+    color: var(--ctl-text); background: var(--ctl); border: 1px solid var(--ctl-line);
+  }
+  .dpad .up { grid-area: 1 / 2; border-radius: 8px 8px 0 0; } .dpad .down { grid-area: 3 / 2; border-radius: 0 0 8px 8px; }
+  .dpad .left { grid-area: 2 / 1; border-radius: 8px 0 0 8px; } .dpad .right { grid-area: 2 / 3; border-radius: 0 8px 8px 0; }
+  .dpad .hub { grid-area: 2 / 2; }
+  .stick { position: relative; width: 120px; height: 120px; border-radius: 50%; background: var(--ctl); border: 1px solid var(--ctl-line); }
+  .knob {
+    position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; margin: -26px 0 0 -26px;
+    border-radius: 50%; background: var(--ctl-on); border: 1px solid var(--ctl-line);
+  }
+  body.touch.hide-controls .controls { display: none; }
+  #exit-fullscreen {
+    display: none; position: fixed; z-index: 3; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right));
+    padding: 4px 10px; font-size: 12px; background: rgba(255, 255, 255, 0.15); opacity: 0.4;
+  }
+  #exit-fullscreen:hover { opacity: 0.9; }
+  body.fullscreen { background: #000; }
+  body.fullscreen #bar { display: none; }
+  body.fullscreen #exit-fullscreen { display: block; }
+  @media (orientation: landscape) {
+    body.touch #stage { flex: 1; aspect-ratio: auto; max-height: none; }
+    body.touch .controls { position: fixed; inset: 0; display: block; padding: 0; pointer-events: none; z-index: 1;
+      --ctl: rgba(255, 255, 255, 0.12); --ctl-on: rgba(255, 255, 255, 0.45); --ctl-line: rgba(255, 255, 255, 0.28); --ctl-text: #fff; }
+    body.touch .cluster { position: absolute; top: 8px; bottom: 40px; justify-content: space-between; pointer-events: auto; opacity: 0.75; }
+    body.touch .cluster.left { left: calc(10px + env(safe-area-inset-left)); }
+    body.touch .cluster.right { right: calc(10px + env(safe-area-inset-right)); }
+    body.touch .cluster.mid { top: auto; bottom: 40px; left: 50%; transform: translateX(-50%); }
+    body.touch .dpad { width: 105px; height: 105px; grid-template-columns: repeat(3, 35px); grid-template-rows: repeat(3, 35px); }
+    body.touch .stick { width: 105px; height: 105px; }
+    body.touch .face { grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(3, 44px); }
+    body.fullscreen.touch .cluster { bottom: calc(8px + env(safe-area-inset-bottom)); }
+    body.fullscreen.touch .cluster.mid { bottom: calc(8px + env(safe-area-inset-bottom)); }
+  }
+</style>
+</head>
+<body>
+<pre id="experiment-proof" hidden></pre>
+<div id="stage"><canvas id="canvas" tabindex="0"></canvas></div>
+<div id="touch" class="controls" aria-hidden="true">
+  <div class="cluster left">
+    <div class="shoulders"><div class="ctl shoulder" data-btn="256">L2</div><div class="ctl shoulder" data-btn="1024">L1</div></div>
+    <div class="dpad" data-dpad>
+      <span class="up" data-dir="16">▲</span><span class="left" data-dir="128">◀</span><span class="hub"></span>
+      <span class="right" data-dir="32">▶</span><span class="down" data-dir="64">▼</span>
+    </div>
+    <div class="stick" data-stick><div class="knob" id="knob"></div></div>
+  </div>
+  <div class="cluster mid">
+    <div class="ctl small" data-btn="1">Select</div>
+    <div class="ctl small" data-btn="8">Start</div>
+  </div>
+  <div class="cluster right">
+    <div class="shoulders"><div class="ctl shoulder" data-btn="2048">R1</div><div class="ctl shoulder" data-btn="512">R2</div></div>
+    <div class="face">
+      <div class="ctl tri" data-btn="4096">△</div>
+      <div class="ctl sq" data-btn="32768">□</div>
+      <div class="ctl ci" data-btn="8192">○</div>
+      <div class="ctl cr" data-btn="16384">✕</div>
+    </div>
+  </div>
+</div>
+<div id="bar"><span id="status">Loading…</span><span id="stats"></span>
+  <select id="render-rate" aria-label="Rendering rate" title="Rendering rate; reloads the game when changed">
+    <option value="auto">Auto (60–120 fps)</option><option value="60">60 fps</option><option value="72">72 fps</option><option value="80">80 fps</option><option value="90">90 fps</option><option value="100">100 fps</option><option value="110">110 fps</option><option value="120">120 fps</option>
+  </select><span id="adaptive-status" aria-live="polite"></span>
+  <select id="scale" aria-label="Resolution" title="Internal resolution, the page reloads to apply it">
+    <option value="1">640×512</option>
+    <option value="2">1280×1024</option>
+    <option value="3">1920×1536</option>
+  </select>
+  <select id="aspect" aria-label="Aspect ratio" title="Screen shape the game is told about, the page reloads to apply it">
+    <option value="4:3">4:3</option>
+    <option value="16:9">16:9</option>
+  </select>
+  <select id="display-detail" aria-label="Display detail" title="Faster display uses a softer image. Applies immediately." hidden>
+    <option value="fast">Faster display</option>
+    <option value="sharp">Sharper display</option>
+  </select>
+  <button id="controls-toggle" type="button" hidden>Hide controls</button>
+  <button id="audio-toggle" type="button">Mute</button>
+  <button id="diagnostics" type="button">Save diagnostics</button>
+  <button id="export-card" type="button" title="Download the memory card in slot 1 as a .ps2 file">Export card</button>
+  <button id="import-card" type="button" title="Put a .ps2 memory card file in slot 1">Import card</button>
+  <input id="import-file" type="file" accept=".ps2" hidden>
+  <button id="fullscreen" type="button" title="Fullscreen (F or double click)">Fullscreen</button></div>
+<button id="exit-fullscreen" type="button">Exit fullscreen</button>
+<div id="remote-panel" hidden><span id="remote-status"></span><input id="remote-invite" readonly aria-label="Invitation link"><button id="remote-copy" type="button">Copy invite</button><button id="remote-stop" type="button">Close session</button></div>
+<div id="overlay"><div id="panel">
+  <strong>Full game · adaptive rendering</strong>
+  <p>Start from the title screen with normal menus and memory-card saves. Menus, loading, and unverified scenes keep their original 60-Hz timing. Supported battles can render at up to 120 fps while gameplay stays at 60 Hz. Auto reduces rendering work when needed.</p>
+  <p id="render-rate-description"></p>
+  <p id="help" hidden></p><button id="start" disabled>Loading…</button></div></div>
+<div id="problem" hidden><p id="problem-text"></p><button id="problem-dismiss" type="button">Dismiss</button> <button id="problem-reload" type="button">Reload game</button></div>
+<script src="runtime-support.js"></script>
+<script src="scene-snapshot.js"></script>
+<script src="remote-common.js"></script>
+<script src="remote-host.js"></script>
+<script>
+const statusEl = document.getElementById('status');
+const recentLogs = [];
+function logRuntime(text) {
+  const line = String(text);
+  recentLogs.push(line.slice(0, 1000));
+  if (recentLogs.length > 80) recentLogs.shift();
+  console.log(line);
+}
+function showProblem(text) {
+  logRuntime(text);
+  document.getElementById('problem-text').textContent = text;
+  document.getElementById('problem').hidden = false;
+}
+function fatalError(text) {
+  if (typeof Module !== 'undefined' && Module) {
+    if (!Module.failure) Module.failure = { message: text, at: new Date().toISOString(), stats: document.getElementById('stats').textContent };
+    Module.failed = true;
+  }
+  showProblem(text);
+}
+document.getElementById('problem-dismiss').onclick = () => { document.getElementById('problem').hidden = true; };
+document.getElementById('problem-reload').onclick = () => location.reload();
+window.addEventListener('error', (e) => fatalError('Browser error: ' + e.message));
+window.addEventListener('unhandledrejection', (e) => fatalError('Browser error: ' + String(e.reason)));
+const CARD_DIR = '/memcard', CARD_FILE = '/memcard/Mcd001.ps2', CARD_BYTES = 8650752;
+let noteTimer = 0, noteRestore = '';
+function note(text) {
+  if (!noteTimer) noteRestore = statusEl.textContent;
+  clearTimeout(noteTimer);
+  statusEl.textContent = text;
+  noteTimer = setTimeout(() => {
+    statusEl.textContent = noteRestore;
+    noteTimer = 0;
+  }, 5000);
+}
+let cardTimer = 0;
+function storeCard(then) {
+  clearTimeout(cardTimer);
+  cardTimer = setTimeout(() => {
+    try {
+      FS.syncfs(false, (err) => {
+        if (err) console.warn('memory card: could not write browser storage', err);
+        if (then) then();
+      });
+    } catch (e) {
+      if (then) then();
+    }
+  }, 300);
+}
+document.getElementById('export-card').addEventListener('click', () => {
+  let data = null;
+  try { data = FS.readFile(CARD_FILE); } catch (e) {}
+  if (!data) {
+    note('Nothing saved on the memory card yet');
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([data], { type: 'application/octet-stream' }));
+  link.download = 'Mcd001.ps2';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 10000);
+});
+const importInput = document.getElementById('import-file');
+document.getElementById('import-card').addEventListener('click', () => importInput.click());
+importInput.addEventListener('change', async () => {
+  const file = importInput.files[0];
+  importInput.value = '';
+  if (!file) return;
+  if (file.size !== CARD_BYTES) {
+    note('That is not an 8 MB PS2 memory card image (' + CARD_BYTES + ' bytes)');
+    return;
+  }
+  const data = new Uint8Array(await file.arrayBuffer());
+  if (new TextDecoder().decode(data.subarray(0, 28)) !== 'Sony PS2 Memory Card Format ') {
+    note('That file is not a formatted PS2 memory card');
+    return;
+  }
+  if (!confirm('Replace the memory card in slot 1 with ' + file.name + '? The page reloads to use it.')) return;
+  try {
+    FS.writeFile(CARD_FILE, data);
+  } catch (e) {
+    note('Import failed: ' + e.message);
+    return;
+  }
+  storeCard(() => location.reload());
+});
+const statsEl = document.getElementById('stats');
+const canvas = document.getElementById('canvas');
+const stage = document.getElementById('stage');
+const params = new URLSearchParams(location.search);
+let experimentFps;
+const experimentSamples = [];
+function createBrowserRafRateTracker(maxGapMs = 2500) {
+  let previous = null;
+  return {
+    reset() { previous = null; },
+    sample(wallMs, rafCount, visible) {
+      if (!visible || !Number.isFinite(wallMs) || !Number.isFinite(rafCount)) {
+        previous = null;
+        return null;
+      }
+      const prior = previous;
+      previous = {wallMs, rafCount};
+      if (!prior) return null;
+      const spanMs = wallMs - prior.wallMs;
+      const frames = rafCount - prior.rafCount;
+      if (spanMs <= 0 || spanMs > maxGapMs || frames < 0) return null;
+      // Browser callback cadence is not a physical display measurement or
+      // proof that every callback showed a new game image.
+      return frames * 1000 / spanMs;
+    },
+  };
+}
+const browserRafRate = createBrowserRafRateTracker();
+const EXPERIMENT_PROOF_HISTORY_LIMIT = 30;
+function experimentProofHistory(samples, adaptive) {
+  // Only the hidden DOM snapshot is shortened. Downloaded diagnostics retain
+  // the original in-memory histories; counts describe those retained arrays.
+  return {
+    samples: samples.slice(-EXPERIMENT_PROOF_HISTORY_LIMIT),
+    retainedSampleCount: samples.length,
+    proofHistoryLimit: EXPERIMENT_PROOF_HISTORY_LIMIT,
+    adaptive: adaptive ? {
+      ...adaptive,
+      samples: adaptive.samples.slice(-EXPERIMENT_PROOF_HISTORY_LIMIT),
+      retainedSampleCount: adaptive.samples.length,
+      proofHistoryLimit: EXPERIMENT_PROOF_HISTORY_LIMIT,
+    } : null,
+  };
+}
+const hostMode = params.has('host');
+const coarsePointer = matchMedia('(pointer: coarse)').matches;
+const mobileMode = PS2WebSupport.mobileModeEnabled(params, navigator, coarsePointer);
+const allowedRenderRates = [60,72,80,90,100,110,120];
+const requestedRenderRate = Number(params.get('fps'));
+const renderMode = allowedRenderRates.includes(requestedRenderRate) ? 'fixed' : 'auto';
+experimentFps = renderMode === 'fixed' ? requestedRenderRate : (mobileMode ? 80 : 120);
+const renderRateSelect = document.getElementById('render-rate');
+renderRateSelect.value = renderMode === 'auto' ? 'auto' : String(experimentFps);
+document.getElementById('render-rate-description').textContent = 'Original 60-Hz menus and gameplay / ' + (renderMode === 'auto' ? 'adaptive battle rendering, initial target ' + experimentFps : 'battle rendering target ' + experimentFps) + ' fps. Rate changes reload the game.';
+renderRateSelect.addEventListener('change', () => { const url = new URL(location.href); url.searchParams.set('fps', renderRateSelect.value); location.href = url.href; });
+function updateAdaptiveStatus(state) {
+  const label = document.getElementById('adaptive-status');
+  if (!label) return;
+  label.textContent = (state.adaptiveCapable ? (renderMode === 'auto' ? 'Auto ' : 'Fixed ') + state.currentHz + ' fps' : '60-Hz scene · battle target ' + state.targetHz) + ' · game ' + Math.round(state.guestRate * 100) + '%';
+  if (state.decision.status === 'slow-at-minimum') label.textContent += ' · device below full speed at 60';
+  label.title = state.decision.reason;
+}
+const boundedDisplay = mobileMode || hostMode;
+let muted = params.get('audio') === 'off';
+let lastFrameAt = 0, stallReported = false;
+
+function missingFeatures() {
+  const header = [0, 97, 115, 109, 1, 0, 0, 0, 1, 4, 1, 96, 0, 0, 3, 2, 1, 0, 10];
+  const accepts = (body) => {
+    try {
+      return WebAssembly.validate(new Uint8Array(header.concat([body.length + 2, 1, body.length], body)));
+    } catch (e) {
+      return false;
+    }
+  };
+  const missing = [];
+  if (!window.crossOriginIsolated) missing.push('cross-origin isolation (COOP and COEP headers)');
+  if (typeof WebAssembly.Suspending !== 'function') missing.push('WebAssembly JSPI');
+  if (!accepts([0, 0x1F, 0x40, 0, 0x0B, 0x0B])) missing.push('WebAssembly exception handling (try_table)');
+  if (!accepts([0, 0x12, 0, 0x0B])) missing.push('WebAssembly tail calls');
+  if (!accepts([0, 0xFD, 0x0C].concat(new Array(16).fill(0), [0x1A, 0x0B]))) missing.push('WebAssembly SIMD');
+  return missing;
+}
+const missing = missingFeatures();
+
+const touchRoot = document.getElementById('touch'), knob = document.getElementById('knob');
+let touchPad = { buttons: 0, x: 0, y: 0, stick: false };
+const fingers = new Map();
+if (coarsePointer || (mobileMode && navigator.maxTouchPoints > 0) || params.has('touch')) document.body.classList.add('touch');
+function circleOf(el) {
+  const r = el.getBoundingClientRect();
+  return { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2 };
+}
+function onTouch(e) {
+  e.preventDefault();
+  const seen = new Set();
+  let buttons = 0, sx = 0, sy = 0, stick = false;
+  for (const t of e.touches) {
+    seen.add(t.identifier);
+    let f = fingers.get(t.identifier);
+    if (!f) {
+      const start = document.elementFromPoint(t.clientX, t.clientY);
+      const region = start && start.closest('[data-stick],[data-dpad]');
+      f = region ? { kind: region.hasAttribute('data-stick') ? 'stick' : 'dpad', el: region } : { kind: 'button' };
+      fingers.set(t.identifier, f);
+    }
+    if (f.kind === 'stick') {
+      const c = circleOf(f.el);
+      let dx = (t.clientX - c.x) / c.r, dy = (t.clientY - c.y) / c.r;
+      const len = Math.hypot(dx, dy);
+      if (len > 1) { dx /= len; dy /= len; }
+      sx = dx; sy = dy; stick = true;
+      knob.style.transform = 'translate(' + (dx * c.r * 0.6) + 'px,' + (dy * c.r * 0.6) + 'px)';
+    } else if (f.kind === 'dpad') {
+      const d = circleOf(f.el), ox = t.clientX - d.x, oy = t.clientY - d.y;
+      if (Math.hypot(ox, oy) > d.r * 0.2) {
+        const angle = Math.atan2(oy, ox) * 180 / Math.PI;
+        if (angle > -67.5 && angle < 67.5) buttons |= 0x20;
+        if (angle > 22.5 && angle < 157.5) buttons |= 0x40;
+        if (angle > 112.5 || angle < -112.5) buttons |= 0x80;
+        if (angle > -157.5 && angle < -22.5) buttons |= 0x10;
+      }
+    } else {
+      const over = document.elementFromPoint(t.clientX, t.clientY);
+      const button = over && over.closest('[data-btn]');
+      if (button && touchRoot.contains(button)) buttons |= Number(button.dataset.btn);
+    }
+  }
+  for (const id of [...fingers.keys()]) if (!seen.has(id)) fingers.delete(id);
+  if (!stick) knob.style.transform = '';
+  touchPad = { buttons, x: sx, y: sy, stick };
+  touchRoot.querySelectorAll('[data-btn]').forEach((el) => el.classList.toggle('on', (buttons & Number(el.dataset.btn)) !== 0));
+  touchRoot.querySelectorAll('[data-dir]').forEach((el) => el.classList.toggle('on', (buttons & Number(el.dataset.dir)) !== 0));
+}
+for (const type of ['touchstart', 'touchmove', 'touchend', 'touchcancel']) touchRoot.addEventListener(type, onTouch, { passive: false });
+
+const scaleSelect = document.getElementById('scale');
+let scale = params.get('PS2_SCALE');
+if (!scale && !mobileMode && !hostMode) {
+  try { scale = localStorage.getItem('ps2web-scale'); } catch (e) {}
+}
+scale = ['1', '2', '3'].includes(scale) ? scale : '1';
+scaleSelect.value = scale;
+scaleSelect.addEventListener('change', () => {
+  try { localStorage.setItem('ps2web-scale', scaleSelect.value); } catch (e) {}
+  const url = new URL(location.href);
+  url.searchParams.delete('PS2_SCALE');
+  location.href = url.href;
+});
+
+const aspectSelect = document.getElementById('aspect');
+let aspect = params.get('aspect');
+if (!aspect) {
+  try { aspect = localStorage.getItem('ps2web-aspect'); } catch (e) {}
+}
+aspect = aspect === '16:9' ? '16:9' : '4:3';
+aspectSelect.value = aspect;
+document.body.classList.toggle('wide', aspect === '16:9');
+aspectSelect.addEventListener('change', () => {
+  try { localStorage.setItem('ps2web-aspect', aspectSelect.value); } catch (e) {}
+  const url = new URL(location.href);
+  url.searchParams.delete('aspect');
+  location.href = url.href;
+});
+
+const detailSelect = document.getElementById('display-detail');
+let displayDetail = params.get('display') || (hostMode ? 'sharp' : null);
+if (!displayDetail) {
+  try { displayDetail = localStorage.getItem('ps2web-display'); } catch (e) {}
+}
+displayDetail = displayDetail === 'sharp' ? 'sharp' : 'fast';
+detailSelect.value = displayDetail;
+detailSelect.hidden = !boundedDisplay;
+detailSelect.addEventListener('change', () => {
+  displayDetail = detailSelect.value === 'sharp' ? 'sharp' : 'fast';
+  try { localStorage.setItem('ps2web-display', displayDetail); } catch (e) {}
+  fitCanvas();
+});
+
+const controlsButton = document.getElementById('controls-toggle');
+let hideControls = false;
+try { hideControls = localStorage.getItem('ps2web-hide-controls') === '1'; } catch (e) {}
+function updateControls() {
+  const touch = document.body.classList.contains('touch');
+  document.body.classList.toggle('hide-controls', hideControls);
+  controlsButton.hidden = !touch;
+  controlsButton.textContent = hideControls ? 'Show controls' : 'Hide controls';
+  fitCanvas();
+}
+controlsButton.addEventListener('click', () => {
+  hideControls = !hideControls;
+  try { localStorage.setItem('ps2web-hide-controls', hideControls ? '1' : '0'); } catch (e) {}
+  updateControls();
+});
+
+function fitCanvas() {
+  // Keep letterboxing in CSS, outside the GPU surface. On an ultrawide phone
+  // the controls can occupy the side bars without allocating/rendering them.
+  const ratio = aspect === '16:9' ? 16 / 9 : 4 / 3;
+  const cssWidth = boundedDisplay ? Math.min(stage.clientWidth, stage.clientHeight * ratio) : stage.clientWidth;
+  const cssHeight = boundedDisplay ? cssWidth / ratio : stage.clientHeight;
+  canvas.style.width = boundedDisplay ? cssWidth + 'px' : '100%';
+  canvas.style.height = boundedDisplay ? cssHeight + 'px' : '100%';
+  const [width, height] = PS2WebSupport.canvasSize(cssWidth, cssHeight, window.devicePixelRatio, boundedDisplay, displayDetail === 'sharp' ? 640 : 480);
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+    if (Module.running && Module._ps2web_resize) Module._ps2web_resize(width, height);
+  }
+}
+// Fullscreen, browser chrome and rotation can produce a burst of sizes. Resize
+// the GPU surface once after it settles instead of repeatedly reallocating it.
+let fitTimer = 0;
+function scheduleFitCanvas() {
+  clearTimeout(fitTimer);
+  fitTimer = setTimeout(fitCanvas, 100);
+}
+window.addEventListener('resize', scheduleFitCanvas);
+if (typeof ResizeObserver !== 'undefined') new ResizeObserver(scheduleFitCanvas).observe(stage);
+
+const fullscreenButton = document.getElementById('fullscreen');
+const root = document.documentElement;
+const requestFullscreen = root.requestFullscreen || root.webkitRequestFullscreen;
+const exitFullscreen = document.exitFullscreen || document.webkitExitFullscreen;
+const nativeFullscreen = () => document.fullscreenElement || document.webkitFullscreenElement;
+let fullscreen = false;
+function setFullscreen(on) {
+  fullscreen = on;
+  document.body.classList.toggle('fullscreen', on);
+  fullscreenButton.textContent = on ? 'Exit fullscreen' : 'Fullscreen';
+  scheduleFitCanvas();
+}
+function toggleFullscreen() {
+  if (fullscreen) {
+    if (nativeFullscreen() && exitFullscreen) exitFullscreen.call(document);
+    setFullscreen(false);
+    return;
+  }
+  setFullscreen(true);
+  if (!requestFullscreen) return;
+  const result = requestFullscreen.call(root, { navigationUI: 'hide' });
+  if (result && result.then) {
+    result.then(() => {
+      if (document.body.classList.contains('touch') && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+    }).catch(() => {});
+  }
+}
+function onFullscreenChange() {
+  if (!nativeFullscreen() && fullscreen && requestFullscreen) setFullscreen(false);
+  else scheduleFitCanvas();
+}
+document.addEventListener('fullscreenchange', onFullscreenChange);
+document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+fullscreenButton.addEventListener('click', toggleFullscreen);
+document.getElementById('exit-fullscreen').addEventListener('click', toggleFullscreen);
+canvas.addEventListener('dblclick', toggleFullscreen);
+window.addEventListener('keydown', (e) => {
+  if (e.code !== 'KeyF' || e.repeat || e.target.tagName === 'SELECT') return;
+  e.preventDefault();
+  toggleFullscreen();
+});
+
+const workletSource = `
+class Output extends AudioWorkletProcessor {
+  constructor(options) {
+    super();
+    const { buffer, base } = options.processorOptions;
+    this.ring = new Uint32Array(buffer, base, 4);
+    this.capacity = this.ring[2];
+    this.samples = new Int16Array(buffer, base + 16, this.capacity * 2);
+    this.left = 0;
+    this.right = 0;
+  }
+  process(inputs, outputs) {
+    const left = outputs[0][0], right = outputs[0][1];
+    const write = Atomics.load(this.ring, 0), mask = this.capacity - 1;
+    let read = Atomics.load(this.ring, 1);
+    for (let i = 0; i < left.length; ++i) {
+      if (read !== write) {
+        const at = (read & mask) * 2;
+        this.left = this.samples[at] / 32768;
+        this.right = this.samples[at + 1] / 32768;
+        read = (read + 1) >>> 0;
+      } else {
+        this.left *= 0.995;
+        this.right *= 0.995;
+      }
+      left[i] = this.left;
+      right[i] = this.right;
+    }
+    Atomics.store(this.ring, 1, read);
+    Atomics.store(this.ring, 3, 1);
+    return true;
+  }
+}
+registerProcessor('ps2-output', Output);`;
+
+let audio = null, node = null;
+function clearAudioPacing() {
+  if (!Module._ps2web_audio_ring || !Module.HEAPU8) return;
+  const ring = new Uint32Array(Module.HEAPU8.buffer, Module._ps2web_audio_ring(), 4);
+  Atomics.store(ring, 3, 0);
+}
+async function startAudio() {
+  if (muted) return;
+  audio = new AudioContext({ sampleRate: 48000, latencyHint: 'interactive' });
+  audio.onstatechange = () => { if (audio.state !== 'running') clearAudioPacing(); };
+  // Resume while still handling the user's tap, before asynchronous worklet loading.
+  await audio.resume();
+  const url = URL.createObjectURL(new Blob([workletSource], { type: 'application/javascript' }));
+  try { await audio.audioWorklet.addModule(url); } finally { URL.revokeObjectURL(url); }
+  node = new AudioWorkletNode(audio, 'ps2-output', {
+    outputChannelCount: [2],
+    processorOptions: { buffer: Module.HEAPU8.buffer, base: Module._ps2web_audio_ring() },
+  });
+  node.onprocessorerror = () => {
+    clearAudioPacing();
+    muted = true;
+    updateAudioButton();
+    showProblem('Audio stopped. The game will continue without sound.');
+  };
+  node.connect(audio.destination);
+  if (params.has('host')) {
+    const destination = audio.createMediaStreamDestination();
+    node.connect(destination);
+    Module.remoteAudioStream = destination.stream;
+  }
+}
+const audioButton = document.getElementById('audio-toggle');
+function updateAudioButton() { audioButton.textContent = muted ? 'Enable sound' : 'Mute'; }
+updateAudioButton();
+audioButton.addEventListener('click', async () => {
+  muted = !muted;
+  try {
+    if (muted) { clearAudioPacing(); if (audio) await audio.suspend(); }
+    else if (audio) await audio.resume();
+    else if (Module.running) await startAudio();
+  } catch (e) { muted = true; clearAudioPacing(); showProblem('Audio unavailable: ' + e.message); }
+  updateAudioButton();
+});
+// The local visibility helper below suspends the native continuation too.
+// Remote streaming hosts retain their existing background behavior.
+document.addEventListener('visibilitychange', () => {
+  if (hostMode) { lastFrameAt = performance.now(); if (document.hidden) clearAudioPacing(); }
+});
+document.addEventListener('pointerdown', () => {
+  if (audio && !muted && audio.state === 'suspended') audio.resume().catch(logRuntime);
+});
+
+const keys = new Set();
+const keyMap = { ArrowUp: 4, ArrowRight: 5, ArrowDown: 6, ArrowLeft: 7, KeyZ: 14, KeyX: 13, KeyA: 15, KeyS: 12,
+                 KeyQ: 10, KeyW: 11, Digit1: 8, Digit2: 9, Enter: 3, Backspace: 0 };
+const stickKeys = new Set(['KeyI', 'KeyJ', 'KeyK', 'KeyL']);
+window.addEventListener('keydown', (e) => { if (e.code in keyMap || stickKeys.has(e.code)) { keys.add(e.code); e.preventDefault(); } });
+window.addEventListener('keyup', (e) => { keys.delete(e.code); });
+const padButtons = [[0, 14], [1, 13], [2, 15], [3, 12], [4, 10], [5, 11], [6, 8], [7, 9], [8, 0], [9, 3], [10, 1], [11, 2],
+                    [12, 4], [13, 6], [14, 7], [15, 5]];
+const axis = (v) => Math.max(0, Math.min(255, Math.round((v + 1) * 127.5)));
+// the keyboard and touch controls are player 1 along with the first gamepad, a second gamepad is player 2
+const players = [0, 1].map(() => ({ plugged: false, pad: -1, pressure: '', strong: 0, weak: 0, rumbleAt: 0 }));
+const motorStrength = (v) => v < 16 ? 0 : Math.sqrt(v / 255);
+function pollPlayer(port, gamepad, own) {
+  const player = players[port];
+  const plugged = port === 0 || !!gamepad;
+  if (plugged !== player.plugged) {
+    player.plugged = plugged;
+    Module._ps2web_pad_connected(port, plugged ? 1 : 0);
+  }
+  if (!plugged) return;
+  let buttons = 0, lx = 128, ly = 128, rx = 128, ry = 128;
+  const pressure = new Array(16).fill(255);
+  if (own) {
+    buttons |= touchPad.buttons;
+    for (const k of keys) if (k in keyMap) buttons |= 1 << keyMap[k];
+    if (keys.has('KeyJ')) lx = 0;
+    if (keys.has('KeyL')) lx = 255;
+    if (keys.has('KeyI')) ly = 0;
+    if (keys.has('KeyK')) ly = 255;
+    if (touchPad.stick) {
+      lx = axis(touchPad.x);
+      ly = axis(touchPad.y);
+    }
+  }
+  const full = buttons;
+  if (gamepad) {
+    for (const [index, bit] of padButtons) {
+      const b = gamepad.buttons[index];
+      if (!b || !(b.pressed || b.value > 0.05)) continue;
+      buttons |= 1 << bit;
+      if (!(full & (1 << bit))) pressure[bit] = Math.max(1, Math.round((b.value > 0 ? b.value : 1) * 255));
+    }
+    if (gamepad.axes.length >= 4) {
+      if (lx === 128) lx = axis(gamepad.axes[0]);
+      if (ly === 128) ly = axis(gamepad.axes[1]);
+      rx = axis(gamepad.axes[2]);
+      ry = axis(gamepad.axes[3]);
+    }
+  }
+  const state = buttons + lx * 65536 + ly * 16777216 + rx * 4294967296 + ry * 1099511627776;
+  if (state !== player.pad) {
+    player.pad = state;
+    Module._ps2web_pad(port, buttons, lx, ly, rx, ry);
+  }
+  const packed = [0, 1, 2, 3].map((i) => pressure[i * 4] | (pressure[i * 4 + 1] << 8) | (pressure[i * 4 + 2] << 16) | (pressure[i * 4 + 3] << 24));
+  if (packed.join() !== player.pressure) {
+    player.pressure = packed.join();
+    Module._ps2web_pressure(port, packed[0], packed[1], packed[2], packed[3]);
+  }
+  const rumble = Module._ps2web_rumble(port), now = performance.now();
+  const strong = motorStrength(rumble >> 8), weak = rumble & 1;
+  const actuator = gamepad && gamepad.vibrationActuator;
+  if (actuator && (Math.abs(strong - player.strong) > 0.08 || weak !== player.weak || ((strong || weak) && now - player.rumbleAt > 100))) {
+    player.strong = strong;
+    player.weak = weak;
+    player.rumbleAt = now;
+    const done = strong || weak ? actuator.playEffect('dual-rumble', { duration: 200, weakMagnitude: weak, strongMagnitude: strong }) : actuator.reset();
+    if (done && done.catch) done.catch(() => {});
+  }
+}
+function pollInput() {
+  const pads = [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter((pad) => pad);
+  for (let port = 0; port < 2; ++port) {
+    const remote = Module.remotePads && Module.remotePads[port];
+    const remotePad = remote && (performance.now() - remote.lastSeen < 750 ? remote.gamepad : PS2Remote.gamepad(PS2Remote.neutral));
+    pollPlayer(port, remotePad || pads[port] || null, port === 0 && !remote);
+  }
+}
+
+// some browsers cannot show a canvas drawn by another GPU (hybrid laptops on Linux), so each adapter draws a few test frames first
+async function canPresent(power) {
+  const adapter = await navigator.gpu.requestAdapter({ powerPreference: power });
+  if (!adapter) return null;
+  const device = await adapter.requestDevice();
+  let failed = false;
+  device.lost.then((info) => {
+    if (info.reason === 'destroyed') return;
+    failed = true;
+    console.warn('[gpu check] ' + power + ' device lost: ' + info.message);
+  });
+  device.onuncapturederror = (e) => {
+    failed = true;
+    console.warn('[gpu check] ' + power + ': ' + e.error.message);
+  };
+  const probe = document.createElement('canvas');
+  probe.width = probe.height = 64;
+  probe.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:0.01;pointer-events:none';
+  document.body.appendChild(probe);
+  try {
+    const context = probe.getContext('webgpu');
+    context.configure({ device, format: navigator.gpu.getPreferredCanvasFormat(), alphaMode: 'opaque' });
+    for (let i = 0; i < 3 && !failed; ++i) {
+      const encoder = device.createCommandEncoder();
+      encoder.beginRenderPass({ colorAttachments: [{ view: context.getCurrentTexture().createView(), loadOp: 'clear', storeOp: 'store', clearValue: [0, 0, 0, 1] }] }).end();
+      device.queue.submit([encoder.finish()]);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await device.queue.onSubmittedWorkDone();
+    }
+  } catch (e) {
+    failed = true;
+    console.warn('[gpu check] ' + power + ': ' + e);
+  }
+  probe.remove();
+  const name = [adapter.info.vendor, adapter.info.architecture].filter(Boolean).join(' ') || power;
+  device.destroy();
+  return failed ? null : name;
+}
+
+function webgpuHelp(onCpu) {
+  const firefox = navigator.userAgent.includes('Firefox/');
+  const linux = navigator.userAgent.includes('Linux') && !navigator.userAgent.includes('Android');
+  if (firefox) return 'WebGPU is turned off in this Firefox, so the game runs on the slow software renderer. Set dom.webgpu.enabled to true in about:config and reload.';
+  if (linux && onCpu) return 'WebGPU runs on the CPU here, so the game is slow. Turn on chrome://flags/#enable-vulkan as well, then restart the browser.';
+  if (linux) return 'WebGPU is turned off in this browser, so the game runs on the slow software renderer. Turn on chrome://flags/#enable-unsafe-webgpu and chrome://flags/#enable-vulkan, then restart the browser.';
+  return 'This browser has no WebGPU, so the game runs on the slow software renderer. A current Chrome, Edge or Safari is much faster.';
+}
+
+async function chooseGpu() {
+  if (!navigator.gpu) {
+    Module.gpuHelp = webgpuHelp(false);
+    return 'WebGPU unavailable, software renderer';
+  }
+  const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+  if (!adapter) {
+    Module.gpuHelp = webgpuHelp(false);
+    return 'WebGPU has no adapter, software renderer';
+  }
+  if (adapter.info.isFallbackAdapter || adapter.info.architecture === 'swiftshader') Module.gpuHelp = webgpuHelp(true);
+  if (navigator.userAgent.includes('Firefox/')) {
+    Module.presentCopy = true;
+    return 'Firefox, frames copied to the page';
+  }
+  const forced = params.get('gpu');
+  if (forced !== 'low') {
+    const name = await canPresent('high-performance');
+    if (name) return 'GPU ' + name;
+  }
+  const name = await canPresent('low-power');
+  if (name) {
+    Module.ENV.PS2_GPU_LOW_POWER = '1';
+    return 'GPU ' + name;
+  }
+  Module.presentCopy = true;
+  return 'GPU cannot draw to the page, copying frames';
+}
+
+let frames = 0, last = performance.now(), lastGpu = 0, lastEmuIdle = 0, lastRenderIdle = 0, lastVuIdle = 0, lastInterpreted = 0;
+let shown = 0, fresh = false;
+const countShown = () => {
+  if (fresh) ++shown;
+  fresh = false;
+  requestAnimationFrame(countShown);
+};
+requestAnimationFrame(countShown);
+var Module = {
+  canvas,
+  arguments: ['/game/core.elf'].concat(params.has('arg') ? ['--arg', params.get('arg')] : [], aspect === '16:9' ? ['--widescreen'] : [], params.getAll('press').flatMap((p) => p.split(',').flatMap((x) => ['--press', x]))),
+  discUrl: '/disc.iso',
+  stateUrl: null,
+  noSurface: params.has('nosurface'),
+  noCard: params.has('nocard'),
+  presentCopy: params.has('copy'),
+  readDiscRange: PS2WebSupport.readDiscRange,
+  discPending: 0,
+  onAbort: (reason) => fatalError('Game stopped: ' + reason),
+  onGpuError: (reason) => fatalError('Graphics stopped: ' + reason + '. Save diagnostics, then reload the game.'),
+  onHalt: (reason) => {
+    clearTimeout(noteTimer);
+    noteTimer = 0;
+    statusEl.textContent = 'Halted: ' + reason;
+    statusEl.style.color = '#f66';
+    fatalError('Game stopped: ' + reason);
+  },
+  print: logRuntime,
+  printErr: logRuntime,
+  setStatus: (text) => {
+    if (!text || Module.gpuInfo) return;
+    const progress = text.match(/^Downloading data\.\.\. \((\d+)\/\d+\)/);
+    statusEl.textContent = progress ? 'Downloading game data, ' + (Number(progress[1]) / 1048576).toFixed(1) + ' MB unpacked' : text;
+  },
+  onRuntimeInitialized: () => {
+    const start = document.getElementById('start');
+    if (missing.length || Module.failed) return;
+    start.disabled = true;
+    // Calibrate only after WASM and runtime initialization finish. Loading the
+    // large module must not be mistaken for the display's idle refresh rate.
+    if (renderMode === 'auto' || experimentFps > 60) {
+      const pacing = PS2ExperimentalPacing.create({
+        targetHz: renderMode === 'auto' ? 120 : experimentFps,
+        cadenceDebt: params.get('cadenceDebt') !== '0',
+        getAppliedHz: () => Module._ps2web_experiment_stat(8),
+        isVisible: () => !document.hidden,
+      });
+      pacing.attach(Module);
+      Module.presentationPacing = pacing;
+    }
+    Module.adaptiveRendering = PS2FullGameAdaptiveRender.attach(Module, {mode: renderMode, initialHz: experimentFps, onStatus: updateAdaptiveStatus});
+    const suspendLocalActivity = () => {
+        keys.clear(); fingers.clear();
+        touchPad = {buttons: 0, x: 0, y: 0, stick: false};
+        knob.style.transform = '';
+        touchRoot.querySelectorAll('.on').forEach(el => el.classList.remove('on'));
+        clearAudioPacing();
+        browserRafRate.reset();
+        if (Module.presentationPacing) Module.presentationPacing.resetCadence('hidden');
+        Module.adaptiveRendering.resetWindow();
+        if (audio && audio.state === 'running') return audio.suspend();
+    };
+    Module.localVisibility = PS2LocalGameVisibility.attach(Module, {
+      skip: hostMode,
+      onHidden: suspendLocalActivity,
+      onPageHide: suspendLocalActivity,
+      onVisible() {
+        lastFrameAt = performance.now();
+        last = lastFrameAt; frames = 0; shown = 0; fresh = false;
+        lastGpu = Module._ps2web_gpu_ms();
+        lastEmuIdle = Module._ps2web_idle_ms(0); lastRenderIdle = Module._ps2web_idle_ms(1); lastVuIdle = Module._ps2web_idle_ms(2);
+        browserRafRate.reset();
+        if (Module.presentationPacing) Module.presentationPacing.resetCadence('visible');
+        Module.adaptiveRendering.resetWindow();
+        if (audio && !muted && audio.state === 'suspended') return audio.resume();
+      },
+      onError(error) { logRuntime('[visibility] ' + String(error)); },
+    });
+    addEventListener('pagehide', event => {
+      if (!event.persisted) {
+        Module.adaptiveRendering.dispose();
+        if (Module.presentationPacing) Module.presentationPacing.dispose();
+      }
+    });
+    const enable = () => { if (!Module.failed) { start.disabled = false; start.textContent = 'Start full game'; } };
+    if (Module.presentationPacing) {
+      start.textContent = 'Checking display timing…';
+      Module.presentationPacing.calibrate().then(timing => {
+        logRuntime('[pacing] fresh idle display ' + (Number.isFinite(timing.observedIdleHz) ? timing.observedIdleHz.toFixed(1) : 'unknown') + ' Hz; render ceiling ' + (renderMode === 'auto' ? 120 : experimentFps));
+        enable();
+      }).catch(error => fatalError('Display timing failed: ' + error.message));
+    } else enable();
+    fetch('build-info.json').then(response => response.ok ? response.json() : null).then(info => { Module.buildInfo = info; }).catch(() => {});
+  },
+  preRun: [() => {
+    if (!Module.noCard) {
+      try {
+        FS.mkdir(CARD_DIR);
+        FS.mount(IDBFS, {}, CARD_DIR);
+        Module.addRunDependency('card');
+        FS.syncfs(true, (err) => {
+          if (err) console.warn('memory card: could not read browser storage', err);
+          Module.removeRunDependency('card');
+        });
+      } catch (e) {
+        console.warn('memory card: browser storage is not available', e);
+      }
+    }
+    for (const [key, value] of params) if (key.startsWith('PS2_')) Module.ENV[key] = value;
+    Module.ENV.PS2_SCALE = scale;
+    Module.ENV.PS2_EXPERIMENT_FPS = String(experimentFps);
+    Module.ENV.PS2_RENDER_AUTO = renderMode === 'auto' ? '1' : '0';
+
+    if (mobileMode) Module.ENV.PS2_MOBILE = '1';
+    Module.addRunDependency('disc');
+    const headController = new AbortController();
+    Promise.all([
+      PS2WebSupport.withTimeout(() => fetch(Module.discUrl, { method: 'HEAD', signal: headController.signal }), 15000, 'Disc connection timed out', () => headController.abort()),
+      PS2WebSupport.withTimeout(chooseGpu, 15000, 'Graphics check timed out'),
+    ]).then(([r, gpu]) => {
+      if (!r.ok) throw new Error('Disc connection failed (HTTP ' + r.status + ')');
+      Module.discSize = Number(r.headers.get('content-length')) || 0;
+      Module.gpuInfo = gpu;
+      if (Module.gpuHelp && !missing.length) {
+        const help = document.getElementById('help');
+        help.textContent = Module.gpuHelp;
+        help.hidden = false;
+      }
+      statusEl.textContent = (Module.discSize ? 'Disc ' + (Module.discSize / 1073741824).toFixed(2) + ' GB' : 'No disc image at ' + Module.discUrl) + ', ' + gpu;
+    }).catch((e) => fatalError(e.message)).finally(() => Module.removeRunDependency('disc'));
+  }],
+  audioQueuedMs: () => Module._ps2web_audio_queued_ms(),
+  ps2CardSaved: () => storeCard(),
+  onFrame: () => {
+    lastFrameAt = performance.now();
+    stallReported = false;
+    pollInput();
+    document.body.dataset.gameMode = String(Module._ps2web_experiment_stat(16));
+    document.body.dataset.gameScene = String(Module._ps2web_experiment_stat(17));
+    document.body.dataset.gameAdaptiveCapable = Module._ps2web_experiment_stat(15) === 1 ? 'true' : 'false';
+    document.body.dataset.gameCard = Module.noCard ? 'off' : 'on';
+    ++frames;
+    fresh = true;
+    const now = performance.now();
+    if (now - last >= 1000) {
+      const gpu = Module._ps2web_gpu_ms();
+      const memory = (Module.HEAPU8.length / 1048576).toFixed(0);
+      const emuIdle = Module._ps2web_idle_ms(0), renderIdle = Module._ps2web_idle_ms(1), vuIdle = Module._ps2web_idle_ms(2), span = now - last;
+      const interpreted = Module._ps2web_vu_interpreted();
+      document.getElementById('exit-fullscreen').textContent = 'Exit fullscreen · ' + (shown * 1000 / span).toFixed(0) + ' FPS';
+      statsEl.textContent = 'frame ' + Module._ps2web_frames() + '   ' + (frames * 1000 / span).toFixed(1) + ' fps (' + (shown * 1000 / span).toFixed(0) + ' on screen)   GPU estimate ' + ((gpu - lastGpu) / span * 100).toFixed(0) +
+                            '%   idle emu ' + ((emuIdle - lastEmuIdle) / span * 100).toFixed(0) + '% vu ' + ((vuIdle - lastVuIdle) / span * 100).toFixed(0) +
+                            '% gs ' + ((renderIdle - lastRenderIdle) / span * 100).toFixed(0) +
+                            '%   heap ' + memory + ' MB   audio ' + Module.audioQueuedMs().toFixed(0) + ' ms' +
+                            (interpreted > lastInterpreted ? '   vu1 interpreted ' + Math.round((interpreted - lastInterpreted) * 1000 / span) + '/s' : '');
+      const sample = {wallMs: now, emulatedFrame: Module._ps2web_experiment_stat(6),
+        renderedFps: frames * 1000 / span, screenFps: shown * 1000 / span,
+        simulationTicks: Module._ps2web_experiment_stat(0), extraFrames: Module._ps2web_experiment_stat(1),
+        modelCopies: Module._ps2web_experiment_stat(2), cameraCopies: Module._ps2web_experiment_stat(3),
+        battleTicks: Module._ps2web_experiment_stat(4), matchSeconds: Module._ps2web_experiment_stat(5),
+        audioProducedFrames: Module._ps2web_experiment_stat(7), videoHz: Module._ps2web_experiment_stat(8), guestSeconds: Module._ps2web_experiment_stat(9)};
+      sample.browserRafHz = null;
+      if (Module.presentationPacing) {
+        const pacingSummary = Module.presentationPacing.snapshot();
+        delete pacingSummary.rafHistory;
+        sample.pacing = pacingSummary;
+        sample.browserRafHz = browserRafRate.sample(now, pacingSummary.rafCount, !document.hidden);
+      }
+      sample.gpuEstimatedBusyPercent = (gpu - lastGpu) / span * 100;
+      sample.emuIdlePercent = (emuIdle - lastEmuIdle) / span * 100;
+      sample.vuIdlePercent = (vuIdle - lastVuIdle) / span * 100;
+      sample.gsIdlePercent = (renderIdle - lastRenderIdle) / span * 100;
+      sample.requestedHz = Module._ps2web_experiment_stat(10);
+      sample.phaseAlpha = Module._ps2web_experiment_stat(11);
+      sample.rateChanges = Module._ps2web_experiment_stat(12);
+      sample.phaseTick = Module._ps2web_experiment_stat(13);
+      sample.phaseCycles = Module._ps2web_experiment_stat(14);
+      sample.adaptiveCapable = Module._ps2web_experiment_stat(15) === 1;
+      sample.gameMode = Module._ps2web_experiment_stat(16);
+      sample.sceneGeneration = Module._ps2web_experiment_stat(17);
+      sample.modeCapHz = Module._ps2web_experiment_stat(18);
+      sample.sceneSnapshotPacked = Module._ps2web_experiment_stat(19);
+      sample.sceneSnapshot = GundamSceneSnapshot.decode(sample.sceneSnapshotPacked);
+      document.body.dataset.gameSceneSnapshot = String(sample.sceneSnapshotPacked);
+      sample.gameVblankTicks = Module._ps2web_experiment_stat(20);
+      document.body.dataset.gameVblankTicks = String(sample.gameVblankTicks);
+      sample.adaptive = Module.adaptiveRendering ? Module.adaptiveRendering.summary() : null;
+      sample.fullscreen = fullscreen;
+      sample.canvas = [canvas.width, canvas.height];
+      experimentSamples.push(sample);
+      if (experimentSamples.length > 600) experimentSamples.shift();
+      statsEl.textContent += ' · target ' + sample.videoHz + ' · sim ' + sample.simulationTicks + ' · extra ' + sample.extraFrames + (sample.pacing ? ' · browser ' + (Number.isFinite(sample.browserRafHz) ? sample.browserRafHz.toFixed(0) : 'unknown') + ' Hz' : '');
+      document.getElementById('experiment-proof').textContent = JSON.stringify({targetFps: sample.videoHz, initialFps: experimentFps, mode: renderMode, ...experimentProofHistory(experimentSamples, Module.adaptiveRendering ? Module.adaptiveRendering.snapshot() : null), visibility: Module.localVisibility ? Module.localVisibility.snapshot() : null, buildInfo: Module.buildInfo || null, presentationPacing: Module.presentationPacing ? Module.presentationPacing.snapshot() : null});
+      document.body.dataset.experimentSamples = String(experimentSamples.length);
+      if (experimentSamples.length >= 20) document.body.dataset.experimentReady = 'true';
+      lastInterpreted = interpreted;
+      lastEmuIdle = emuIdle;
+      lastRenderIdle = renderIdle;
+      lastVuIdle = vuIdle;
+      lastGpu = gpu;
+      frames = 0;
+      shown = 0;
+      last = now;
+    }
+  },
+  noInitialRun: true,
+};
+
+updateControls();
+if (missing.length) {
+  const help = document.getElementById('help');
+  help.textContent = 'This browser cannot run the game yet. It lacks ' + missing.join(', ') + '. A current Chrome or Edge has everything it needs.';
+  help.hidden = false;
+  document.getElementById('start').textContent = 'Unsupported browser';
+}
+
+document.getElementById('start').addEventListener('click', async () => {
+  document.getElementById('start').disabled = true;
+  try { await PS2WebSupport.withTimeout(startAudio, 5000, 'Audio startup timed out'); }
+  catch (e) {
+    muted = true;
+    clearAudioPacing();
+    if (audio) audio.suspend().catch(() => {});
+    updateAudioButton();
+    logRuntime('Starting without audio: ' + e.message);
+  }
+  document.getElementById('overlay').remove();
+  canvas.focus();
+  fitCanvas();
+  statusEl.textContent = 'Running' + (mobileMode ? ' in phone mode' : '') + ', ' + Module.gpuInfo;
+  Module.running = true;
+  if (params.has('host')) PS2RemoteHost.start(Module, canvas).catch(error => showProblem('Hosting failed: ' + error.message));
+  lastFrameAt = performance.now();
+  try { await Module.callMain(Module.arguments); }
+  catch (e) { fatalError('Game stopped: ' + String(e)); }
+});
+
+setInterval(() => {
+  if (!Module.running || Module.failed || document.hidden || stallReported || performance.now() - lastFrameAt < 12000) return;
+  stallReported = true;
+  const waiting = Module.discPending ? ' Waiting for ' + Module.discPending + ' disc request(s); check Tailscale.' : '';
+  showProblem('No new frame for 12 seconds.' + waiting + ' If it stays frozen, save diagnostics before reloading.');
+}, 2000);
+document.getElementById('diagnostics').addEventListener('click', () => {
+  const report = {
+    build: 'gundam-full-game-adaptive-1', boot: 'normal', memoryCardEnabled: !Module.noCard, mode: renderMode, buildInfo: Module.buildInfo || null, adaptive: Module.adaptiveRendering ? Module.adaptiveRendering.snapshot() : null, visibility: Module.localVisibility ? Module.localVisibility.snapshot() : null, presentationPacing: Module.presentationPacing ? Module.presentationPacing.snapshot() : null, experimentFps, experimentSamples, userAgent: navigator.userAgent, mobileMode,
+    mobileOverride: params.get('mobile'), coarsePointer, maxTouchPoints: navigator.maxTouchPoints,
+    hostMode, failed: !!Module.failed, failure: Module.failure || null,
+    cores: navigator.hardwareConcurrency, deviceMemoryGB: navigator.deviceMemory,
+    isolated: crossOriginIsolated, gpu: Module.gpuInfo, audio: audio ? audio.state : 'off', muted,
+    heapMB: Module.HEAPU8 ? Module.HEAPU8.byteLength / 1048576 : null,
+    canvas: [canvas.width, canvas.height], scale, displayDetail, fullscreen, stats: statsEl.textContent,
+    discPending: Module.discPending, lastFrameAgoMs: Math.round(performance.now() - lastFrameAt),
+    errors: recentLogs,
+  };
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' }));
+  link.download = 'gundam-full-game-diagnostics.json';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+});
+</script>
+
+<script src="cadence-debt-pacing.js"></script>
+<script src="adaptive-render-policy.js"></script>
+<script src="full-game-adaptive-render.js"></script>
+<script src="local-game-visibility.js"></script>
+{{{ SCRIPT }}}
+</body>
+</html>
