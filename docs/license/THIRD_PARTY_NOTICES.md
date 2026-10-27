@@ -1,10 +1,10 @@
 # Third-party notices
 
-These notices distinguish tools used in research, dependencies of this reader, and software proposed for future game packaging. This local report does not bundle the upstream game runtime, the generated game source, or the referenced replacement server.
+These notices distinguish tools used in research, dependencies of this reader, and software proposed for future game packaging. The compiler and runtime source snapshot is bundled under `vendor/ps2-web-recomp/`. Its exact file hashes are in `vendor/manifest.json`. The referenced replacement server is not bundled.
 
 | Component | Relationship | Recorded version / terms |
 | --- | --- | --- |
-| [ps2-web-recomp](https://github.com/snuri00/ps2-web-recomp) | Upstream static recompiler and runtime used by the game work | Commit `6526f4803d98e10de50bea3af104a4d26e9df033`; MIT. Preserve its original notices when exporting its code. |
+| [ps2-web-recomp](https://github.com/snuri00/ps2-web-recomp) | Upstream static recompiler and runtime used by the game work | Commit `6526f4803d98e10de50bea3af104a4d26e9df033`; MIT; the unmodified original license is retained in `vendor/ps2-web-recomp/LICENSE`. Local changes are separate patches. |
 | [Emscripten](https://github.com/emscripten-core/emscripten) | Toolchain used for retained web builds | `6.0.11`, as recorded by the game build validation; toolchain not bundled here. |
 | [Ghidra](https://github.com/NationalSecurityAgency/ghidra) | Static analysis with a PS2 processor extension | `12.1.4` in the retained research notes; tools and extension not bundled. Exact extension pin remains to be captured for a reproducible RE setup. |
 | [Marked](https://github.com/markedjs/marked) | Markdown parser installed to build the Wiki | Exact version and package integrity in `package-lock.json`; MIT. Distribution installed by npm retains its own license. |
@@ -17,4 +17,4 @@ This file is a provenance inventory, not a replacement for dependency license te
 
 The Wiki self-hosts **Manrope** from the [Google Fonts source distribution](https://github.com/google/fonts/tree/main/ofl/manrope). Copyright 2018 The Manrope Project Authors. The unmodified variable TTF is supplied under the SIL Open Font License 1.1, with the complete original license at `apps/wiki/fonts/OFL.txt`; the reader build copies that license alongside the font. No external font service is contacted by readers.
 
-The bundled file SHA-256 is `3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6`. This is a font-specific license, separate from the unselected license for the project's own contributions.
+The bundled file SHA-256 is `3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6`. This is a font-specific license, separate from the MIT license for the project's own contributions.
