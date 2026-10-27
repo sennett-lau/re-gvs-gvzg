@@ -1,0 +1,10 @@
+* text=auto eol=lf
+# Fingerprinted upstream and game-derived inputs must retain their exact bytes.
+vendor/** -text linguist-vendored=true
+generated/** -text linguist-generated=true
+apps/game/prebuilt/** -text linguist-generated=true
+*.wasm binary
+*.data binary
+*.mp4 binary
+*.png binary
+*.ttf binary

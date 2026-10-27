@@ -1,0 +1,1541 @@
+#include "units.hpp"
+
+namespace gen {
+
+using namespace ps2;
+
+const std::uint16_t m_00E0A000_MWO_2AB82A11_entries_0002[4096] = {
+    1, 0, 0, 0, 2, 0, 0, 3, 0, 0, 0, 4, 0, 0, 5, 0, 6, 0, 0, 0, 0, 7, 0, 0, 8, 0, 0, 9, 0, 0, 10, 0,
+    0, 0, 11, 0, 0, 0, 0, 0, 12, 0, 0, 0, 0, 13, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0,
+    0, 16, 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 19, 0, 0, 0, 20, 0, 0, 0,
+    0, 0, 0, 0, 21, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0,
+    26, 0, 0, 0, 0, 0, 0, 27, 0, 0, 28, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0,
+    31, 0, 0, 0, 0, 32, 0, 33, 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 35, 0, 0, 36, 0, 37, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 38, 0, 0, 0, 0, 0, 39, 0, 0, 0, 0, 0, 40, 0, 41, 0, 0, 0, 0, 0, 0, 42, 0, 0, 0,
+    0, 0, 0, 43, 0, 0, 44, 0, 45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 0, 0, 47, 0, 0,
+    0, 0, 0, 0, 48, 0, 0, 0, 49, 0, 0, 0, 50, 0, 0, 51, 0, 52, 0, 0, 0, 0, 0, 53, 0, 0, 0, 54, 0, 0, 0, 0,
+    55, 0, 0, 0, 0, 56, 0, 0, 57, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 58, 0, 0, 0, 0, 59, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 0, 61, 0, 0, 0, 0, 0, 0, 0, 0, 62, 0, 0, 0, 63, 0, 64,
+    0, 0, 0, 65, 0, 66, 0, 0, 0, 0, 0, 0, 67, 0, 0, 0, 0, 0, 0, 0, 68, 0, 0, 0, 0, 0, 0, 0, 69, 0, 0, 0,
+    0, 0, 0, 0, 70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 71, 0, 0, 0, 0, 0, 72, 0, 0, 0, 0, 73, 0, 0, 0, 0, 0, 0, 0, 0, 0, 74, 0, 0, 0,
+    0, 0, 0, 0, 0, 75, 0, 0, 0, 0, 0, 0, 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 77, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 78, 0, 0, 0, 0, 0, 0, 0, 0, 79, 0, 0, 0, 0, 80, 0, 0, 0, 0, 0, 81, 0, 0, 0,
+    0, 82, 0, 0, 0, 0, 0, 0, 0, 83, 0, 0, 0, 0, 0, 0, 84, 0, 0, 0, 85, 0, 0, 0, 0, 86, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 87, 0, 0, 88, 0, 0, 0, 0, 0, 0, 89, 0, 0, 90, 0, 0, 0, 91, 0, 0, 0, 92, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 93, 0, 0, 0, 0, 0, 0, 94, 0, 0, 0, 0, 0, 95, 0, 0, 96, 0, 0, 0, 97, 0,
+    0, 0, 0, 0, 98, 0, 0, 0, 0, 99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 101, 0, 0, 0, 0, 0, 102, 0, 0, 0, 0, 0, 103, 0, 0, 0, 104, 0, 0, 0,
+    0, 0, 0, 0, 0, 105, 0, 0, 0, 106, 0, 107, 0, 0, 0, 0, 0, 0, 108, 0, 0, 0, 0, 0, 109, 0, 0, 0, 0, 0, 0, 0,
+    110, 0, 0, 0, 0, 0, 111, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 112, 0, 0, 0, 0, 0, 0, 0, 0, 0, 113, 0, 0, 0, 0, 0, 114, 0, 0, 0, 0, 0, 115, 0, 0, 0,
+    0, 0, 0, 116, 0, 0, 117, 0, 118, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 119, 0, 0, 0, 0, 0, 120, 0, 0, 0,
+    0, 121, 0, 122, 0, 0, 0, 0, 123, 0, 0, 0, 0, 0, 0, 124, 0, 0, 125, 0, 126, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    127, 0, 0, 0, 0, 0, 128, 0, 0, 0, 0, 0, 129, 0, 0, 0, 0, 0, 0, 130, 0, 0, 131, 0, 132, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 133, 0, 0, 134, 0, 0, 0, 0, 0, 0, 135, 0, 0, 0, 136, 0, 0, 0, 0, 137, 0, 0, 138, 0, 139,
+    0, 0, 0, 0, 0, 140, 0, 0, 0, 141, 0, 0, 0, 0, 0, 0, 142, 0, 0, 0, 0, 143, 0, 0, 0, 144, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 145, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0, 0, 0, 147, 0, 0, 0, 148, 0, 149, 0, 0, 0, 150,
+    0, 151, 0, 0, 0, 0, 0, 0, 152, 0, 0, 0, 0, 0, 153, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 154, 0, 0, 155, 0,
+    0, 0, 0, 0, 0, 156, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 157, 0, 0, 0, 0, 0, 158, 0, 159, 0, 0, 0, 0, 0, 0, 0,
+    0, 160, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+void m_00E0A000_MWO_2AB82A11_unit_0002(Cpu &c, std::uint32_t entry, std::uint32_t depth) {
+dispatch_entry:
+    switch (entry) {
+    case 1u: goto L_00E10000;
+    case 2u: goto L_00E10010;
+    case 3u: goto L_00E1001C;
+    case 4u: goto L_00E1002C;
+    case 5u: goto L_00E10038;
+    case 6u: goto L_00E10040;
+    case 7u: goto L_00E10054;
+    case 8u: goto L_00E10060;
+    case 9u: goto L_00E1006C;
+    case 10u: goto L_00E10078;
+    case 11u: goto L_00E10088;
+    case 12u: goto L_00E100A0;
+    case 13u: goto L_00E100B4;
+    case 14u: goto L_00E100C0;
+    case 15u: goto L_00E100F4;
+    case 16u: goto L_00E10104;
+    case 17u: goto L_00E10114;
+    case 18u: goto L_00E10148;
+    case 19u: goto L_00E10160;
+    case 20u: goto L_00E10170;
+    case 21u: goto L_00E10190;
+    case 22u: goto L_00E101A8;
+    case 23u: goto L_00E10228;
+    case 24u: goto L_00E10250;
+    case 25u: goto L_00E10268;
+    case 26u: goto L_00E10280;
+    case 27u: goto L_00E1029C;
+    case 28u: goto L_00E102A8;
+    case 29u: goto L_00E102B0;
+    case 30u: goto L_00E102E8;
+    case 31u: goto L_00E10300;
+    case 32u: goto L_00E10314;
+    case 33u: goto L_00E1031C;
+    case 34u: goto L_00E10330;
+    case 35u: goto L_00E1034C;
+    case 36u: goto L_00E10358;
+    case 37u: goto L_00E10360;
+    case 38u: goto L_00E1039C;
+    case 39u: goto L_00E103B4;
+    case 40u: goto L_00E103CC;
+    case 41u: goto L_00E103D4;
+    case 42u: goto L_00E103F0;
+    case 43u: goto L_00E1040C;
+    case 44u: goto L_00E10418;
+    case 45u: goto L_00E10420;
+    case 46u: goto L_00E10468;
+    case 47u: goto L_00E10474;
+    case 48u: goto L_00E10490;
+    case 49u: goto L_00E104A0;
+    case 50u: goto L_00E104B0;
+    case 51u: goto L_00E104BC;
+    case 52u: goto L_00E104C4;
+    case 53u: goto L_00E104DC;
+    case 54u: goto L_00E104EC;
+    case 55u: goto L_00E10500;
+    case 56u: goto L_00E10514;
+    case 57u: goto L_00E10520;
+    case 58u: goto L_00E10554;
+    case 59u: goto L_00E10568;
+    case 60u: goto L_00E105A4;
+    case 61u: goto L_00E105C0;
+    case 62u: goto L_00E105E4;
+    case 63u: goto L_00E105F4;
+    case 64u: goto L_00E105FC;
+    case 65u: goto L_00E1060C;
+    case 66u: goto L_00E10614;
+    case 67u: goto L_00E10630;
+    case 68u: goto L_00E10650;
+    case 69u: goto L_00E10670;
+    case 70u: goto L_00E10690;
+    case 71u: goto L_00E1071C;
+    case 72u: goto L_00E10734;
+    case 73u: goto L_00E10748;
+    case 74u: goto L_00E10770;
+    case 75u: goto L_00E10794;
+    case 76u: goto L_00E107B0;
+    case 77u: goto L_00E107F8;
+    case 78u: goto L_00E10820;
+    case 79u: goto L_00E10844;
+    case 80u: goto L_00E10858;
+    case 81u: goto L_00E10870;
+    case 82u: goto L_00E10884;
+    case 83u: goto L_00E108A4;
+    case 84u: goto L_00E108C0;
+    case 85u: goto L_00E108D0;
+    case 86u: goto L_00E108E4;
+    case 87u: goto L_00E1091C;
+    case 88u: goto L_00E10928;
+    case 89u: goto L_00E10944;
+    case 90u: goto L_00E10950;
+    case 91u: goto L_00E10960;
+    case 92u: goto L_00E10970;
+    case 93u: goto L_00E109A8;
+    case 94u: goto L_00E109C4;
+    case 95u: goto L_00E109DC;
+    case 96u: goto L_00E109E8;
+    case 97u: goto L_00E109F8;
+    case 98u: goto L_00E10A10;
+    case 99u: goto L_00E10A24;
+    case 100u: goto L_00E10A68;
+    case 101u: goto L_00E10AB0;
+    case 102u: goto L_00E10AC8;
+    case 103u: goto L_00E10AE0;
+    case 104u: goto L_00E10AF0;
+    case 105u: goto L_00E10B14;
+    case 106u: goto L_00E10B24;
+    case 107u: goto L_00E10B2C;
+    case 108u: goto L_00E10B48;
+    case 109u: goto L_00E10B60;
+    case 110u: goto L_00E10B80;
+    case 111u: goto L_00E10B98;
+    case 112u: goto L_00E10C18;
+    case 113u: goto L_00E10C40;
+    case 114u: goto L_00E10C58;
+    case 115u: goto L_00E10C70;
+    case 116u: goto L_00E10C8C;
+    case 117u: goto L_00E10C98;
+    case 118u: goto L_00E10CA0;
+    case 119u: goto L_00E10CD8;
+    case 120u: goto L_00E10CF0;
+    case 121u: goto L_00E10D04;
+    case 122u: goto L_00E10D0C;
+    case 123u: goto L_00E10D20;
+    case 124u: goto L_00E10D3C;
+    case 125u: goto L_00E10D48;
+    case 126u: goto L_00E10D50;
+    case 127u: goto L_00E10D80;
+    case 128u: goto L_00E10D98;
+    case 129u: goto L_00E10DB0;
+    case 130u: goto L_00E10DCC;
+    case 131u: goto L_00E10DD8;
+    case 132u: goto L_00E10DE0;
+    case 133u: goto L_00E10E1C;
+    case 134u: goto L_00E10E28;
+    case 135u: goto L_00E10E44;
+    case 136u: goto L_00E10E54;
+    case 137u: goto L_00E10E68;
+    case 138u: goto L_00E10E74;
+    case 139u: goto L_00E10E7C;
+    case 140u: goto L_00E10E94;
+    case 141u: goto L_00E10EA4;
+    case 142u: goto L_00E10EC0;
+    case 143u: goto L_00E10ED4;
+    case 144u: goto L_00E10EE4;
+    case 145u: goto L_00E10F20;
+    case 146u: goto L_00E10F30;
+    case 147u: goto L_00E10F54;
+    case 148u: goto L_00E10F64;
+    case 149u: goto L_00E10F6C;
+    case 150u: goto L_00E10F7C;
+    case 151u: goto L_00E10F84;
+    case 152u: goto L_00E10FA0;
+    case 153u: goto L_00E10FB8;
+    case 154u: goto L_00E10FEC;
+    case 155u: goto L_00E10FF8;
+    case 156u: goto L_00E11014;
+    case 157u: goto L_00E11040;
+    case 158u: goto L_00E11058;
+    case 159u: goto L_00E11060;
+    case 160u: goto L_00E11084;
+    default: bad_entry(c, 0x00E10000u); return;
+    }
+L_00E10000:
+    set32(c.r[5], 0u + 3u);
+    c.r[7].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10010u); set32(c.r[6], c.r[2].w[0] + 13u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10010u) [[unlikely]] return; }
+L_00E10010:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1001Cu); set32(c.r[5], 0u + 5u);  call(c, 0x0026BF90u, depth + 1u); if (c.pc != 0x00E1001Cu) [[unlikely]] return; }
+L_00E1001C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1002Cu); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E1002Cu) [[unlikely]] return; }
+L_00E1002C:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10088; } }
+    c.budget -= 1;
+L_00E10038:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10040u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0023A310u, depth + 1u); if (c.pc != 0x00E10040u) [[unlikely]] return; }
+L_00E10040:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 770u)));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 16u);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10054u); st8((c.r[16].w[0] + 812u), static_cast<std::uint8_t>(c.r[2].w[0]));  call(c, 0x001EA490u, depth + 1u); if (c.pc != 0x00E10054u) [[unlikely]] return; }
+L_00E10054:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10088; } }
+    c.budget -= 1;
+L_00E10060:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1006Cu); set32(c.r[5], 0u - 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E1006Cu) [[unlikely]] return; }
+L_00E1006C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10078u); set32(c.r[5], 0u + 2u);  call(c, 0x0026BF90u, depth + 1u); if (c.pc != 0x00E10078u) [[unlikely]] return; }
+L_00E10078:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10088u); set32(c.r[6], 0u + 1u);  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E10088u) [[unlikely]] return; }
+L_00E10088:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E100A0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E100B4u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x001DA350u, depth + 1u); if (c.pc != 0x00E100B4u) [[unlikely]] return; }
+L_00E100B4:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E100C0u); set32(c.r[5], 0u + 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E100C0u) [[unlikely]] return; }
+L_00E100C0:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == c.r[3].d[0];  if (t) { goto L_00E100F8; } }
+    c.budget -= 2;
+    { const bool t = c.r[2].sd[0] < 0;  if (t) { goto L_00E100F8; } }
+    st8((c.r[16].w[0] + 783u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    c.f[12] = ld32((c.r[16].w[0] + 8268u));
+    set32(c.r[5], 0u + 3u);
+    c.r[7].d[0] = 0ull + 0ull;
+    c.budget -= 8;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E100F4u); set32(c.r[6], c.r[2].w[0] + 13u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E100F4u) [[unlikely]] return; }
+L_00E100F4:
+    c.budget -= 1;
+L_00E100F8:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10104u); set32(c.r[5], 0u + 5u);  call(c, 0x0026BF90u, depth + 1u); if (c.pc != 0x00E10104u) [[unlikely]] return; }
+L_00E10104:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10114u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E10114u) [[unlikely]] return; }
+L_00E10114:
+    c.f[2] = ld32((c.r[16].w[0] + 8252u));
+    c.f[1] = ld32((c.r[16].w[0] + 712u));
+    c.f[0] = 0u;
+    c.f[1] = fp::sub(c.f[1], c.f[2]);
+    fpu_compare(c, fp::key(c.f[1]) <= fp::key(c.f[0]));
+    c.budget -= 8;
+    { const bool t = !(c.fcr31 & kFpuCondition); st32((c.r[16].w[0] + 712u), c.f[1]);  if (t) { goto L_00E10150; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 770u)));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 32u);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10148u); st8((c.r[16].w[0] + 812u), static_cast<std::uint8_t>(c.r[2].w[0]));  call(c, 0x001EA490u, depth + 1u); if (c.pc != 0x00E10148u) [[unlikely]] return; }
+L_00E10148:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10160; } }
+L_00E10150:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 5u);
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10160u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026C030u, depth + 1u); if (c.pc != 0x00E10160u) [[unlikely]] return; }
+L_00E10160:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10170:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[4].w[0] + 709u)));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x00E10000u);
+    set32(c.r[2], c.r[2].w[0] + 7120u);
+    set32(c.r[3], c.r[3].w[0] << 2);
+    set32(c.r[2], c.r[2].w[0] + c.r[3].w[0]);
+    set32(c.r[2], ld32((c.r[2].w[0])));
+    c.budget -= 8;
+    { const std::uint32_t t = c.r[2].w[0];  c.pc = t; if (t - 0x00E10000u < 16384u) { entry = m_00E0A000_MWO_2AB82A11_entries_0002[(t - 0x00E10000u) >> 2]; if (entry) goto dispatch_entry; } [[clang::musttail]] return dispatch(c, 0u, depth); }
+L_00E10190:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.r[16].d[0] = c.r[4].d[0] + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E101A8u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E101A8u) [[unlikely]] return; }
+L_00E101A8:
+    st8((c.r[16].w[0] + 758u), static_cast<std::uint8_t>(0u));
+    st8((c.r[16].w[0] + 759u), static_cast<std::uint8_t>(0u));
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 767u)));
+    c.budget -= 5;
+    { const bool t = c.r[2].d[0] != 0ull;  if (t) { goto L_00E10230; } }
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x3F190000u);
+    c.r[2].d[0] = c.r[2].d[0] | 39322ull;
+    c.f[0] = c.r[2].w[0];
+    set32(c.r[2], c.r[3].w[0] + 1u);
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.f[1] = ld32((c.r[16].w[0] + 104u));
+    fpu_compare(c, fp::key(c.f[1]) < fp::key(c.f[0]));
+    c.budget -= 10;
+    { const bool t = !(c.fcr31 & kFpuCondition); c.r[2].sd[0] = static_cast<std::int32_t>(0xBC990000u);  if (t) { goto L_00E101F8; } }
+    st32((c.r[16].w[0] + 104u), c.f[0]);
+    c.r[2].d[0] = c.r[2].d[0] | 39322ull;
+    c.budget -= 4;
+    { const bool t = 0ull == 0ull; st32((c.r[16].w[0] + 108u), c.r[2].w[0]);  if (t) { goto L_00E10210; } }
+    c.budget -= 1;
+L_00E101F8:
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x42800000u);
+    c.f[0] = c.r[2].w[0];
+    fpu_div(c, 0u, c.f[1], c.f[0]);
+    c.f[0] = c.f[0] ^ fp::kSign;
+    st32((c.r[16].w[0] + 108u), c.f[0]);
+    c.budget -= 6;
+L_00E10210:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.f[12] = 0u;
+    set32(c.r[5], 0u + 3u);
+    c.r[6].d[0] = 0ull + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10228u); c.r[7].d[0] = 0ull + 0ull;  call(c, 0x001D9200u, depth + 1u); if (c.pc != 0x00E10228u) [[unlikely]] return; }
+L_00E10228:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10268; } }
+L_00E10230:
+    set32(c.r[2], 0u + 2u);
+    c.f[12] = 0u;
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 1u);
+    c.budget -= 8;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10250u); set32(c.r[7], 0u + 8u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10250u) [[unlikely]] return; }
+L_00E10250:
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 1u);
+    set32(c.r[6], 0u + 17u);
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10268u); set32(c.r[7], 0u + 10u);  call(c, 0x001D9AC0u, depth + 1u); if (c.pc != 0x00E10268u) [[unlikely]] return; }
+L_00E10268:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10280:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    set32(c.r[5], 0u + 1u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    set32(c.r[6], 0u + 3u);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1029Cu); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x0026AD70u, depth + 1u); if (c.pc != 0x00E1029Cu) [[unlikely]] return; }
+L_00E1029C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E102A8u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E102A8u) [[unlikely]] return; }
+L_00E102A8:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E102B0u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E102B0u) [[unlikely]] return; }
+L_00E102B0:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10320; } }
+    set32(c.r[2], ld32((c.r[16].w[0] + 1488u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10308; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 1u);
+    set32(c.r[7], 0u + 8u);
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    c.budget -= 9;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E102E8u); st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E102E8u) [[unlikely]] return; }
+L_00E102E8:
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 1u);
+    set32(c.r[6], 0u + 17u);
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10300u); set32(c.r[7], 0u + 10u);  call(c, 0x001D9AC0u, depth + 1u); if (c.pc != 0x00E10300u) [[unlikely]] return; }
+L_00E10300:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10320; } }
+L_00E10308:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10314u); set32(c.r[5], 0u + 16u);  call(c, 0x0026A890u, depth + 1u); if (c.pc != 0x00E10314u) [[unlikely]] return; }
+L_00E10314:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1031Cu); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0026A770u, depth + 1u); if (c.pc != 0x00E1031Cu) [[unlikely]] return; }
+L_00E1031C:
+    c.budget -= 1;
+L_00E10320:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10330:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    set32(c.r[5], 0u + 1u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    c.r[6].d[0] = c.r[5].d[0] + 0ull;
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1034Cu); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x0026AD70u, depth + 1u); if (c.pc != 0x00E1034Cu) [[unlikely]] return; }
+L_00E1034C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10358u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E10358u) [[unlikely]] return; }
+L_00E10358:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10360u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E10360u) [[unlikely]] return; }
+L_00E10360:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E103D8; } }
+    set32(c.r[2], ld32((c.r[16].w[0] + 1488u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E103C0; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 2u);
+    set32(c.r[7], 0u + 8u);
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.budget -= 10;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1039Cu); st8((c.r[16].w[0] + 783u), static_cast<std::uint8_t>(0u));  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E1039Cu) [[unlikely]] return; }
+L_00E1039C:
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 1u);
+    c.r[6].d[0] = 0ull + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E103B4u); set32(c.r[7], 0u + 18u);  call(c, 0x001D9AC0u, depth + 1u); if (c.pc != 0x00E103B4u) [[unlikely]] return; }
+L_00E103B4:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E103D8; } }
+    c.budget -= 1;
+L_00E103C0:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E103CCu); set32(c.r[5], 0u + 16u);  call(c, 0x0026A890u, depth + 1u); if (c.pc != 0x00E103CCu) [[unlikely]] return; }
+L_00E103CC:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E103D4u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0026A770u, depth + 1u); if (c.pc != 0x00E103D4u) [[unlikely]] return; }
+L_00E103D4:
+    c.budget -= 1;
+L_00E103D8:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E103F0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    set32(c.r[5], 0u + 1u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    c.r[6].d[0] = c.r[5].d[0] + 0ull;
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1040Cu); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x0026AD70u, depth + 1u); if (c.pc != 0x00E1040Cu) [[unlikely]] return; }
+L_00E1040C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10418u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E10418u) [[unlikely]] return; }
+L_00E10418:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10420u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E10420u) [[unlikely]] return; }
+L_00E10420:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 8285u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E104D0; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[2].sd[0] = static_cast<std::int16_t>(ld16((c.r[16].w[0] + 1576u)));
+    c.budget -= 6;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E104A8; } }
+    c.r[2].d[0] = ld8((c.r[16].w[0] + 965u));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] != 0ull; c.r[3].sd[0] = static_cast<std::int32_t>(0x41C00000u);  if (t) { goto L_00E104A8; } }
+    set32(c.r[2], 0u + 1u);
+    st32((c.r[16].w[0] + 728u), c.r[3].w[0]);
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    st8((c.r[16].w[0] + 304u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10468u); c.r[5].d[0] = 0ull + 0ull;  call(c, 0x0023AAD0u, depth + 1u); if (c.pc != 0x00E10468u) [[unlikely]] return; }
+L_00E10468:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10474u); set32(c.r[5], 0u - 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E10474u) [[unlikely]] return; }
+L_00E10474:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    c.r[7].d[0] = 0ull + 0ull;
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10490u); set32(c.r[6], c.r[2].w[0] + 5u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10490u) [[unlikely]] return; }
+L_00E10490:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E104A0u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E104A0u) [[unlikely]] return; }
+L_00E104A0:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E104F0; } }
+L_00E104A8:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E104B0u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0023A310u, depth + 1u); if (c.pc != 0x00E104B0u) [[unlikely]] return; }
+L_00E104B0:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E104BCu); set32(c.r[5], 0u + 16u);  call(c, 0x0026A890u, depth + 1u); if (c.pc != 0x00E104BCu) [[unlikely]] return; }
+L_00E104BC:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E104C4u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0026A770u, depth + 1u); if (c.pc != 0x00E104C4u) [[unlikely]] return; }
+L_00E104C4:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E104F0; } }
+    c.budget -= 1;
+L_00E104D0:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E104DCu); set32(c.r[5], 0u - 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E104DCu) [[unlikely]] return; }
+L_00E104DC:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E104ECu); set32(c.r[6], 0u + 1u);  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E104ECu) [[unlikely]] return; }
+L_00E104EC:
+    c.budget -= 1;
+L_00E104F0:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10500:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10514u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x001DA350u, depth + 1u); if (c.pc != 0x00E10514u) [[unlikely]] return; }
+L_00E10514:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10520u); set32(c.r[5], 0u + 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E10520u) [[unlikely]] return; }
+L_00E10520:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == c.r[3].d[0];  if (t) { goto L_00E10558; } }
+    c.budget -= 2;
+    { const bool t = c.r[2].sd[0] < 0;  if (t) { goto L_00E10558; } }
+    st8((c.r[16].w[0] + 783u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    c.f[12] = ld32((c.r[16].w[0] + 8268u));
+    set32(c.r[5], 0u + 3u);
+    c.r[7].d[0] = 0ull + 0ull;
+    c.budget -= 8;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10554u); set32(c.r[6], c.r[2].w[0] + 13u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10554u) [[unlikely]] return; }
+L_00E10554:
+    c.budget -= 1;
+L_00E10558:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10568u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E10568u) [[unlikely]] return; }
+L_00E10568:
+    c.f[1] = ld32((c.r[16].w[0] + 8252u));
+    c.f[0] = ld32((c.r[16].w[0] + 728u));
+    c.f[12] = 0u;
+    c.f[0] = fp::sub(c.f[0], c.f[1]);
+    fpu_compare(c, fp::key(c.f[0]) <= fp::key(c.f[12]));
+    c.budget -= 7;
+    { const bool t = !(c.fcr31 & kFpuCondition); st32((c.r[16].w[0] + 728u), c.f[0]);  if (t) { goto L_00E105A8; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[6].d[0] = 0ull + 0ull;
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[5].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 767u)));
+    c.budget -= 8;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E105A4u); set32(c.r[7], 0u + 32u);  call(c, 0x001D9200u, depth + 1u); if (c.pc != 0x00E105A4u) [[unlikely]] return; }
+L_00E105A4:
+    c.budget -= 1;
+L_00E105A8:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E105C0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x3F4C0000u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    c.r[2].d[0] = c.r[2].d[0] | 52429ull;
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.f[12] = c.r[2].w[0];
+    c.f[13] = ld32((c.r[4].w[0] + 8252u));
+    c.budget -= 9;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E105E4u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x00126190u, depth + 1u); if (c.pc != 0x00E105E4u) [[unlikely]] return; }
+L_00E105E4:
+    c.f[12] = c.f[0];
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E105F4u); set32(c.r[5], 0u + 255u);  call(c, 0x001F0680u, depth + 1u); if (c.pc != 0x00E105F4u) [[unlikely]] return; }
+L_00E105F4:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E105FCu); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E105FCu) [[unlikely]] return; }
+L_00E105FC:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull; c.r[4].d[0] = c.r[16].d[0] + 0ull;  if (t) { goto L_00E10618; } }
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1060Cu); c.r[5].d[0] = 0ull + 0ull;  call(c, 0x0026A890u, depth + 1u); if (c.pc != 0x00E1060Cu) [[unlikely]] return; }
+L_00E1060C:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10614u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0026A770u, depth + 1u); if (c.pc != 0x00E10614u) [[unlikely]] return; }
+L_00E10614:
+    c.budget -= 1;
+L_00E10618:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10630:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[4].w[0] + 704u)));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x00E10000u);
+    set32(c.r[2], c.r[2].w[0] + 7152u);
+    set32(c.r[3], c.r[3].w[0] << 2);
+    set32(c.r[2], c.r[2].w[0] + c.r[3].w[0]);
+    set32(c.r[2], ld32((c.r[2].w[0])));
+    c.budget -= 8;
+    { const std::uint32_t t = c.r[2].w[0];  c.pc = t; if (t - 0x00E10000u < 16384u) { entry = m_00E0A000_MWO_2AB82A11_entries_0002[(t - 0x00E10000u) >> 2]; if (entry) goto dispatch_entry; } [[clang::musttail]] return dispatch(c, 0u, depth); }
+L_00E10650:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[4].w[0] + 708u)));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x00E10000u);
+    set32(c.r[2], c.r[2].w[0] + 7168u);
+    set32(c.r[3], c.r[3].w[0] << 2);
+    set32(c.r[2], c.r[2].w[0] + c.r[3].w[0]);
+    set32(c.r[2], ld32((c.r[2].w[0])));
+    c.budget -= 8;
+    { const std::uint32_t t = c.r[2].w[0];  c.pc = t; if (t - 0x00E10000u < 16384u) { entry = m_00E0A000_MWO_2AB82A11_entries_0002[(t - 0x00E10000u) >> 2]; if (entry) goto dispatch_entry; } [[clang::musttail]] return dispatch(c, 0u, depth); }
+L_00E10670:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[4].w[0] + 705u)));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x00E10000u);
+    set32(c.r[2], c.r[2].w[0] + 7184u);
+    set32(c.r[3], c.r[3].w[0] << 2);
+    set32(c.r[2], c.r[2].w[0] + c.r[3].w[0]);
+    set32(c.r[2], ld32((c.r[2].w[0])));
+    c.budget -= 8;
+    { const std::uint32_t t = c.r[2].w[0];  c.pc = t; if (t - 0x00E10000u < 16384u) { entry = m_00E0A000_MWO_2AB82A11_entries_0002[(t - 0x00E10000u) >> 2]; if (entry) goto dispatch_entry; } [[clang::musttail]] return dispatch(c, 0u, depth); }
+L_00E10690:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    st8((c.r[4].w[0] + 758u), static_cast<std::uint8_t>(0u));
+    st8((c.r[4].w[0] + 759u), static_cast<std::uint8_t>(0u));
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[4].w[0] + 767u)));
+    c.budget -= 8;
+    { const bool t = c.r[2].d[0] != 0ull; c.r[16].d[0] = c.r[4].d[0] + 0ull;  if (t) { goto L_00E10740; } }
+    c.r[4].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 705u)));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x3F190000u);
+    c.r[2].d[0] = c.r[2].d[0] | 39322ull;
+    set32(c.r[3], 0u + 1u);
+    c.f[0] = c.r[2].w[0];
+    set32(c.r[2], c.r[4].w[0] + 1u);
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    st8((c.r[16].w[0] + 812u), static_cast<std::uint8_t>(c.r[3].w[0]));
+    c.f[1] = ld32((c.r[16].w[0] + 104u));
+    fpu_compare(c, fp::key(c.f[1]) < fp::key(c.f[0]));
+    c.budget -= 12;
+    { const bool t = !(c.fcr31 & kFpuCondition); c.r[2].sd[0] = static_cast<std::int32_t>(0xBC990000u);  if (t) { goto L_00E106F0; } }
+    st32((c.r[16].w[0] + 104u), c.f[0]);
+    c.r[2].d[0] = c.r[2].d[0] | 39322ull;
+    c.budget -= 4;
+    { const bool t = 0ull == 0ull; st32((c.r[16].w[0] + 108u), c.r[2].w[0]);  if (t) { goto L_00E10708; } }
+L_00E106F0:
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x42800000u);
+    c.f[0] = c.r[2].w[0];
+    fpu_div(c, 0u, c.f[1], c.f[0]);
+    c.f[0] = c.f[0] ^ fp::kSign;
+    st32((c.r[16].w[0] + 108u), c.f[0]);
+    c.budget -= 6;
+L_00E10708:
+    c.r[5].sd[0] = static_cast<std::int32_t>(0x00E10000u);
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], c.r[5].w[0] + 6768u);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1071Cu); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0036FB90u, depth + 1u); if (c.pc != 0x00E1071Cu) [[unlikely]] return; }
+L_00E1071C:
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    c.r[6].d[0] = 0ull + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10734u); c.r[7].d[0] = 0ull + 0ull;  call(c, 0x001D9200u, depth + 1u); if (c.pc != 0x00E10734u) [[unlikely]] return; }
+L_00E10734:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10798; } }
+    c.budget -= 1;
+L_00E10740:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10748u); set32(c.r[5], 0u - 4u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E10748u) [[unlikely]] return; }
+L_00E10748:
+    set32(c.r[3], 0u + 2u);
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == c.r[3].d[0]; set32(c.r[5], 0u + 3u);  if (t) { goto L_00E10778; } }
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[5].w[0]));
+    c.f[12] = 0u;
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    set32(c.r[7], 0u + 16u);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10770u); set32(c.r[6], c.r[2].w[0] + 2u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10770u) [[unlikely]] return; }
+L_00E10770:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10798; } }
+L_00E10778:
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[3].w[0]));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 1u);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10794u); set32(c.r[7], 0u + 8u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10794u) [[unlikely]] return; }
+L_00E10794:
+    c.budget -= 1;
+L_00E10798:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E107B0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    set32(c.r[3], 0u + 1u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.r[5].sd[0] = static_cast<std::int8_t>(ld8((c.r[4].w[0] + 767u)));
+    c.budget -= 7;
+    { const bool t = c.r[5].d[0] != c.r[3].d[0]; c.r[16].d[0] = c.r[4].d[0] + 0ull;  if (t) { goto L_00E10858; } }
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 8285u)));
+    c.budget -= 3;
+    { const bool t = c.r[3].d[0] == 0ull;  if (t) { goto L_00E10858; } }
+    set32(c.r[2], ld32((c.r[16].w[0] + 1488u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10850; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 705u)));
+    set32(c.r[5], 0u - 1u);
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E107F8u); st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[2].w[0]));  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E107F8u) [[unlikely]] return; }
+L_00E107F8:
+    set32(c.r[3], 0u + 2u);
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == c.r[3].d[0]; set32(c.r[5], 0u + 3u);  if (t) { goto L_00E10828; } }
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[5].w[0]));
+    c.f[12] = 0u;
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    set32(c.r[7], 0u + 16u);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10820u); set32(c.r[6], c.r[2].w[0] + 2u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10820u) [[unlikely]] return; }
+L_00E10820:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10858; } }
+L_00E10828:
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[3].w[0]));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 1u);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10844u); set32(c.r[7], 0u + 8u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10844u) [[unlikely]] return; }
+L_00E10844:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10858; } }
+    c.budget -= 1;
+L_00E10850:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10858u); set32(c.r[5], 0u + 16u);  call(c, 0x001EA490u, depth + 1u); if (c.pc != 0x00E10858u) [[unlikely]] return; }
+L_00E10858:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10870:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10884u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x001DA350u, depth + 1u); if (c.pc != 0x00E10884u) [[unlikely]] return; }
+L_00E10884:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E108C0; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 705u)));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u - 1u);
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E108A4u); st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[2].w[0]));  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E108A4u) [[unlikely]] return; }
+L_00E108A4:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[7], 0u + 8u);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E108C0u); set32(c.r[6], c.r[2].w[0] + 2u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E108C0u) [[unlikely]] return; }
+L_00E108C0:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E108D0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E108E4u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x001DA350u, depth + 1u); if (c.pc != 0x00E108E4u) [[unlikely]] return; }
+L_00E108E4:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E109D0; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 705u)));
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[2].sd[0] = static_cast<std::int16_t>(ld16((c.r[16].w[0] + 1592u)));
+    c.budget -= 6;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10968; } }
+    c.r[2].d[0] = ld8((c.r[16].w[0] + 965u));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] != 0ull; set32(c.r[5], 0u + 1u);  if (t) { goto L_00E10968; } }
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E1091Cu); st8((c.r[16].w[0] + 305u), static_cast<std::uint8_t>(c.r[5].w[0]));  call(c, 0x0023AAD0u, depth + 1u); if (c.pc != 0x00E1091Cu) [[unlikely]] return; }
+L_00E1091C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10928u); set32(c.r[5], 0u - 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E10928u) [[unlikely]] return; }
+L_00E10928:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    c.r[7].d[0] = 0ull + 0ull;
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10944u); set32(c.r[6], c.r[2].w[0] + 16u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10944u) [[unlikely]] return; }
+L_00E10944:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10950u); set32(c.r[5], 0u + 16u);  call(c, 0x0026BF90u, depth + 1u); if (c.pc != 0x00E10950u) [[unlikely]] return; }
+L_00E10950:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10960u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E10960u) [[unlikely]] return; }
+L_00E10960:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E109F8; } }
+L_00E10968:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10970u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0023A310u, depth + 1u); if (c.pc != 0x00E10970u) [[unlikely]] return; }
+L_00E10970:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    set32(c.r[2], 0u + 2u);
+    c.budget -= 4;
+    { const bool t = c.r[3].d[0] != c.r[2].d[0];  if (t) { goto L_00E109B0; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 705u)));
+    set32(c.r[7], 0u + 8u);
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 1u);
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.budget -= 10;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E109A8u); st16((c.r[16].w[0] + 164u), static_cast<std::uint16_t>(c.r[7].w[0]));  call(c, 0x001D9200u, depth + 1u); if (c.pc != 0x00E109A8u) [[unlikely]] return; }
+L_00E109A8:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E109F8; } }
+L_00E109B0:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 770u)));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 16u);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E109C4u); st8((c.r[16].w[0] + 812u), static_cast<std::uint8_t>(c.r[2].w[0]));  call(c, 0x001EA490u, depth + 1u); if (c.pc != 0x00E109C4u) [[unlikely]] return; }
+L_00E109C4:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E109F8; } }
+    c.budget -= 1;
+L_00E109D0:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E109DCu); set32(c.r[5], 0u - 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E109DCu) [[unlikely]] return; }
+L_00E109DC:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E109E8u); set32(c.r[5], 0u + 2u);  call(c, 0x0026BF90u, depth + 1u); if (c.pc != 0x00E109E8u) [[unlikely]] return; }
+L_00E109E8:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E109F8u); set32(c.r[6], 0u + 1u);  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E109F8u) [[unlikely]] return; }
+L_00E109F8:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10A10:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10A24u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x001DA350u, depth + 1u); if (c.pc != 0x00E10A24u) [[unlikely]] return; }
+L_00E10A24:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 8285u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10AD0; } }
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    set32(c.r[2], 0u + 2u);
+    c.budget -= 4;
+    { const bool t = c.r[3].d[0] != c.r[2].d[0];  if (t) { goto L_00E10A70; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 705u)));
+    set32(c.r[7], 0u + 16u);
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 1u);
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.budget -= 10;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10A68u); st16((c.r[16].w[0] + 164u), static_cast<std::uint16_t>(c.r[7].w[0]));  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10A68u) [[unlikely]] return; }
+L_00E10A68:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10AE0; } }
+L_00E10A70:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 770u)));
+    c.budget -= 3;
+    { const bool t = c.r[3].d[0] != 0ull;  if (t) { goto L_00E10A88; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 744u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] != 0ull;  if (t) { goto L_00E10AB8; } }
+L_00E10A88:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 705u)));
+    set32(c.r[7], 0u + 16u);
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.f[12] = 0u;
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 705u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    st16((c.r[16].w[0] + 164u), static_cast<std::uint16_t>(c.r[7].w[0]));
+    c.r[5].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 767u)));
+    c.budget -= 10;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10AB0u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10AB0u) [[unlikely]] return; }
+L_00E10AB0:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10AE0; } }
+L_00E10AB8:
+    st8((c.r[16].w[0] + 812u), static_cast<std::uint8_t>(c.r[3].w[0]));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10AC8u); set32(c.r[5], 0u + 32u);  call(c, 0x001EA490u, depth + 1u); if (c.pc != 0x00E10AC8u) [[unlikely]] return; }
+L_00E10AC8:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10AE0; } }
+L_00E10AD0:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 5u);
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10AE0u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026C030u, depth + 1u); if (c.pc != 0x00E10AE0u) [[unlikely]] return; }
+L_00E10AE0:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10AF0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x3F4C0000u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    c.r[2].d[0] = c.r[2].d[0] | 52429ull;
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.f[12] = c.r[2].w[0];
+    c.f[13] = ld32((c.r[4].w[0] + 8252u));
+    c.budget -= 9;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10B14u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x00126190u, depth + 1u); if (c.pc != 0x00E10B14u) [[unlikely]] return; }
+L_00E10B14:
+    c.f[12] = c.f[0];
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10B24u); set32(c.r[5], 0u + 255u);  call(c, 0x001F0680u, depth + 1u); if (c.pc != 0x00E10B24u) [[unlikely]] return; }
+L_00E10B24:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10B2Cu); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA350u, depth + 1u); if (c.pc != 0x00E10B2Cu) [[unlikely]] return; }
+L_00E10B2C:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10B48; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 770u)));
+    st8((c.r[16].w[0] + 812u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[5].sd[0] = static_cast<std::int16_t>(ld16((c.r[16].w[0] + 164u)));
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10B48u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001EA490u, depth + 1u); if (c.pc != 0x00E10B48u) [[unlikely]] return; }
+L_00E10B48:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10B60:
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[4].w[0] + 709u)));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x00E10000u);
+    set32(c.r[2], c.r[2].w[0] + 7216u);
+    set32(c.r[3], c.r[3].w[0] << 2);
+    set32(c.r[2], c.r[2].w[0] + c.r[3].w[0]);
+    set32(c.r[2], ld32((c.r[2].w[0])));
+    c.budget -= 8;
+    { const std::uint32_t t = c.r[2].w[0];  c.pc = t; if (t - 0x00E10000u < 16384u) { entry = m_00E0A000_MWO_2AB82A11_entries_0002[(t - 0x00E10000u) >> 2]; if (entry) goto dispatch_entry; } [[clang::musttail]] return dispatch(c, 0u, depth); }
+L_00E10B80:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.r[16].d[0] = c.r[4].d[0] + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10B98u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E10B98u) [[unlikely]] return; }
+L_00E10B98:
+    st8((c.r[16].w[0] + 758u), static_cast<std::uint8_t>(0u));
+    st8((c.r[16].w[0] + 759u), static_cast<std::uint8_t>(0u));
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 767u)));
+    c.budget -= 5;
+    { const bool t = c.r[2].d[0] != 0ull;  if (t) { goto L_00E10C20; } }
+    c.r[3].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x3F190000u);
+    c.r[2].d[0] = c.r[2].d[0] | 39322ull;
+    c.f[0] = c.r[2].w[0];
+    set32(c.r[2], c.r[3].w[0] + 1u);
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.f[1] = ld32((c.r[16].w[0] + 104u));
+    fpu_compare(c, fp::key(c.f[1]) < fp::key(c.f[0]));
+    c.budget -= 10;
+    { const bool t = !(c.fcr31 & kFpuCondition); c.r[2].sd[0] = static_cast<std::int32_t>(0xBC990000u);  if (t) { goto L_00E10BE8; } }
+    st32((c.r[16].w[0] + 104u), c.f[0]);
+    c.r[2].d[0] = c.r[2].d[0] | 39322ull;
+    c.budget -= 4;
+    { const bool t = 0ull == 0ull; st32((c.r[16].w[0] + 108u), c.r[2].w[0]);  if (t) { goto L_00E10C00; } }
+    c.budget -= 1;
+L_00E10BE8:
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x42800000u);
+    c.f[0] = c.r[2].w[0];
+    fpu_div(c, 0u, c.f[1], c.f[0]);
+    c.f[0] = c.f[0] ^ fp::kSign;
+    st32((c.r[16].w[0] + 108u), c.f[0]);
+    c.budget -= 6;
+L_00E10C00:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.f[12] = 0u;
+    set32(c.r[5], 0u + 3u);
+    c.r[6].d[0] = 0ull + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10C18u); c.r[7].d[0] = 0ull + 0ull;  call(c, 0x001D9200u, depth + 1u); if (c.pc != 0x00E10C18u) [[unlikely]] return; }
+L_00E10C18:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10C58; } }
+L_00E10C20:
+    set32(c.r[2], 0u + 2u);
+    c.f[12] = 0u;
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 1u);
+    c.budget -= 8;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10C40u); set32(c.r[7], 0u + 8u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10C40u) [[unlikely]] return; }
+L_00E10C40:
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 1u);
+    set32(c.r[6], 0u + 17u);
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10C58u); set32(c.r[7], 0u + 10u);  call(c, 0x001D9AC0u, depth + 1u); if (c.pc != 0x00E10C58u) [[unlikely]] return; }
+L_00E10C58:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10C70:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    set32(c.r[5], 0u + 1u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    set32(c.r[6], 0u + 3u);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10C8Cu); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x0026AD70u, depth + 1u); if (c.pc != 0x00E10C8Cu) [[unlikely]] return; }
+L_00E10C8C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10C98u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E10C98u) [[unlikely]] return; }
+L_00E10C98:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10CA0u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E10CA0u) [[unlikely]] return; }
+L_00E10CA0:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10D10; } }
+    set32(c.r[2], ld32((c.r[16].w[0] + 1488u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10CF8; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 1u);
+    set32(c.r[7], 0u + 8u);
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    c.budget -= 9;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10CD8u); st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10CD8u) [[unlikely]] return; }
+L_00E10CD8:
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 1u);
+    set32(c.r[6], 0u + 17u);
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10CF0u); set32(c.r[7], 0u + 10u);  call(c, 0x001D9AC0u, depth + 1u); if (c.pc != 0x00E10CF0u) [[unlikely]] return; }
+L_00E10CF0:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10D10; } }
+L_00E10CF8:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10D04u); set32(c.r[5], 0u + 16u);  call(c, 0x0026A890u, depth + 1u); if (c.pc != 0x00E10D04u) [[unlikely]] return; }
+L_00E10D04:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10D0Cu); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0026A770u, depth + 1u); if (c.pc != 0x00E10D0Cu) [[unlikely]] return; }
+L_00E10D0C:
+    c.budget -= 1;
+L_00E10D10:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10D20:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    set32(c.r[5], 0u + 1u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    c.r[6].d[0] = c.r[5].d[0] + 0ull;
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10D3Cu); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x0026AD70u, depth + 1u); if (c.pc != 0x00E10D3Cu) [[unlikely]] return; }
+L_00E10D3C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10D48u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E10D48u) [[unlikely]] return; }
+L_00E10D48:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10D50u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E10D50u) [[unlikely]] return; }
+L_00E10D50:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10D98; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    set32(c.r[6], 0u + 2u);
+    set32(c.r[7], 0u + 8u);
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.budget -= 10;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10D80u); st8((c.r[16].w[0] + 783u), static_cast<std::uint8_t>(0u));  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10D80u) [[unlikely]] return; }
+L_00E10D80:
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 1u);
+    c.r[6].d[0] = 0ull + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10D98u); set32(c.r[7], 0u + 18u);  call(c, 0x001D9AC0u, depth + 1u); if (c.pc != 0x00E10D98u) [[unlikely]] return; }
+L_00E10D98:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10DB0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    set32(c.r[5], 0u + 1u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    c.r[6].d[0] = c.r[5].d[0] + 0ull;
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10DCCu); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x0026AD70u, depth + 1u); if (c.pc != 0x00E10DCCu) [[unlikely]] return; }
+L_00E10DCC:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10DD8u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E10DD8u) [[unlikely]] return; }
+L_00E10DD8:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10DE0u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E10DE0u) [[unlikely]] return; }
+L_00E10DE0:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 8285u)));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10E88; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[2].sd[0] = static_cast<std::int16_t>(ld16((c.r[16].w[0] + 1592u)));
+    c.budget -= 6;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E10E60; } }
+    c.r[2].d[0] = ld8((c.r[16].w[0] + 965u));
+    c.budget -= 3;
+    { const bool t = c.r[2].d[0] != 0ull; set32(c.r[5], 0u + 1u);  if (t) { goto L_00E10E60; } }
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10E1Cu); st8((c.r[16].w[0] + 305u), static_cast<std::uint8_t>(c.r[5].w[0]));  call(c, 0x0023AAD0u, depth + 1u); if (c.pc != 0x00E10E1Cu) [[unlikely]] return; }
+L_00E10E1C:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10E28u); set32(c.r[5], 0u - 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E10E28u) [[unlikely]] return; }
+L_00E10E28:
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 783u)));
+    c.f[12] = 0u;
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    set32(c.r[5], 0u + 3u);
+    c.r[7].d[0] = 0ull + 0ull;
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10E44u); set32(c.r[6], c.r[2].w[0] + 5u);  call(c, 0x001D96E0u, depth + 1u); if (c.pc != 0x00E10E44u) [[unlikely]] return; }
+L_00E10E44:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10E54u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E10E54u) [[unlikely]] return; }
+L_00E10E54:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10EA8; } }
+    c.budget -= 1;
+L_00E10E60:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10E68u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0023A310u, depth + 1u); if (c.pc != 0x00E10E68u) [[unlikely]] return; }
+L_00E10E68:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10E74u); set32(c.r[5], 0u + 16u);  call(c, 0x0026A890u, depth + 1u); if (c.pc != 0x00E10E74u) [[unlikely]] return; }
+L_00E10E74:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10E7Cu); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0026A770u, depth + 1u); if (c.pc != 0x00E10E7Cu) [[unlikely]] return; }
+L_00E10E7C:
+    c.budget -= 2;
+    { const bool t = 0ull == 0ull;  if (t) { goto L_00E10EA8; } }
+    c.budget -= 1;
+L_00E10E88:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 3;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10E94u); set32(c.r[5], 0u - 1u);  call(c, 0x0026B4E0u, depth + 1u); if (c.pc != 0x00E10E94u) [[unlikely]] return; }
+L_00E10E94:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10EA4u); set32(c.r[6], 0u + 1u);  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E10EA4u) [[unlikely]] return; }
+L_00E10EA4:
+    c.budget -= 1;
+L_00E10EA8:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10EC0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10ED4u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x001DA350u, depth + 1u); if (c.pc != 0x00E10ED4u) [[unlikely]] return; }
+L_00E10ED4:
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[5].d[0] = 0ull + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10EE4u); c.r[6].d[0] = 0ull + 0ull;  call(c, 0x0026B230u, depth + 1u); if (c.pc != 0x00E10EE4u) [[unlikely]] return; }
+L_00E10EE4:
+    c.f[1] = ld32((c.r[16].w[0] + 8252u));
+    c.f[0] = ld32((c.r[16].w[0] + 728u));
+    c.f[12] = 0u;
+    c.f[0] = fp::sub(c.f[0], c.f[1]);
+    fpu_compare(c, fp::key(c.f[0]) <= fp::key(c.f[12]));
+    c.budget -= 7;
+    { const bool t = !(c.fcr31 & kFpuCondition); st32((c.r[16].w[0] + 728u), c.f[0]);  if (t) { goto L_00E10F20; } }
+    c.r[2].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 709u)));
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.r[6].d[0] = 0ull + 0ull;
+    set32(c.r[2], c.r[2].w[0] + 1u);
+    st8((c.r[16].w[0] + 709u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.r[5].sd[0] = static_cast<std::int8_t>(ld8((c.r[16].w[0] + 767u)));
+    c.budget -= 8;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10F20u); set32(c.r[7], 0u + 32u);  call(c, 0x001D9200u, depth + 1u); if (c.pc != 0x00E10F20u) [[unlikely]] return; }
+L_00E10F20:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10F30:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x3F4C0000u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    c.r[2].d[0] = c.r[2].d[0] | 52429ull;
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.f[12] = c.r[2].w[0];
+    c.f[13] = ld32((c.r[4].w[0] + 8252u));
+    c.budget -= 9;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10F54u); c.r[16].d[0] = c.r[4].d[0] + 0ull;  call(c, 0x00126190u, depth + 1u); if (c.pc != 0x00E10F54u) [[unlikely]] return; }
+L_00E10F54:
+    c.f[12] = c.f[0];
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    c.budget -= 4;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10F64u); set32(c.r[5], 0u + 255u);  call(c, 0x001F0680u, depth + 1u); if (c.pc != 0x00E10F64u) [[unlikely]] return; }
+L_00E10F64:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10F6Cu); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E10F6Cu) [[unlikely]] return; }
+L_00E10F6C:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull; c.r[4].d[0] = c.r[16].d[0] + 0ull;  if (t) { goto L_00E10F88; } }
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10F7Cu); c.r[5].d[0] = 0ull + 0ull;  call(c, 0x0026A890u, depth + 1u); if (c.pc != 0x00E10F7Cu) [[unlikely]] return; }
+L_00E10F7C:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10F84u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x0026A770u, depth + 1u); if (c.pc != 0x00E10F84u) [[unlikely]] return; }
+L_00E10F84:
+    c.budget -= 1;
+L_00E10F88:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E10FA0:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.r[16].d[0] = c.r[4].d[0] + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10FB8u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E10FB8u) [[unlikely]] return; }
+L_00E10FB8:
+    c.f[1] = ld32((c.r[16].w[0] + 104u));
+    c.r[2].sd[0] = static_cast<std::int32_t>(0x3F190000u);
+    c.r[2].d[0] = c.r[2].d[0] | 39322ull;
+    c.f[0] = c.r[2].w[0];
+    fpu_compare(c, fp::key(c.f[1]) < fp::key(c.f[0]));
+    c.budget -= 8;
+    { const bool t = !(c.fcr31 & kFpuCondition);  if (t) { goto L_00E10FF0; } }
+    st32((c.r[16].w[0] + 104u), c.f[0]);
+    set32(c.r[4], c.r[16].w[0] + 1392u);
+    set32(c.r[5], c.r[16].w[0] + 8624u);
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10FECu); st32((c.r[16].w[0] + 108u), 0u);  call(c, 0x00102830u, depth + 1u); if (c.pc != 0x00E10FECu) [[unlikely]] return; }
+L_00E10FEC:
+    c.budget -= 1;
+L_00E10FF0:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E10FF8u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E10FF8u) [[unlikely]] return; }
+L_00E10FF8:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E11030; } }
+    set32(c.r[2], 0u + 1u);
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    st8((c.r[16].w[0] + 767u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    c.budget -= 5;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E11014u); c.r[5].d[0] = 0ull + 0ull;  call(c, 0x0026A890u, depth + 1u); if (c.pc != 0x00E11014u) [[unlikely]] return; }
+L_00E11014:
+    c.r[4].sd[0] = static_cast<std::int16_t>(ld16((c.r[16].w[0] + 822u)));
+    set32(c.r[3], 0u - 3u);
+    c.r[3].d[0] = c.r[4].d[0] & c.r[3].d[0];
+    st16((c.r[16].w[0] + 822u), static_cast<std::uint16_t>(c.r[3].w[0]));
+    c.r[3].sd[0] = static_cast<std::int16_t>(ld16((c.r[16].w[0] + 822u)));
+    c.r[3].d[0] = c.r[3].d[0] | 1ull;
+    st16((c.r[16].w[0] + 822u), static_cast<std::uint16_t>(c.r[3].w[0]));
+    c.budget -= 7;
+L_00E11030:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+L_00E11040:
+    set32(c.r[29], c.r[29].w[0] - 32u);
+    st64((c.r[29].w[0] + 16u), c.r[31].d[0]);
+    st128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.r[16].d[0] = c.r[4].d[0] + 0ull;
+    c.budget -= 6;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E11058u); set32(c.r[5], c.r[16].w[0] + 1392u);  call(c, 0x0026A010u, depth + 1u); if (c.pc != 0x00E11058u) [[unlikely]] return; }
+L_00E11058:
+    c.budget -= 2;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E11060u); c.r[4].d[0] = c.r[16].d[0] + 0ull;  call(c, 0x001DA300u, depth + 1u); if (c.pc != 0x00E11060u) [[unlikely]] return; }
+L_00E11060:
+    c.budget -= 2;
+    { const bool t = c.r[2].d[0] == 0ull;  if (t) { goto L_00E11088; } }
+    set32(c.r[2], 0u + 1u);
+    c.r[5].sd[0] = static_cast<std::int32_t>(0x00E10000u);
+    c.r[4].d[0] = c.r[16].d[0] + 0ull;
+    st8((c.r[16].w[0] + 767u), static_cast<std::uint8_t>(c.r[2].w[0]));
+    set32(c.r[5], c.r[5].w[0] + 6768u);
+    c.budget -= 7;
+    { c.r[31].sd[0] = static_cast<std::int32_t>(0x00E11084u); set32(c.r[6], 0u + 4u);  call(c, 0x0036FB90u, depth + 1u); if (c.pc != 0x00E11084u) [[unlikely]] return; }
+L_00E11084:
+    c.budget -= 1;
+L_00E11088:
+    c.r[31].d[0] = ld64((c.r[29].w[0] + 16u));
+    ld128((c.r[29].w[0]) & ~15u, c.r[16]);
+    c.budget -= 4;
+    { const std::uint32_t t = c.r[31].w[0]; set32(c.r[29], c.r[29].w[0] + 32u);  c.pc = t; return; }
+}
+
+}
