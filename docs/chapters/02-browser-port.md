@@ -43,7 +43,7 @@ At the earliest documented browser stage, interactive automation was unavailable
 
 The WebAssembly module contains compiled game translation and runtime work. JavaScript initializes it and connects browser services. The current boot arrangement needs the original ELF inside the generated data package. This package contains game data, including executable code. The complete disc remains a separate runtime input, served locally through the existing disc route. A standalone WASM file is therefore not a complete playable package.
 
-Graphics use the runtime's WebGPU path. Audio uses a running engine and browser output path. The UI supplies keyboard/gamepad input, presentation controls and diagnostics. Shared memory and the rendering path require specific browser capabilities and response headers. Serving online requires HTTPS. A static file upload alone does not configure these runtime requirements or provide the user's disc.
+Graphics use the runtime's WebGPU path. Audio uses a running engine and browser output path. The UI supplies keyboard/gamepad input, presentation controls and diagnostics. Shared memory and the rendering path require specific browser capabilities and response headers. Serving online requires HTTPS. The host supplies the disc through range requests, so visitors need no local disc file. Deployment must also preserve the isolation headers; [Game setup](../GAME_FILES.md) describes the hosting arrangement.
 
 Disc reads also need explicit failure handling. The browser support changes add timeouts and validate byte-range responses, so stalled or truncated data can become an actionable error instead of an unexplained wait. Audio pacing is bounded and handles unavailable or suspended audio states. Game and GPU failures become visible and can be captured in diagnostics. These changes help identify failures and recover from some of them. They do not establish recovery from every GPU device-loss event.
 
@@ -56,7 +56,7 @@ A baseline package should preserve one matched HTML/JS/WASM/data set, the build 
 The remaining publication work has three steps:
 
 1. Reconstruct the intended baseline from retained inputs.
-2. Check a clean setup with a user-supplied disc.
+2. Check a clean host setup with a separately supplied disc.
 3. Repeat the declared boot, selection, battle and exit flow.
 
 This report does not silently replace those acceptance checks with a successful native screenshot. It supplies the evidence needed to decide what a future package can honestly promise.

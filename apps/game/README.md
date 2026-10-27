@@ -7,4 +7,4 @@ The [setup guide](../../docs/GAME_FILES.md) is the canonical launch and rebuild 
 - `shell.html` is the UI template used when linking.
 - `assets/` contains the browser controllers, pacing, input, diagnostics and streaming client support. The prebuilt copies are checked against these source assets.
 
-The user supplies the supported disc separately. A complete ISO is not included in the small `.data` package.
+The host operator supplies the supported disc separately; visitors open the game URL without supplying an ISO. A complete ISO is not included in the small `.data` package.

@@ -21,17 +21,21 @@ files=[*sorted((ROOT/'apps/game/prebuilt').iterdir()),
        *sorted((ROOT/'docs/license').iterdir())]
 readme='''# re-gvs-gvzg playable package
 
-Requires Python 3.10+ and a browser supporting WebGPU, JSPI, Wasm exceptions,
-SIMD and cross-origin isolation. Use your own Japanese SLPS-25419 disc image.
-No ISO, ROM, personal save or memory card is included.
+Hosted players only open the game URL in a browser supporting WebGPU, JSPI,
+Wasm exceptions, SIMD and cross-origin isolation. They do not supply an ISO.
 
-From this extracted folder:
+To run your own host, use Python 3.10+ and provide the Japanese SLPS-25419
+disc image on that host. No ISO, ROM, personal save or memory card is included.
+
+From this extracted folder on the host:
 
     python3 scripts/game/serve.py --disc /path/to/disc.iso
 
 Open http://127.0.0.1:8620/. Start with Auto or choose a fixed battle render
 rate. Gameplay remains 60 Hz; unsupported scenes use their original timing.
 Online hosting requires HTTPS and the provided isolation/range-request support.
+Serve the frontend and /disc.iso at the same origin; visitors need no Python
+installation, disc picker or upload step.
 
 apps/game/prebuilt/build-info.json identifies every executable artifact.
 apps/game/prebuilt/LICENSES.txt retains upstream binary notices.

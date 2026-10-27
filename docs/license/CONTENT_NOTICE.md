@@ -2,7 +2,7 @@
 
 This independent technical research project studies the Japanese PS2 release of [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en.wikipedia.org/wiki/Mobile_Suit_Gundam:_Gundam_vs._Zeta_Gundam). It is not affiliated with or endorsed by the game's developers, publishers or other rights holders. Game names and trademarks identify the research target; they remain associated with their respective owners.
 
-No original ISO, ROM or compressed disc backup is included. Game packages require a user's own supported disc image. A user-supplied disc requirement does not change the origin of generated code or bundled data: translated C++, executable-derived exports and a `.data` package containing the original ELF must be identified as game-derived material.
+No original ISO, ROM or compressed disc backup is included in this repository or its code package. The host operator supplies the supported disc separately; hosted players do not supply an ISO. The hosting arrangement does not change the origin of generated code or bundled data: translated C++, executable-derived exports and a `.data` package containing the original ELF must be identified as game-derived material.
 
 The local report describes observations and experiments, not a transfer of rights in the game. Research purpose and a takedown process are not assertions of permission. Rights in third-party tools and code are described separately in [Third-party notices](THIRD_PARTY_NOTICES.md).
 

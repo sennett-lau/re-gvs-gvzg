@@ -1,14 +1,20 @@
 # Run and rebuild the game
 
-The checkout includes the generated C++, runtime patches, adaptive hooks and one matched browser package. **Supply your own supported disc image**; the ISO, ROM and personal runtime state are excluded.
+The checkout includes the generated C++, runtime patches, adaptive hooks and one matched browser package. **Hosted players open the game URL and play; they do not supply an ISO.** The server operator supplies the supported disc separately. The ISO, ROM and personal runtime state remain excluded from Git and the downloadable code package.
 
 The target is the Japanese PS2 release of [Mobile Suit Gundam: Gundam vs. Zeta Gundam](https://en.wikipedia.org/wiki/Mobile_Suit_Gundam:_Gundam_vs._Zeta_Gundam), serial `SLPS-25419`, executable CRC `435D8236`. The server and builder verify the main executable SHA-256 against `upstream.lock` before using it.
 
-## Play the included package
+## Play a hosted game
 
-Use Python 3.10 or newer and a browser with WebGPU, JSPI, Wasm exceptions, SIMD and cross-origin isolation. The package acceptance used Chrome 156 on Windows with hardware WebGPU.
+Open the deployed game URL in a supported browser and press **Start full game**. The browser downloads the runtime and requests the required disc ranges from the host. Game simulation and rendering run on the player's device. The host serves data; it does not compute a separate game for each visitor.
 
-From the repository root:
+This flow is already implemented through `/disc.iso` and HTTP byte-range requests. It needs no disc picker or upload step. A permanent public game URL has not been selected yet.
+
+## Run your own host
+
+The operator needs Python 3.10 or newer and a supported disc image. Players need a browser with WebGPU, JSPI, Wasm exceptions, SIMD and cross-origin isolation. The package acceptance used Chrome 156 on Windows with hardware WebGPU.
+
+From the repository root on the host:
 
 ```sh
 python3 scripts/game/verify.py
@@ -21,7 +27,13 @@ The default **Auto** mode adjusts eligible battles between 60 and 120 render upd
 
 Keyboard controls include arrows for movement, Enter for Start/pause, X for Circle/confirm and Z for Cross. Touch controls and browser gamepads are also available. Memory-card storage uses the browser origin; export a card before clearing that origin's data. `?nocard=1` disables the card and leaves the game's original confirmation prompt, which must be answered before continuing.
 
-Serving online requires **HTTPS**, the isolation headers and disc-range support provided by the game server. The Wiki is a separate static reader. A browser-local disc picker is future work.
+## Deploy the hosted game
+
+Use the existing game server behind an HTTPS reverse proxy. Serve the UI, JS/WASM/data and `/disc.iso` through the same public origin, preserving HTTP `Range` requests, `206` responses and the COOP/COEP isolation headers. Keeping those resources together matches the current client and avoids a cross-origin disc integration change. Store the disc outside the repository and point `--disc` at that host-side file.
+
+The Wiki can use GitHub Pages independently. The current disc is 4,140,204,032 bytes (4.14 GB), while a published Pages site is limited to 1 GB, so the complete disc-backed game cannot be hosted entirely there. [GitHub Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits) (checked 2026-10-27).
+
+A later split between a static frontend and an asset host would need a configurable disc URL, compatible CORS/range responses and cross-origin isolation. A local disc picker is an optional alternative for self-contained play, not a prerequisite for the hosted experience. Multiplayer services remain separate from static Wiki hosting.
 
 ## Rebuild from the included C++
 
