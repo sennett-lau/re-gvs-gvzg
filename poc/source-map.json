@@ -1,0 +1,155 @@
+{
+  "scope": "Retained multiplayer source provenance. Original workspace paths are logical labels, not build prerequisites. Tests are adapted to this repository layout.",
+  "files": {
+    "poc/streaming/remote_play.py": {
+      "source": "scripts/remote_play.py",
+      "original_source_sha256": "0967e5ae3d3a25fe08213aefc4fd5b596cb4a095a2d55d70770e01819239d653",
+      "export_sha256": "0967e5ae3d3a25fe08213aefc4fd5b596cb4a095a2d55d70770e01819239d653"
+    },
+    "tests/multiplayer/remote_play_test.py": {
+      "source": "tests/remote_play.py",
+      "original_source_sha256": "43e78c3efbe66898aa05171e457e8c5dfedeb76db4c6bb8568b56a29874541f5",
+      "export_sha256": "bdb949f486b726b253c1bdbf2fa9a45374d09fe00b7b6701008df4c02a05cfc4"
+    },
+    "tests/multiplayer/remote_input.js": {
+      "source": "tests/remote_input.js",
+      "original_source_sha256": "92cdfd291e94acabe13e284dcdece2519f2fbc4aec0272556a1f89e20d69cea2",
+      "export_sha256": "fbad57ad053ba007dfacd870b76b4c2ac1f5664e85a6d02f416f3b21ac13c9a1"
+    },
+    "poc/lockstep/server/netplay.py": {
+      "source": "scripts/netplay.py",
+      "original_source_sha256": "35dc89fa9c0caf9d5867bef4aba28defb9b69b56809b3d3002e4b2c51511e00a",
+      "export_sha256": "35dc89fa9c0caf9d5867bef4aba28defb9b69b56809b3d3002e4b2c51511e00a"
+    },
+    "poc/lockstep/src/web_netplay.cpp": {
+      "source": "research/gundam-netplay/web_netplay.cpp",
+      "original_source_sha256": "c5e360b0c54f1c86479a8721294a37617ad0043357ab1bbac813052792056ed8",
+      "export_sha256": "c5e360b0c54f1c86479a8721294a37617ad0043357ab1bbac813052792056ed8"
+    },
+    "poc/lockstep/src/web_netplay.hpp": {
+      "source": "research/gundam-netplay/web_netplay.hpp",
+      "original_source_sha256": "4a06cc56312b0d3b943a7ba8c79ade22d6887385a0a630976048d5abd7a7c33a",
+      "export_sha256": "4a06cc56312b0d3b943a7ba8c79ade22d6887385a0a630976048d5abd7a7c33a"
+    },
+    "poc/lockstep/web/netplay-transport.js": {
+      "source": "build/web-gundam-pvp-disc-release/netplay-transport.js",
+      "original_source_sha256": "103a6be3aa03e53525aa784c1c258e7362e3d449b583fdb6cc10064cba4d8577",
+      "export_sha256": "103a6be3aa03e53525aa784c1c258e7362e3d449b583fdb6cc10064cba4d8577"
+    },
+    "poc/lockstep/web/netplay-game.js": {
+      "source": "build/web-gundam-pvp-disc-release/netplay-game.js",
+      "original_source_sha256": "1fdea5e068a2e24b1b5c932a533e6f97713638ebd3af7372207bba56f14b4019",
+      "export_sha256": "1fdea5e068a2e24b1b5c932a533e6f97713638ebd3af7372207bba56f14b4019"
+    },
+    "poc/lockstep/web/gundam-netplay-lobby.js": {
+      "source": "build/web-gundam-pvp-disc-release/gundam-netplay-lobby.js",
+      "original_source_sha256": "7f64e57c31f5d4a84aa51c1464a364abe7a6842b935151920d011cd5953bd7ef",
+      "export_sha256": "7f64e57c31f5d4a84aa51c1464a364abe7a6842b935151920d011cd5953bd7ef"
+    },
+    "poc/lockstep/web/netplay-diagnostics.js": {
+      "source": "build/web-gundam-pvp-disc-release/netplay-diagnostics.js",
+      "original_source_sha256": "6bf4d7322f9be72e9712fd8cd7c822fc01fa57658aaab050044cfc3fb42b04d2",
+      "export_sha256": "6bf4d7322f9be72e9712fd8cd7c822fc01fa57658aaab050044cfc3fb42b04d2"
+    },
+    "poc/lockstep/src/web.cpp": {
+      "source": "build/web-gundam-pvp-disc-release/web.cpp",
+      "original_source_sha256": "86f88622c78aaed140de0297b45ada6554e27c2d883822d3527007b98db75894",
+      "export_sha256": "86f88622c78aaed140de0297b45ada6554e27c2d883822d3527007b98db75894"
+    },
+    "poc/lockstep/web/shell.html": {
+      "source": "build/web-gundam-pvp-disc-release/shell.html",
+      "original_source_sha256": "d28a9190c8071042dfda80cee892eca844e08a16adadb94504a3fd349aac740b",
+      "export_sha256": "d28a9190c8071042dfda80cee892eca844e08a16adadb94504a3fd349aac740b"
+    },
+    "poc/lockstep/src/cdvd.cpp": {
+      "source": "build/web-gundam-pvp-experiment/cdvd.cpp",
+      "original_source_sha256": "87ac62cb67830d4561a68010371cff48d325e9dcfe1e5f2f76570690d31752f0",
+      "export_sha256": "87ac62cb67830d4561a68010371cff48d325e9dcfe1e5f2f76570690d31752f0"
+    },
+    "poc/lockstep/src/cdvdfsv.cpp": {
+      "source": "build/web-gundam-pvp-experiment/cdvdfsv.cpp",
+      "original_source_sha256": "3f15063c86c21efbde32474cb00a4700049e4b76b06e577dadf6dd0f76d2b7f0",
+      "export_sha256": "3f15063c86c21efbde32474cb00a4700049e4b76b06e577dadf6dd0f76d2b7f0"
+    },
+    "poc/lockstep/src/system.cpp": {
+      "source": "build/web-gundam-120-experiment/system.cpp",
+      "original_source_sha256": "5a009942f8f903fe38657edba2ff3f378e62f284d8855a2616d7a8bf37feb87e",
+      "export_sha256": "5a009942f8f903fe38657edba2ff3f378e62f284d8855a2616d7a8bf37feb87e"
+    },
+    "poc/lockstep/src/vif.cpp": {
+      "source": "build/web-gundam-120-experiment/vif.cpp",
+      "original_source_sha256": "c08631f1d980613c7ebb3fb96887f81e381aeb4c42da84f766ac678100c0c36d",
+      "export_sha256": "c08631f1d980613c7ebb3fb96887f81e381aeb4c42da84f766ac678100c0c36d"
+    },
+    "poc/lockstep/src/web_hooks.cpp": {
+      "source": "research/gundam-fps/web_hooks.cpp",
+      "original_source_sha256": "0c2825bedd364a16e1bd1e119bb27f6ecfeba5b670f32cb1ad94a4d363fb0312",
+      "export_sha256": "0c2825bedd364a16e1bd1e119bb27f6ecfeba5b670f32cb1ad94a4d363fb0312"
+    },
+    "poc/lockstep/src/web_hooks.hpp": {
+      "source": "research/gundam-fps/web_hooks.hpp",
+      "original_source_sha256": "24f803b02c9b537606c38879e0da551ef13b2d2f6025d1d69b813df7ec2958c4",
+      "export_sha256": "24f803b02c9b537606c38879e0da551ef13b2d2f6025d1d69b813df7ec2958c4"
+    },
+    "poc/lockstep/src/render_interpolation.cpp": {
+      "source": "research/gundam-fps/render_interpolation.cpp",
+      "original_source_sha256": "589368fbc4d311d6a85c217ab381823ee10ebf796dfefa6ecccdb7a8a1876e0b",
+      "export_sha256": "589368fbc4d311d6a85c217ab381823ee10ebf796dfefa6ecccdb7a8a1876e0b"
+    },
+    "poc/lockstep/inputs/combat-inputs.json": {
+      "source": "research/gundam-netplay/combat-inputs.json",
+      "original_source_sha256": "d53dfe145ae49aa7687ff01c1a713ba375d177bd5b73ca24791fe3a214f887d8",
+      "export_sha256": "d53dfe145ae49aa7687ff01c1a713ba375d177bd5b73ca24791fe3a214f887d8"
+    },
+    "poc/lockstep/inputs/p2-late-join-inputs.json": {
+      "source": "research/gundam-netplay/p2-late-join-inputs.json",
+      "original_source_sha256": "34d0506e2bc5a41f6537b91fa470da59bda30b005f59a3808cde3ab47f68ff5e",
+      "export_sha256": "34d0506e2bc5a41f6537b91fa470da59bda30b005f59a3808cde3ab47f68ff5e"
+    },
+    "poc/lockstep/inputs/p2-confirm-series.json": {
+      "source": "research/gundam-netplay/p2-confirm-series.json",
+      "original_source_sha256": "874ced064b651ae4d0ee72e90f8afa674186762ab37d43da2ae4194bd23f434f",
+      "export_sha256": "874ced064b651ae4d0ee72e90f8afa674186762ab37d43da2ae4194bd23f434f"
+    },
+    "poc/lockstep/inputs/p2-name-confirm.json": {
+      "source": "research/gundam-netplay/p2-name-confirm.json",
+      "original_source_sha256": "b4d14784e30e90836e7d88d11f8e106138ade094701fd776f1212f8d87f9953a",
+      "export_sha256": "b4d14784e30e90836e7d88d11f8e106138ade094701fd776f1212f8d87f9953a"
+    },
+    "poc/lockstep/inputs/both-ready-inputs.json": {
+      "source": "research/gundam-netplay/both-ready-inputs.json",
+      "original_source_sha256": "0544f29c5205522acc5dacbe78afe024431f91019d876f8d55a5d88bd042f070",
+      "export_sha256": "0544f29c5205522acc5dacbe78afe024431f91019d876f8d55a5d88bd042f070"
+    },
+    "tests/multiplayer/netplay_test.py": {
+      "source": "tests/netplay.py",
+      "original_source_sha256": "f7d15a90776c2077e36a747f0bed4a9a69931fbb86f6674df0ff280aab629f14",
+      "export_sha256": "304f62f960a3288ea6e3c02824492c84f74a251cd3e00a8d18c40c5e88dbea1e"
+    },
+    "tests/multiplayer/netplay_retries.js": {
+      "source": "tests/netplay_retries.js",
+      "original_source_sha256": "ba52b4adc095200bd1fe02eda475410798c4df82394b096c4a04bd1bf7e38737",
+      "export_sha256": "3c0d31f4c013d4a24d316fe05e2346a82bdee8e438516cdb004e1e28c4c074cc"
+    },
+    "tests/multiplayer/netplay_transport.js": {
+      "source": "tests/netplay_transport.js",
+      "original_source_sha256": "3a6687781051a8312d5170a67d3d2ead964a18f0e9fbdbcba66fed9845732d40",
+      "export_sha256": "9148787802ef6366173eabd09eaeeb43ebc15662b51e72a78eb1d71a6ccd93f0"
+    },
+    "tests/multiplayer/netplay_game_startup.js": {
+      "source": "tests/netplay_game_startup.js",
+      "original_source_sha256": "f9c391428e8be773d1ce73b9c911de4fd7c8f89824654f3384fcd1304587b676",
+      "export_sha256": "d24bbc21942f26520e0c929bac1383984932a9c1254c765bc54612d09346159b"
+    },
+    "tests/multiplayer/netplay_lobby.js": {
+      "source": "tests/netplay_lobby.js",
+      "original_source_sha256": "f4e7ef4c63b86f277c8aa76d2838a1d98148cc7787783fa5452425ad10d49deb",
+      "export_sha256": "2f61d3bdde0dcee8c505116de34f0d3877b329b3df0a603171442b85f8513063"
+    },
+    "tests/multiplayer/netplay_diagnostics.js": {
+      "source": "tests/netplay_diagnostics.js",
+      "original_source_sha256": "9dcaa4b9169f6ff7044d3db608ba2f9aaba3855ab2bc3fbb03644e3f8998dc98",
+      "export_sha256": "2da9a984811e35f9d22b1b19a8588a08ddef95f71d0dc3e33dcb1d2efc6622bd"
+    }
+  }
+}

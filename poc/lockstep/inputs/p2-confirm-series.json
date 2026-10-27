@@ -1,0 +1,26 @@
+[
+  {
+    "start": 20,
+    "end": 32,
+    "port": 1,
+    "buttons": 8192
+  },
+  {
+    "start": 120,
+    "end": 132,
+    "port": 1,
+    "buttons": 8192
+  },
+  {
+    "start": 220,
+    "end": 232,
+    "port": 1,
+    "buttons": 8192
+  },
+  {
+    "start": 320,
+    "end": 332,
+    "port": 1,
+    "buttons": 8192
+  }
+]
