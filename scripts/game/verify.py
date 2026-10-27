@@ -29,7 +29,6 @@ for name,record in files.items():
     if sha(prebuilt/name)!=record['sha256']:raise ValueError('Prebuilt hash mismatch: '+name)
     if (prebuilt/name).stat().st_size!=record['bytes']:raise ValueError('Prebuilt size mismatch: '+name)
     if record['bytes']>=100*1024*1024:raise ValueError('Prebuilt file exceeds ordinary Git limit: '+name)
-for p in (ROOT/'apps/game/assets').iterdir():
-    if p.name=='package.json':continue
-    if p.is_file() and sha(p)!=sha(prebuilt/p.name):raise ValueError('Asset and prebuilt differ: '+p.name)
+# Prebuilt is the immutable v0.3.0-alpha.1 package; current source can advance.
+# Its own manifest above remains the authority for every published asset.
 print(f'Pinned vendor, {generated["file_count"]} generated files, final hooks and {len(files)} matched prebuilt files verified.')

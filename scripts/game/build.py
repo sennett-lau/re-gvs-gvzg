@@ -69,6 +69,7 @@ def main():
     parser.add_argument('--emsdk', type=Path, default=os.environ.get('EMSDK'))
     parser.add_argument('--work', type=Path, default=ROOT / '.local/game-build')
     parser.add_argument('--jobs', type=int, default=2)
+    parser.add_argument('--multiplayer', action='store_true', help='Normal-boot multiplayer with original menu handoff')
     args = parser.parse_args()
     if not args.emsdk:
         parser.error('Set EMSDK or pass --emsdk pointing to an activated Emscripten 6.0.11 SDK.')
@@ -89,7 +90,7 @@ def main():
     work.mkdir(parents=True)
     source_files = {}
     for directory in ['vendor/ps2-web-recomp', 'generated/gundam-vs-z-gundam', 'patches', 'src/hooks',
-                      'apps/game/src', 'apps/game/assets', 'research/source/render-hooks', 'scripts/game']:
+                      'src/multiplayer', 'poc/lockstep/src', 'poc/lockstep/web', 'apps/game/src', 'apps/game/assets', 'research/source/render-hooks', 'scripts/game']:
         for file in sorted((ROOT / directory).rglob('*')):
             if file.is_file() and '__pycache__' not in file.parts:
                 source_files[file.relative_to(ROOT).as_posix()] = digest(file)
@@ -123,6 +124,12 @@ def main():
                hooks / 'full_game_web_hooks.cpp', hooks / 'full_game_interpolation.cpp',
                prepared / 'vif.cpp', *[prepared / (n + '.cpp') for n in
                ['unit_0044', 'unit_0039', 'unit_0049', 'unit_004D', 'unit_0047']]]
+    if args.multiplayer:
+        import multiplayer
+        sources += multiplayer.prepare(prepared, source)
+        includes += ['-I' + str(ROOT / 'src/multiplayer'), '-I' + str(ROOT / 'poc/lockstep/src'),
+                     '-I' + str(source / 'runtime/src/iop')]
+        FLAGS.append('-DPS2_MULTIPLAYER')
     objects = []
     for source_file in sources:
         obj = prepared / (source_file.stem + '.o')
@@ -143,8 +150,12 @@ def main():
     for asset in (ROOT / 'apps/game/assets').iterdir():
         if asset.is_file() and asset.name != 'package.json':
             shutil.copy2(asset, output / asset.name)
+    for name in ['netplay-transport.js', 'netplay-game.js']:
+        shutil.copy2(ROOT / 'poc/lockstep/web' / name, output / name)
+    if args.multiplayer:
+        multiplayer.assets(output)
     files = {p.name: {'sha256': digest(p), 'bytes': p.stat().st_size} for p in sorted(output.iterdir()) if p.is_file()}
-    info = {'profile': 'full-game-adaptive', 'emscripten': '6.0.11', 'elf_sha256': ELF_SHA,
+    info = {'profile': 'full-game-multiplayer' if args.multiplayer else 'full-game-adaptive', 'emscripten': '6.0.11', 'elf_sha256': ELF_SHA,
             'simulation_hz': 60, 'render_rates': [60, 72, 80, 90, 100, 110, 120],
             'source_files_sha256': source_files,
             'files': files}

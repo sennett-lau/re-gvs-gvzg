@@ -1,3 +1,7 @@
+#ifdef PS2_MULTIPLAYER
+#include "web_netplay.hpp"
+#include "render_hooks.hpp"
+#endif
 #include "full_game_web_hooks.hpp"
 namespace ps2::vif { void research_prepare_vu_thread(); }
 #include "ps2/disc.hpp"
@@ -226,6 +230,9 @@ bool disc_ready(std::uint64_t offset, std::size_t size) {
         advance(index);
     }
     read_ahead(std::max(last, g_last_chunk));
+#ifdef PS2_MULTIPLAYER
+    if (gundam_netplay_enabled()) return true; // read_disc blocks without advancing guest time.
+#endif
     return ready;
 }
 
@@ -235,7 +242,12 @@ std::size_t read_disc(std::uint64_t offset, void *out, std::size_t size) {
     while (done < size && offset + done < g_disc_size) {
         const std::uint64_t at = offset + done;
         const Slot *c = chunk(at / kChunk);
-        if (!c) break;
+        if (!c || at % kChunk >= c->size) {
+#ifdef PS2_MULTIPLAYER
+            if (gundam_netplay_enabled()) ps2::halt("Netplay disc read failed");
+#endif
+            break;
+        }
         const std::size_t within = static_cast<std::size_t>(at % kChunk);
         const std::size_t take = std::min<std::size_t>(size - done, c->size - within);
         std::memcpy(to + done, c->data + within, take);
@@ -301,6 +313,9 @@ void pace() {
 }
 
 void on_vblank() {
+#ifdef PS2_MULTIPLAYER
+    if (!research_render_only()) gundam_netplay_step();
+#endif
     research_web_vblank();
     const double start = emscripten_get_now();
     pace();
@@ -330,6 +345,9 @@ void *emulate(void *data) {
         }
     }
     research_web_begin();
+#ifdef PS2_MULTIPLAYER
+    gundam_netplay_begin();
+#endif
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setstacksize(&attr, 16u << 20);
@@ -389,6 +407,9 @@ extern "C" EMSCRIPTEN_KEEPALIVE double ps2web_idle_ms(int which) {
 }
 
 int main(int argc, char **argv) {
+#ifdef PS2_MULTIPLAYER
+    gundam_netplay_configure();
+#endif
     static Launch launch;
     for (int i = 2; i < argc; ++i) {
         const std::string a = argv[i];
