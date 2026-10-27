@@ -11,8 +11,8 @@ The Wiki and above-60 rendering proof of concept are ready for review. This loca
 | `AGENTS.md` | Entry point directing coding agents to the contributor guide | Yes |
 | `docs/chapters/` | Complete, canonical English research narrative | Yes |
 | `docs/evidence/` | Small curated measurements and source provenance | Yes |
-| `docs/figures/` | Concept parameters and generated static diagrams | Yes |
-| `apps/wiki/` | Reader template, styles and reusable interactive components | Yes |
+| `docs/figures/` | Measured plots and retained research figures | Yes |
+| `apps/wiki/` | Reader template, styles, navigation and theme controls | Yes |
 | `scripts/` | Reader build, validation, media generation and repeatable numeric analyses | Yes |
 | `apps/game/` | Game UI, input, diagnostics and one matched `prebuilt/` set | Future export |
 | `generated/` | Selected readable generated C++ and translation tables | Future export |
@@ -67,9 +67,7 @@ The report commits are separate from that future implementation sequence. No exi
 
 Read [Contributing](../CONTRIBUTING.md) before adding a page or explanation. It defines how to find related content and keep development procedures separate from the research narrative.
 
-Markdown remains complete with captions, limitations and static figures. The Wiki pre-renders that Markdown; JavaScript adds optional interactions. Measurement files stay in `docs/evidence/`, while conceptual figures have explicitly illustrative parameters in `docs/figures/`. Generated HTML is ignored and rebuilt. Source links point to the exact Markdown copied into that reader build.
-
-An interactive figure marker is a project convention, not native Markdown functionality. If JavaScript fails or is disabled, readers still receive the article and static figure. A future hosted URL can replace the local reader link after a real deployment is approved.
+Markdown remains complete with captions, limitations and static figures. The Wiki pre-renders that Markdown; JavaScript adds navigation and theme controls. Measurement files stay in `docs/evidence/`, and measured plots stay in `docs/figures/`. Generated HTML is ignored and rebuilt. Source links point to the exact Markdown copied into that reader build.
 
 ## Stable Wiki hosting
 

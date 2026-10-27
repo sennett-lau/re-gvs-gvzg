@@ -99,9 +99,8 @@ The revised reader passed these checks:
 | Navigation | Stage links, Evidence links, keyboard mobile menu, section tracking and source disclosure passed |
 | Theme switching | Dark by default. Saved choices, keyboard switching, navigation, reload, cross-tab updates and blocked-storage fallback passed. Both themes fit seven widths from 320 to 1,440 pixels. |
 | Contributor navigation | Collapsed on research pages. Keyboard access, contributor-page expansion and return to the overview passed with and without JavaScript. |
-| Interactive figures | Slider, keyboard input, repeat/interpolate comparison, budget selector and architecture switch passed |
 | Retained game evidence | Labeled comparison decoded and played silently in eight theme/width cases. Mobile showcase autoplay, mute, hidden controls and looping passed at 320, 390 and 1,440 pixels. The filmstrip fit those widths. Four code excerpts rendered with and without JavaScript. Public media and selected pages matched the local build. |
-| JavaScript disabled | Full chapter, summary, callout, static figure and native navigation remained available |
+| JavaScript disabled | Full chapter, summary, callout and native navigation remained available |
 | Page and HTTP errors | None observed in this reader test |
 
 Negative controls removed a summary and a callout limitation from generated HTML. The checker rejected both missing-content cases. Each test restored the generated file afterward. These checks guard against losing content during conversion, including an earlier bug that removed a summary with its adjacent reader hint.
@@ -110,7 +109,6 @@ The wording review preserved the chapters' existing numeric values and code iden
 
 The later 180-Hz evidence update passed 48 layout checks across eight affected pages, two themes and widths of 320, 390 and 1,440 pixels. Both new viewing copies decoded without errors. Overview autoplay, mute, hidden controls and looping passed; the chapter video remained opt-in. The new measurements remained readable without JavaScript. No page or HTTP errors appeared in that reader check.
 
-The motion explanations passed 32 layout checks across four chapters, both themes and widths of 320, 390, 768 and 1,440 pixels. Checks covered manual and keyboard stepping, moving packets, delayed-input waiting, mismatch stopping, route switching, interpolation playback and finite playback. Reduced-motion preferences and leaving the viewport stop animation. All four explanations retain static content without JavaScript. No page, HTTP or optional-illustration warnings appeared.
 
 These checks validate the report artifact and its reading interface. They do not add a new game, phone, audio or multiplayer performance result to the historical research.
 

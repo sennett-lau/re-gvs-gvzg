@@ -67,9 +67,6 @@ Interpolation changed the rendering copies of model transforms and the camera be
 >
 > The implemented method adds approximately **16.7 ms** of presentation delay, or one simulation tick. It produces smoother motion at the cost of some visual delay. Input responsiveness does not double.
 
-<!-- interactive: render-clock -->
-
-![Conceptual interpolation between two canonical gameplay updates](../figures/render-clock.svg)
 
 ## Two research routes, with different costs
 

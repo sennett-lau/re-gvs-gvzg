@@ -23,9 +23,6 @@ The model follows a console with two controller ports. One game owns the combat 
 >
 > Clients control emulated game controllers. They do not receive operating-system remote desktop access.
 
-<!-- interactive: multiplayer-routes -->
-
-![Where game computation runs in the two multiplayer architectures](../figures/multiplayer-routes.svg)
 
 ## What the code implements
 

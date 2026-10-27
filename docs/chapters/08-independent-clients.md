@@ -26,9 +26,6 @@ The transport assigns player slots and agrees on build and initial-state identit
 
 At checkpoints, it compares full-RAM hashes from both copies at the same gameplay tick. Missing input pauses progress. Mismatches stop the session. There is no rollback or mid-match resynchronization.
 
-<!-- interactive: lockstep-gate -->
-
-![Lockstep input gate: collect both inputs, advance locally, and stop if a later checkpoint differs](../figures/lockstep-gate.svg)
 
 A generic halt message initially hid whether failure came from transport, an expired lease or differing state. Diagnostics were changed to preserve the precise JavaScript error and checkpoint. An injected-clock test reproduced a 31-second initialization expiring a 30-second lease. Startup recovery now reclaims only the same player's slot before gameplay begins, resumes the initial input window and has a bounded deadline. This reproduced a possible failure. It did not identify the cause of every user's phone report.
 

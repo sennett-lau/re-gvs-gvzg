@@ -22,9 +22,6 @@ The guest is the PS2 system. The host is the device that runs the translated gam
 
 The EE is the main Emotion Engine processor. VU programs perform vector work. GS refers to the Graphics Synthesizer. Moving EE or VU instructions into compiled code does not make the other components free.
 
-<!-- interactive: build-pipeline -->
-
-![Build flow: user disc, executable extraction, generated C++, matched web package, then execution in the browser](../figures/build-pipeline.svg)
 
 ## The executable was only part of the program
 
