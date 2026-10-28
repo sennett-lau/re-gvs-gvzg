@@ -1026,7 +1026,7 @@
       "sha256": "8056e1b16648329672be15f07c9b60a69ded270a1ed53fa10c04d39d753be4f4"
     }
   },
-  "next_experiment": "Boot only NTGDVDJ.BIN in a separate translation/dispatch and fresh machine/browser, with helper/game/1 arguments, original disc and a copy of the private fresh card; observe ordinary settings/save or its first blocker before considering integrated LoadExec lifecycle",
+  "next_experiment": "Observe and implement a genuine native card-file boundary for the separately booted utility; preserve in-game LoadExec gap and original session lifecycle.",
   "review": {
     "source": ".local/original-online/consultation.md",
     "sha256": "ea87149ec3927c08841b98e0faaa229b40eb0989f9bc87a8d16b65b738522a09",
@@ -5048,5 +5048,1058 @@
       "raw_manifest": ".local/original-online/followup/utility-feasibility.json",
       "manifest_sha256": "4f0af6b86a00c710881ba780826aded40bdd970341d2bf17fe154db90708c8de"
     }
+  },
+  "standalone_utility": {
+    "scope": "Separate original utility boot only; in-game LoadExecPS2 remains unsupported",
+    "network_success": false,
+    "configuration_save_verified": false,
+    "input_sha256": {
+      "target": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+      "disc": "ad66c7954982d37930b151de61aea12527b81e9dd7f64b8bc81de5079dc11c0b",
+      "card": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9"
+    },
+    "upstream_revision": "6526f4803d98e10de50bea3af104a4d26e9df033",
+    "runtime_patches": false,
+    "game_hooks": false,
+    "default_game_build_changed": false,
+    "original_bytes_and_dispatch": {
+      "target_sha256": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+      "original_words": [
+        {
+          "address": "0x1ac77c",
+          "file_offset": 706556,
+          "word": "0x8f82a728"
+        },
+        {
+          "address": "0x1ac788",
+          "file_offset": 706568,
+          "word": "0x8c420110"
+        },
+        {
+          "address": "0x1ac78c",
+          "file_offset": 706572,
+          "word": "0x40f809"
+        },
+        {
+          "address": "0x1ac790",
+          "file_offset": 706576,
+          "word": "0x24a5a700"
+        },
+        {
+          "address": "0x1b2da0",
+          "file_offset": 732704,
+          "word": "0x27bdfff0"
+        },
+        {
+          "address": "0x1b2da4",
+          "file_offset": 732708,
+          "word": "0xffbf0000"
+        },
+        {
+          "address": "0x1b2da8",
+          "file_offset": 732712,
+          "word": "0xc06cd20"
+        },
+        {
+          "address": "0x1b2dac",
+          "file_offset": 732716,
+          "word": "0xac850000"
+        },
+        {
+          "address": "0x1b4960",
+          "file_offset": 739808,
+          "word": "0x27bdff90"
+        },
+        {
+          "address": "0x1b4964",
+          "file_offset": 739812,
+          "word": "0xffbf0050"
+        },
+        {
+          "address": "0x1b4968",
+          "file_offset": 739816,
+          "word": "0x7fb40040"
+        },
+        {
+          "address": "0x1b496c",
+          "file_offset": 739820,
+          "word": "0x7fb30030"
+        }
+      ],
+      "dispatch": [
+        {
+          "address": "0x1b2da0",
+          "baseline_token": 0,
+          "seeded_token": 285
+        },
+        {
+          "address": "0x1b4960",
+          "baseline_token": 0,
+          "seeded_token": 79
+        }
+      ],
+      "passed": true,
+      "scope": "Original-byte and dispatch coverage only; runtime success is separate"
+    },
+    "first_seed_delta": {
+      "target_sha256": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+      "observed_pc": "0x001B2DA0",
+      "observed_ra": "0x001AC794",
+      "callsite": "0x001AC78C: jalr v0; delay slot loads a1=0x24A700",
+      "selected_original_words": [
+        {
+          "address": "0x1ac77c",
+          "section": "",
+          "section_flags": 7,
+          "file_offset": 706556,
+          "word": "0x8f82a728"
+        },
+        {
+          "address": "0x1ac788",
+          "section": "",
+          "section_flags": 7,
+          "file_offset": 706568,
+          "word": "0x8c420110"
+        },
+        {
+          "address": "0x1ac78c",
+          "section": "",
+          "section_flags": 7,
+          "file_offset": 706572,
+          "word": "0x40f809"
+        },
+        {
+          "address": "0x1ac790",
+          "section": "",
+          "section_flags": 7,
+          "file_offset": 706576,
+          "word": "0x24a5a700"
+        },
+        {
+          "address": "0x1b2da0",
+          "section": "",
+          "section_flags": 7,
+          "file_offset": 732704,
+          "word": "0x27bdfff0"
+        },
+        {
+          "address": "0x1b2da4",
+          "section": "",
+          "section_flags": 7,
+          "file_offset": 732708,
+          "word": "0xffbf0000"
+        },
+        {
+          "address": "0x1b2da8",
+          "section": "",
+          "section_flags": 7,
+          "file_offset": 732712,
+          "word": "0xc06cd20"
+        },
+        {
+          "address": "0x1b2dac",
+          "section": "",
+          "section_flags": 7,
+          "file_offset": 732716,
+          "word": "0xac850000"
+        }
+      ],
+      "seed_file_sha256": "f85e52077e7290180135671f1646c11c8929b8251e81a21038a54e5e447fde3e",
+      "baseline_stats": "code 176450 instructions (689 KiB), functions 1811, entries 17760, rejected seeds 0",
+      "seeded_stats": "code 178072 instructions (695 KiB), functions 1823, entries 17880, rejected seeds 0",
+      "changed_generated_files": {
+        "unit_002D.cpp": {
+          "before": "d4ea9468b66bb4112b19cc1b952c5e37bee1c70f866b2cd48582348abf46ad7b",
+          "after": "c63af513c75df0f09a984c78d7692afc070e38296d3e0838064733f76a001474"
+        },
+        "unit_002B.cpp": {
+          "before": "219f9fac2c2209c28d2a90dd95fd91ea08042c090f7898f041f2e071dfc5efd6",
+          "after": "5fe4bf65508cb61291375b3ceed9f2b5b8be0df76833eecc271924020be6d907"
+        },
+        "unit_002C.cpp": {
+          "before": "8364d37d7ad6c5577f3c7d29ed726721c39bafbc12a984c65da025f8cb5db0d9",
+          "after": "9dac2e5b7db4b43fa4afa3e3d1c9b9bb0bc674c3b6bcf57d6b13f59a532588cc"
+        },
+        "unit_0004.cpp": {
+          "before": "8620e3e78e9b23e1339c3cfa91cd31f634e69be5e9916f49cfedb13a62ce1ce1",
+          "after": "03930cbbbeb6c63a892a05d47f1aaf59befcec57f6bfdf638f7f9586ca932c93"
+        }
+      }
+    },
+    "second_seed_stats": "code 178673 instructions (697 KiB), functions 1834, entries 17948, rejected seeds 0",
+    "builds": {
+      "netutility": {
+        "build_info_sha256": "5ba1dd57af4b1549bd80c50a841b3abe2fdee879e21cde8f959235df89f2f534",
+        "target_sha256": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+        "output_sha256": {
+          "index.wasm": "3eb4fb604a3e643eca019c019914bf6df1f7bc6cb9d063a83b566e5cda17452c",
+          "index.data": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+          "index.html": "5102cdb5344d5f4f7711456291679e91746bd501896e783902df2a5460c4d527",
+          "index.js": "8000e3bfdb5fab2858dfe9da514235d9eee10cd59e8593f9562970a92aa4f234"
+        },
+        "toolchain": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.11 (a0014542110d6078c3a1a7941fa1ddb3a2281f16)",
+        "sdk_sha256": {
+          ".emscripten": "001c6ae86c1ec65b8a41d0db23c239f7e2348bd5fb68c98fbc628cd86a7c3f65",
+          "upstream/emscripten/em++": "33857101ce8e022ca9c427422154a11c21f03e03439ab2baa1690cbbcc829343",
+          "upstream/emscripten/emcc.py": "5ccd3b66c9433389b0338706182197340bfdf241777cc8985821e7d150818e46",
+          "upstream/bin/clang": "83f618b85c111b3d38ab5c2110dc139bbdc39a8f09797a2cbbafe05e4cf7e440",
+          "upstream/bin/wasm-opt": "d8da7e7cc717bb4da015475a106b25987a9941e87486ec8676fd8efc698f171d"
+        },
+        "shell_sha256": "76e8af7c6c529d6a8587b3048320b40e849ba1852c72462e81596505bba6b432",
+        "diagnostic_options": [
+          "trace_syscalls",
+          "trace_iop_modules",
+          "trace_io"
+        ],
+        "diagnostic_source_sha256": "453af5de6e961f15b96efa0c241118b14ccd18af8e7e5b9540d1104c2e2b5cc3",
+        "compiler_sources_count": 79,
+        "compile_command_count": 79,
+        "incremental_command_count": 0,
+        "base_build_info_sha256": null,
+        "source_manifest_sha256": "585fd7c430b7583714574b3c581aae7dee534c3a5353c3fe3d16d792440036be",
+        "command_manifest_sha256": "2af8da0069cba38c822ab70342d39cf8b2c2f76451179ad400903f44fcd0637e",
+        "started_utc": "2026-10-28T20:33:55.258997+00:00",
+        "ended_utc": "2026-10-28T20:35:17.808219+00:00"
+      },
+      "netutility-seeded": {
+        "build_info_sha256": "7a80a937b0fa67e4728762951638e82142d7be62c5c6047e21d32c9e878878ca",
+        "target_sha256": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+        "output_sha256": {
+          "index.wasm": "8d10f8c0e5a3eef04f514b6303138e0ef1e79c108bf9310c2923b1c313b6c7aa",
+          "index.data": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+          "index.html": "5102cdb5344d5f4f7711456291679e91746bd501896e783902df2a5460c4d527",
+          "index.js": "2c21c2bc16d851c99341b03866bd35938cfd435dcd69a7647d3a911a8fd5ca28"
+        },
+        "toolchain": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.11 (a0014542110d6078c3a1a7941fa1ddb3a2281f16)",
+        "sdk_sha256": {
+          ".emscripten": "001c6ae86c1ec65b8a41d0db23c239f7e2348bd5fb68c98fbc628cd86a7c3f65",
+          "upstream/emscripten/em++": "33857101ce8e022ca9c427422154a11c21f03e03439ab2baa1690cbbcc829343",
+          "upstream/emscripten/emcc.py": "5ccd3b66c9433389b0338706182197340bfdf241777cc8985821e7d150818e46",
+          "upstream/bin/clang": "83f618b85c111b3d38ab5c2110dc139bbdc39a8f09797a2cbbafe05e4cf7e440",
+          "upstream/bin/wasm-opt": "d8da7e7cc717bb4da015475a106b25987a9941e87486ec8676fd8efc698f171d"
+        },
+        "shell_sha256": "76e8af7c6c529d6a8587b3048320b40e849ba1852c72462e81596505bba6b432",
+        "diagnostic_options": [
+          "trace_syscalls",
+          "trace_iop_modules",
+          "trace_io"
+        ],
+        "diagnostic_source_sha256": "453af5de6e961f15b96efa0c241118b14ccd18af8e7e5b9540d1104c2e2b5cc3",
+        "compiler_sources_count": 79,
+        "compile_command_count": 79,
+        "incremental_command_count": 5,
+        "base_build_info_sha256": "5ba1dd57af4b1549bd80c50a841b3abe2fdee879e21cde8f959235df89f2f534",
+        "source_manifest_sha256": "1e236d14bf012056565b6026c8e95b51935fe3b156b002070b6c8bb87ed4cc21",
+        "command_manifest_sha256": "2af8da0069cba38c822ab70342d39cf8b2c2f76451179ad400903f44fcd0637e",
+        "started_utc": "2026-10-28T20:33:55.258997+00:00",
+        "ended_utc": "2026-10-28T20:37:55.328825+00:00"
+      },
+      "netutility-seeded2": {
+        "build_info_sha256": "b4a3a54ac27544783312c3706a3f0e628222108902a67f8c3a16ae423a47b992",
+        "target_sha256": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+        "output_sha256": {
+          "index.wasm": "60d01cfa4cab7b9f249b1cf3236ccf4ef0e4d9dcbbc124dbd365f712a9760d42",
+          "index.data": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+          "index.html": "5102cdb5344d5f4f7711456291679e91746bd501896e783902df2a5460c4d527",
+          "index.js": "7d98458088f60629779a46772b674c0586742df599ebb73478ba467bb97bc0ff"
+        },
+        "toolchain": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.11 (a0014542110d6078c3a1a7941fa1ddb3a2281f16)",
+        "sdk_sha256": {
+          ".emscripten": "001c6ae86c1ec65b8a41d0db23c239f7e2348bd5fb68c98fbc628cd86a7c3f65",
+          "upstream/emscripten/em++": "33857101ce8e022ca9c427422154a11c21f03e03439ab2baa1690cbbcc829343",
+          "upstream/emscripten/emcc.py": "5ccd3b66c9433389b0338706182197340bfdf241777cc8985821e7d150818e46",
+          "upstream/bin/clang": "83f618b85c111b3d38ab5c2110dc139bbdc39a8f09797a2cbbafe05e4cf7e440",
+          "upstream/bin/wasm-opt": "d8da7e7cc717bb4da015475a106b25987a9941e87486ec8676fd8efc698f171d"
+        },
+        "shell_sha256": "76e8af7c6c529d6a8587b3048320b40e849ba1852c72462e81596505bba6b432",
+        "diagnostic_options": [
+          "trace_syscalls",
+          "trace_iop_modules",
+          "trace_io"
+        ],
+        "diagnostic_source_sha256": "453af5de6e961f15b96efa0c241118b14ccd18af8e7e5b9540d1104c2e2b5cc3",
+        "compiler_sources_count": 79,
+        "compile_command_count": 79,
+        "incremental_command_count": 4,
+        "base_build_info_sha256": "7a80a937b0fa67e4728762951638e82142d7be62c5c6047e21d32c9e878878ca",
+        "source_manifest_sha256": "442fe4b962f228fdb01e741e397e5fa6c09280643904da014edd5224c1c0d16c",
+        "command_manifest_sha256": "2af8da0069cba38c822ab70342d39cf8b2c2f76451179ad400903f44fcd0637e",
+        "started_utc": "2026-10-28T20:33:55.258997+00:00",
+        "ended_utc": "2026-10-28T20:39:16.430758+00:00"
+      },
+      "netutility-canonical2": {
+        "build_info_sha256": "ab4cac62494280efa8cfb8272b83f462f445dc2ce361378198ca06079038df77",
+        "target_sha256": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+        "output_sha256": {
+          "index.wasm": "ab74e016080134985537b82acf1ee0049843f57c1af4bc041efe0ed485ddcb10",
+          "index.data": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+          "index.html": "5102cdb5344d5f4f7711456291679e91746bd501896e783902df2a5460c4d527",
+          "index.js": "7ab369be897f76fa1fb36a91a66d6d36a559fdd6190060d9ed61edb8134f6c17"
+        },
+        "toolchain": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.11 (a0014542110d6078c3a1a7941fa1ddb3a2281f16)",
+        "sdk_sha256": {
+          ".emscripten": "001c6ae86c1ec65b8a41d0db23c239f7e2348bd5fb68c98fbc628cd86a7c3f65",
+          "upstream/emscripten/em++": "33857101ce8e022ca9c427422154a11c21f03e03439ab2baa1690cbbcc829343",
+          "upstream/emscripten/emcc.py": "5ccd3b66c9433389b0338706182197340bfdf241777cc8985821e7d150818e46",
+          "upstream/bin/clang": "83f618b85c111b3d38ab5c2110dc139bbdc39a8f09797a2cbbafe05e4cf7e440",
+          "upstream/bin/wasm-opt": "d8da7e7cc717bb4da015475a106b25987a9941e87486ec8676fd8efc698f171d"
+        },
+        "shell_sha256": "76e8af7c6c529d6a8587b3048320b40e849ba1852c72462e81596505bba6b432",
+        "diagnostic_options": [
+          "trace_syscalls",
+          "trace_iop_modules",
+          "trace_io"
+        ],
+        "diagnostic_source_sha256": "453af5de6e961f15b96efa0c241118b14ccd18af8e7e5b9540d1104c2e2b5cc3",
+        "compiler_sources_count": 79,
+        "compile_command_count": 79,
+        "incremental_command_count": 0,
+        "base_build_info_sha256": null,
+        "source_manifest_sha256": "442fe4b962f228fdb01e741e397e5fa6c09280643904da014edd5224c1c0d16c",
+        "command_manifest_sha256": "32b332d19bd0a05aef9f3e628b1617f00632f508dff957bab56d85f9ec39b8a0",
+        "started_utc": "2026-10-28T20:41:12.242125+00:00",
+        "ended_utc": "2026-10-28T20:43:36.232795+00:00"
+      },
+      "netutility-quiet": {
+        "build_info_sha256": "cc5d7a8b228e3222ce128a4cf016b1ba38cea31fb638ee3bc556962f22d81bcd",
+        "target_sha256": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+        "output_sha256": {
+          "index.wasm": "19f0169a2dce510830112ec1c82e8d1df5f2f000b7d9f46ceb6019be38f1e3a9",
+          "index.data": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+          "index.html": "5102cdb5344d5f4f7711456291679e91746bd501896e783902df2a5460c4d527",
+          "index.js": "c1279ba3cdc37bb849b8349b0d650cf0c717dccb75afe4f0b5fbcac4a076d906"
+        },
+        "toolchain": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.11 (a0014542110d6078c3a1a7941fa1ddb3a2281f16)",
+        "sdk_sha256": {
+          ".emscripten": "001c6ae86c1ec65b8a41d0db23c239f7e2348bd5fb68c98fbc628cd86a7c3f65",
+          "upstream/emscripten/em++": "33857101ce8e022ca9c427422154a11c21f03e03439ab2baa1690cbbcc829343",
+          "upstream/emscripten/emcc.py": "5ccd3b66c9433389b0338706182197340bfdf241777cc8985821e7d150818e46",
+          "upstream/bin/clang": "83f618b85c111b3d38ab5c2110dc139bbdc39a8f09797a2cbbafe05e4cf7e440",
+          "upstream/bin/wasm-opt": "d8da7e7cc717bb4da015475a106b25987a9941e87486ec8676fd8efc698f171d"
+        },
+        "shell_sha256": "76e8af7c6c529d6a8587b3048320b40e849ba1852c72462e81596505bba6b432",
+        "diagnostic_options": {
+          "default": "producer quiet",
+          "opt_in_environment": [
+            "PS2_UTILITY_TRACE_SYSCALLS",
+            "PS2_UTILITY_TRACE_MODULES",
+            "PS2_UTILITY_TRACE_IO"
+          ]
+        },
+        "diagnostic_source_sha256": "5a0a98806a878ca399cce5bcde7c7d1121a2766cd623579950901cb9d82f1027",
+        "compiler_sources_count": 79,
+        "compile_command_count": 79,
+        "incremental_command_count": 2,
+        "base_build_info_sha256": "ab4cac62494280efa8cfb8272b83f462f445dc2ce361378198ca06079038df77",
+        "source_manifest_sha256": "cab00d6b3179bfeb46c2a19f2d1bac86d1380fcbfb5345984ce4792b66b66132",
+        "command_manifest_sha256": "32b332d19bd0a05aef9f3e628b1617f00632f508dff957bab56d85f9ec39b8a0",
+        "started_utc": "2026-10-28T20:41:12.242125+00:00",
+        "ended_utc": "2026-10-28T20:45:47.966159+00:00"
+      }
+    },
+    "runs": {
+      "automatic_translation": {
+        "run": {
+          "started_utc": "2026-10-28T20:35:41.516Z",
+          "argv": [
+            "/game/core.elf",
+            "--arg",
+            "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+            "--arg",
+            "cdrom0:\\SLPS_254.19;1",
+            "--arg",
+            "1"
+          ],
+          "fixture_sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "harness_sha256": "593644cf951d366617cc4e9918af31e3b4d3f583c4f1ea5176908b6ea36b3d96",
+          "muted": true,
+          "network_success": false,
+          "build_info_sha256": "5ba1dd57af4b1549bd80c50a841b3abe2fdee879e21cde8f959235df89f2f534"
+        },
+        "raw_sha256": {
+          "build-info.json": "5ba1dd57af4b1549bd80c50a841b3abe2fdee879e21cde8f959235df89f2f534",
+          "final.png": "5ea4190c4ab76108c4efd8ed97c8fdab179f32befacc6ccb5b459febc0c1ed3e",
+          "sample-20.png": "5ea4190c4ab76108c4efd8ed97c8fdab179f32befacc6ccb5b459febc0c1ed3e",
+          "result.json": "ac61dccba3baebe70c194f1c8a6b06ca33b45c3662aa43aad4018aabf78b96e2",
+          "samples.json": "9a6d5408196a9c8c1a0a90f292fcbd3f10a8aa6a2f03c67684cf201b38f292ec",
+          "live.json": "67c0a731fe9440c765f04f94a839975d5b7484574284aed8b86f37dbc8ad713b",
+          "timeline.jsonl": "20283c67744744cc36e35d290bc06ea5ac4dc290cd8adc66ffe47ac0b607ba21",
+          "console.log": "1dd169f11ee6b30a63a68a75e3830ecd17098cc5fcb2e12b911cc0f1eda940b1",
+          "card.json": "b055143f3336c8d806c44b24ba62d7e00d4fca4bf02413f7caaa47c8799fab57",
+          "run.json": "1664fcc231c44cf3c631188852822eaa48d7b9b1c608c87383b59ad50e3e514e",
+          "sample-1.png": "5ea4190c4ab76108c4efd8ed97c8fdab179f32befacc6ccb5b459febc0c1ed3e",
+          "sample-10.png": "5ea4190c4ab76108c4efd8ed97c8fdab179f32befacc6ccb5b459febc0c1ed3e",
+          "live.png": "5ea4190c4ab76108c4efd8ed97c8fdab179f32befacc6ccb5b459febc0c1ed3e"
+        },
+        "console_records": 1940,
+        "observed_engine_stops": [
+          {
+            "utc": "2026-10-28T20:35:45.887Z",
+            "elapsed_ms": 4383.041,
+            "text": "[ee] halted: missing code at 0x001B2DA0 (ra 0x001AC794)"
+          },
+          {
+            "utc": "2026-10-28T20:35:45.910Z",
+            "elapsed_ms": 4405.9763,
+            "text": "[ee] stopped after 39 frames, 194391541 cycles: missing code at 0x001B2DA0 (ra 0x001AC794)"
+          }
+        ],
+        "selected_io": [
+          {
+            "utc": "2026-10-28T20:35:45.038Z",
+            "elapsed_ms": 3534.5702,
+            "text": "[iop-tty] dev9: unknown dev9 hardware."
+          },
+          {
+            "utc": "2026-10-28T20:35:45.767Z",
+            "elapsed_ms": 4263.407099999999,
+            "text": "[io] open pfs0:/conf/system.ini (flags 0x1) on unsupported device"
+          },
+          {
+            "utc": "2026-10-28T20:35:45.767Z",
+            "elapsed_ms": 4263.6443,
+            "text": "[fileio] open pfs0:/conf/system.ini -> -2"
+          }
+        ],
+        "result_fields": {
+          "halt": null,
+          "audio_running": true,
+          "audio_consumed": false,
+          "errors": [],
+          "blocked": []
+        },
+        "first_sample": {
+          "utc": "2026-10-28T20:35:46.633Z",
+          "elapsed_ms": 5129.14,
+          "status": "Running, GPU nvidia ampere",
+          "frames": 39,
+          "primitives": 3,
+          "audio": [
+            "running"
+          ],
+          "ring": [
+            12896,
+            12896,
+            16384,
+            1
+          ],
+          "gpu": "GPU nvidia ampere",
+          "isolated": true,
+          "setup": {
+            "address": 2881280,
+            "argc": 3,
+            "argv": [
+              "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+              "cdrom0:\\SLPS_254.19;1",
+              "1"
+            ]
+          }
+        },
+        "last_sample": {
+          "utc": "2026-10-28T20:36:27.505Z",
+          "elapsed_ms": 46001.2444,
+          "status": "Running, GPU nvidia ampere",
+          "frames": 39,
+          "primitives": 3,
+          "audio": [
+            "running"
+          ],
+          "ring": [
+            12896,
+            12896,
+            16384,
+            1
+          ],
+          "gpu": "GPU nvidia ampere",
+          "isolated": true,
+          "setup": {
+            "address": 2881280,
+            "argc": 3,
+            "argv": [
+              "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+              "cdrom0:\\SLPS_254.19;1",
+              "1"
+            ]
+          }
+        },
+        "timeline": [
+          {
+            "utc": "2026-10-28T20:35:44.194Z",
+            "elapsed_ms": 2689.9105999999997,
+            "event": "card-imported"
+          },
+          {
+            "utc": "2026-10-28T20:35:44.625Z",
+            "elapsed_ms": 3121.6911,
+            "event": "start"
+          },
+          {
+            "utc": "2026-10-28T20:36:27.534Z",
+            "elapsed_ms": 46030.6103,
+            "event": "command",
+            "command": {
+              "id": 1,
+              "action": "finish"
+            }
+          }
+        ],
+        "card": {
+          "sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "bytes": 8650752
+        }
+      },
+      "observed_callback": {
+        "run": {
+          "started_utc": "2026-10-28T20:38:14.715Z",
+          "argv": [
+            "/game/core.elf",
+            "--arg",
+            "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+            "--arg",
+            "cdrom0:\\SLPS_254.19;1",
+            "--arg",
+            "1"
+          ],
+          "fixture_sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "harness_sha256": "84fb1454dc258e557a14a9ce2b3a1b585d6550df5f2caec4f240bcb2b5e1bd31",
+          "muted": true,
+          "network_success": false,
+          "build_info_sha256": "7a80a937b0fa67e4728762951638e82142d7be62c5c6047e21d32c9e878878ca"
+        },
+        "raw_sha256": {
+          "build-info.json": "7a80a937b0fa67e4728762951638e82142d7be62c5c6047e21d32c9e878878ca",
+          "final.png": "420ed47ba1861337b6d608fd2c68a0ce605490f5348d4702d4382194a7795c3c",
+          "result.json": "042502390ffaea3d5b2ee5125a637d79a97969d611ec6349d3ee720232e1af35",
+          "samples.json": "36c2df7320ede05a281c87d4f60eee8dd54438350a6a8bdaec5e6f4be04bb3b9",
+          "live.json": "9778cb5f170983b23d86037592d25dadacda31a2a4e7297f99b17eb0e4cbcc94",
+          "timeline.jsonl": "066af93c6d5071a1f111e635b7d2bdef6cc77a5925dc98966b01a5125ab138b2",
+          "console.log": "ff380b9c1d7ce50957e36b509331950d7ed5b1d86be177e056a81477e9741a28",
+          "card.json": "b055143f3336c8d806c44b24ba62d7e00d4fca4bf02413f7caaa47c8799fab57",
+          "run.json": "4afc233a652aa0c77806ddb4bd0a2a1dde248bb41dd04a0c0bca7377c52e15a0",
+          "sample-1.png": "420ed47ba1861337b6d608fd2c68a0ce605490f5348d4702d4382194a7795c3c",
+          "live.png": "420ed47ba1861337b6d608fd2c68a0ce605490f5348d4702d4382194a7795c3c"
+        },
+        "console_records": 5893,
+        "observed_engine_stops": [
+          {
+            "utc": "2026-10-28T20:38:21.779Z",
+            "elapsed_ms": 7075.5005,
+            "text": "[ee] halted: missing code at 0x001B4960 (ra 0x00001010)"
+          },
+          {
+            "utc": "2026-10-28T20:38:21.801Z",
+            "elapsed_ms": 7097.621099999999,
+            "text": "[ee] stopped after 66 frames, 330424467 cycles: missing code at 0x001B4960 (ra 0x00001010)"
+          }
+        ],
+        "selected_io": [
+          {
+            "utc": "2026-10-28T20:38:19.221Z",
+            "elapsed_ms": 4518.0325,
+            "text": "[iop-tty] dev9: unknown dev9 hardware."
+          },
+          {
+            "utc": "2026-10-28T20:38:20.144Z",
+            "elapsed_ms": 5441.2305,
+            "text": "[io] open pfs0:/conf/system.ini (flags 0x1) on unsupported device"
+          },
+          {
+            "utc": "2026-10-28T20:38:20.144Z",
+            "elapsed_ms": 5441.3701,
+            "text": "[fileio] open pfs0:/conf/system.ini -> -2"
+          }
+        ],
+        "result_fields": {
+          "halt": "[ee] halted: missing code at 0x001B4960 (ra 0x00001010)",
+          "audio_running": true,
+          "audio_consumed": false,
+          "errors": [],
+          "blocked": []
+        },
+        "first_sample": {
+          "utc": "2026-10-28T20:38:20.747Z",
+          "elapsed_ms": 6043.438999999999,
+          "status": "Running, GPU nvidia ampere",
+          "frames": 65,
+          "primitives": 3,
+          "audio": [
+            "running"
+          ],
+          "ring": [
+            33760,
+            33760,
+            16384,
+            1
+          ],
+          "gpu": "GPU nvidia ampere",
+          "isolated": true,
+          "setup": {
+            "address": 2881280,
+            "argc": 3,
+            "argv": [
+              "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+              "cdrom0:\\SLPS_254.19;1",
+              "1"
+            ]
+          }
+        },
+        "last_sample": {
+          "utc": "2026-10-28T20:38:20.747Z",
+          "elapsed_ms": 6043.438999999999,
+          "status": "Running, GPU nvidia ampere",
+          "frames": 65,
+          "primitives": 3,
+          "audio": [
+            "running"
+          ],
+          "ring": [
+            33760,
+            33760,
+            16384,
+            1
+          ],
+          "gpu": "GPU nvidia ampere",
+          "isolated": true,
+          "setup": {
+            "address": 2881280,
+            "argc": 3,
+            "argv": [
+              "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+              "cdrom0:\\SLPS_254.19;1",
+              "1"
+            ]
+          }
+        },
+        "timeline": [
+          {
+            "utc": "2026-10-28T20:38:18.178Z",
+            "elapsed_ms": 3474.6575,
+            "event": "card-imported"
+          },
+          {
+            "utc": "2026-10-28T20:38:18.727Z",
+            "elapsed_ms": 4023.8247999999994,
+            "event": "start"
+          },
+          {
+            "utc": "2026-10-28T20:38:21.779Z",
+            "elapsed_ms": 7075.7299,
+            "event": "halt",
+            "text": "[ee] halted: missing code at 0x001B4960 (ra 0x00001010)"
+          },
+          {
+            "utc": "2026-10-28T20:38:21.860Z",
+            "elapsed_ms": 7157.2264,
+            "event": "stopped",
+            "halt": "[ee] halted: missing code at 0x001B4960 (ra 0x00001010)",
+            "status": "Running, GPU nvidia ampere"
+          }
+        ],
+        "card": {
+          "sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "bytes": 8650752
+        }
+      },
+      "callback_and_thread_full_trace": {
+        "run": {
+          "started_utc": "2026-10-28T20:39:51.026Z",
+          "argv": [
+            "/game/core.elf",
+            "--arg",
+            "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+            "--arg",
+            "cdrom0:\\SLPS_254.19;1",
+            "--arg",
+            "1"
+          ],
+          "fixture_sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "harness_sha256": "84fb1454dc258e557a14a9ce2b3a1b585d6550df5f2caec4f240bcb2b5e1bd31",
+          "muted": true,
+          "network_success": false,
+          "build_info_sha256": "b4a3a54ac27544783312c3706a3f0e628222108902a67f8c3a16ae423a47b992"
+        },
+        "raw_sha256": {
+          "build-info.json": "b4a3a54ac27544783312c3706a3f0e628222108902a67f8c3a16ae423a47b992",
+          "samples.json": "13cd9e439d44a34b7d9cc7ee8622373c78d67085ad488b8ef089f3040848e5ee",
+          "live.json": "ae331155756903dbfe372e0206cf9c6d7adaef2e2728f01b304330835d90fe99",
+          "timeline.jsonl": "0de78962e3417d2e5cd834969a47b2fa4d6a6160d0858bcb77a8d7121de44841",
+          "console.log": "c46ed083e5772bc4ea4d5ae1cc1c078301c755c31ddad077dfbe4b7e521c5fa3",
+          "failure.json": "0922f8c9e20df5c5daa2ea1539c75792945219b91ed5ea68f162abcade497ff3",
+          "run.json": "93e7e3a18932847457da24827bbae77c338779552ab46e21f6cbe84b856f6a0f",
+          "live.png": "c855eced88f9383590bf44b48d32dcdc1451a34b90cf51cfa9d899e8f3e484cf"
+        },
+        "console_records": 615173,
+        "observed_engine_stops": [],
+        "selected_io": [
+          {
+            "utc": "2026-10-28T20:39:54.487Z",
+            "elapsed_ms": 3471.9026,
+            "text": "[iop-tty] dev9: unknown dev9 hardware."
+          },
+          {
+            "utc": "2026-10-28T20:39:55.244Z",
+            "elapsed_ms": 4229.259599999999,
+            "text": "[io] open pfs0:/conf/system.ini (flags 0x1) on unsupported device"
+          },
+          {
+            "utc": "2026-10-28T20:39:55.245Z",
+            "elapsed_ms": 4229.7679,
+            "text": "[fileio] open pfs0:/conf/system.ini -> -2"
+          }
+        ],
+        "result_fields": {
+          "capture_failed": "TimeoutError: page.screenshot: Timeout 90000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n"
+        },
+        "first_sample": {
+          "utc": "2026-10-28T20:39:56.103Z",
+          "elapsed_ms": 5088.1894,
+          "status": "Running, GPU nvidia ampere",
+          "frames": 66,
+          "primitives": 3,
+          "audio": [
+            "running"
+          ],
+          "ring": [
+            34752,
+            34720,
+            16384,
+            1
+          ],
+          "gpu": "GPU nvidia ampere",
+          "isolated": true,
+          "setup": {
+            "address": 2881280,
+            "argc": 3,
+            "argv": [
+              "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+              "cdrom0:\\SLPS_254.19;1",
+              "1"
+            ]
+          }
+        },
+        "last_sample": null,
+        "timeline": {
+          "started_utc": "2026-10-28T20:39:51.026Z",
+          "argv": [
+            "/game/core.elf",
+            "--arg",
+            "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+            "--arg",
+            "cdrom0:\\SLPS_254.19;1",
+            "--arg",
+            "1"
+          ],
+          "fixture_sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "harness_sha256": "84fb1454dc258e557a14a9ce2b3a1b585d6550df5f2caec4f240bcb2b5e1bd31",
+          "muted": true,
+          "network_success": false,
+          "build_info_sha256": "b4a3a54ac27544783312c3706a3f0e628222108902a67f8c3a16ae423a47b992"
+        },
+        "card": null
+      },
+      "producer_quiet": {
+        "run": {
+          "started_utc": "2026-10-28T20:46:48.060Z",
+          "argv": [
+            "/game/core.elf",
+            "--arg",
+            "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+            "--arg",
+            "cdrom0:\\SLPS_254.19;1",
+            "--arg",
+            "1"
+          ],
+          "fixture_sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "harness_sha256": "15e20fb56b7d4323f125d1ec38706632d7828e72a63b21426a97240a7e081c67",
+          "setup_address_provenance": "Original startup a3=0x002BF700 and prior dynamic SetupThread; current reads are observational",
+          "muted": true,
+          "network_success": false,
+          "build_info_sha256": "cc5d7a8b228e3222ce128a4cf016b1ba38cea31fb638ee3bc556962f22d81bcd"
+        },
+        "raw_sha256": {
+          "build-info.json": "cc5d7a8b228e3222ce128a4cf016b1ba38cea31fb638ee3bc556962f22d81bcd",
+          "final.png": "e13a7365de2fbc5695b96b0f4e7b25829db314a6b9fa465da92bdeddd1e79982",
+          "sample-20.png": "7bd08b740f8efb849fdb2a86cca997815e38a2600817d45782e4b8414ec7ca22",
+          "operator-1-before.png": "b7aff6f4ebd11bfac449cd868d758940e63b88105dded948f0988d7435b2f637",
+          "result.json": "076c355e5a612c7be47e6b7f079884a86cb1b4944e7f3da3cd3cb0de29a2536c",
+          "sample-30.png": "8b0d2fe4dc1f9fd24de61520be9644f8ed9a87ab4983b6c86b18848be8dfec85",
+          "samples.json": "16c6e55544ae2c0ccfc83e7d4284c4d9f79482bf6246a2412d4ee68c83fbd4f7",
+          "live.json": "3ba0d64efa3a5f1ab29bc24ffe3ec036af861dcea12203c22520437ce5e794f6",
+          "timeline.jsonl": "8ede89a8ae1fa061c3ef7a1c592f2c1831e9e5151c2c571bdf3aaa8e8569a711",
+          "operator-1-after.png": "b6eacf69ffa05fad2615ef26cb594339a2f2a525d270c7acdb0d0806dd4dfaaf",
+          "sample-40.png": "43357447b32e964d64027f450aca297cc63801a8bfde853eebf730f26fa068e6",
+          "console.log": "a8e4e2ca7bf4136901cbcdc66aedccb6353be7c32f8f28d5c26eddfcf25a60cd",
+          "operator-ack.json": "2aa3953b42ab9b94e5c3f92a71cff42efba3b928699158b17ec38ac5bed597a1",
+          "card.json": "b055143f3336c8d806c44b24ba62d7e00d4fca4bf02413f7caaa47c8799fab57",
+          "operator-2-after.png": "c0a6eb8de52c38f9db75c8540b3559e3f7f049226557c24c38dc3480a57cb888",
+          "run.json": "fc257b111df6a6f65cd7195c663935dd2b1fa1bdbe43a41d49a1eb1e5a444511",
+          "operator-2-before.png": "b58205ac303cba18a81a681293cdb2053d728cdfcc2d438f369970338a1178a3",
+          "sample-1.png": "38ccb9c660bff0ed7830d0024f11f647f6d6345e781e52327cd168133bc36165",
+          "sample-10.png": "b37994ac914f3ee918cf3f2edb43e37bed055e7e96b716004c07392a1e3f4b09",
+          "live.png": "f5f05103bd15f7b72919042080945dc3acbf3acc61a60f0c61f22015e86e0d06"
+        },
+        "console_records": 75,
+        "observed_engine_stops": [],
+        "selected_io": [
+          {
+            "utc": "2026-10-28T20:46:51.387Z",
+            "elapsed_ms": 3341.072,
+            "text": "[iop-tty] dev9: unknown dev9 hardware."
+          },
+          {
+            "utc": "2026-10-28T20:46:52.051Z",
+            "elapsed_ms": 4005.6666000000005,
+            "text": "[io] open pfs0:/conf/system.ini (flags 0x1) on unsupported device"
+          },
+          {
+            "utc": "2026-10-28T20:46:52.052Z",
+            "elapsed_ms": 4006.8103,
+            "text": "[fileio] open pfs0:/conf/system.ini -> -2"
+          },
+          {
+            "utc": "2026-10-28T20:47:55.667Z",
+            "elapsed_ms": 67621.7341,
+            "text": "[io] open mc0:/BWNETCNF/BWNETCNF (flags 0x1) on unsupported device"
+          },
+          {
+            "utc": "2026-10-28T20:47:55.695Z",
+            "elapsed_ms": 67649.2517,
+            "text": "[io] open mc0:/BWNETCNF/BWNETCNF (flags 0x1) on unsupported device"
+          },
+          {
+            "utc": "2026-10-28T20:47:55.737Z",
+            "elapsed_ms": 67691.197,
+            "text": "[io] open mc0:/BWNETCNF/BWNETCNF (flags 0x1) on unsupported device"
+          }
+        ],
+        "result_fields": {
+          "halt": null,
+          "audio_running": true,
+          "audio_consumed": true,
+          "errors": [],
+          "blocked": []
+        },
+        "first_sample": {
+          "utc": "2026-10-28T20:46:53.110Z",
+          "elapsed_ms": 5064.4731,
+          "log_counts": {
+            "seen": 67,
+            "dma_suppressed": 0,
+            "other_suppressed": 0,
+            "emitted": 67
+          },
+          "status": "Running, GPU nvidia ampere",
+          "frames": 100,
+          "primitives": 243821,
+          "audio": [
+            "running"
+          ],
+          "ring": [
+            61600,
+            58112,
+            16384,
+            1
+          ],
+          "gpu": "GPU nvidia ampere",
+          "isolated": true,
+          "setup": {
+            "address": 2881280,
+            "argc": 3,
+            "argv": [
+              "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+              "cdrom0:\\SLPS_254.19;1",
+              "1"
+            ]
+          }
+        },
+        "last_sample": {
+          "utc": "2026-10-28T20:48:32.085Z",
+          "elapsed_ms": 104038.9824,
+          "log_counts": {
+            "seen": 70,
+            "dma_suppressed": 0,
+            "other_suppressed": 0,
+            "emitted": 70
+          },
+          "status": "Running, GPU nvidia ampere",
+          "frames": 6038,
+          "primitives": 74988643,
+          "audio": [
+            "running"
+          ],
+          "ring": [
+            4812032,
+            4808576,
+            16384,
+            1
+          ],
+          "gpu": "GPU nvidia ampere",
+          "isolated": true,
+          "setup": {
+            "address": 2881280,
+            "argc": 3,
+            "argv": [
+              "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+              "cdrom0:\\SLPS_254.19;1",
+              "1"
+            ]
+          }
+        },
+        "timeline": [
+          {
+            "utc": "2026-10-28T20:46:50.786Z",
+            "elapsed_ms": 2740.2409000000002,
+            "event": "card-imported"
+          },
+          {
+            "utc": "2026-10-28T20:46:51.095Z",
+            "elapsed_ms": 3049.7711,
+            "event": "start"
+          },
+          {
+            "utc": "2026-10-28T20:47:22.544Z",
+            "elapsed_ms": 34498.0751,
+            "event": "command",
+            "command": {
+              "id": 1,
+              "action": "press",
+              "code": "KeyX"
+            }
+          },
+          {
+            "utc": "2026-10-28T20:47:22.583Z",
+            "elapsed_ms": 34537.865900000004,
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "utc": "2026-10-28T20:47:22.844Z",
+            "elapsed_ms": 34798.2771,
+            "event": "keyup",
+            "code": "KeyX"
+          },
+          {
+            "utc": "2026-10-28T20:47:55.231Z",
+            "elapsed_ms": 67184.8689,
+            "event": "command",
+            "command": {
+              "id": 2,
+              "action": "press",
+              "code": "KeyX"
+            }
+          },
+          {
+            "utc": "2026-10-28T20:47:55.275Z",
+            "elapsed_ms": 67229.705,
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "utc": "2026-10-28T20:47:55.538Z",
+            "elapsed_ms": 67492.15639999999,
+            "event": "keyup",
+            "code": "KeyX"
+          },
+          {
+            "utc": "2026-10-28T20:48:32.142Z",
+            "elapsed_ms": 104096.7197,
+            "event": "command",
+            "command": {
+              "id": 3,
+              "action": "finish"
+            }
+          }
+        ],
+        "card": {
+          "sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "bytes": 8650752
+        }
+      }
+    },
+    "source_sha256": {
+      "poc/original-online/build_utility.py": "8abd22f53ec7c4f6dbdb1291c24606038d2037c538e6ac7d049e3ae4a927cf86",
+      "poc/original-online/verify_utility.py": "524c84888056ad9d34123aa9be387274905ae7e0871c8aaa239f7e18926861a5",
+      "poc/original-online/utility-entries.txt": "321c1c9842ca5bf78087f12b038923863ca36ca1d9fb35d73ef916738e2e4b53",
+      "tests/original-online/utility-browser.cjs": "15e20fb56b7d4323f125d1ec38706632d7828e72a63b21426a97240a7e081c67"
+    },
+    "interpretation": [
+      "Automatic translation omitted two genuinely executed targets; adding only those seeds preserved original instructions and reached the utility UI.",
+      "The pristine harness halt field is null despite a captured native halt; engine console establishes the failure. Later harnesses detect generic native halt lines.",
+      "The full-trace two-seed capture timed out waiting for a screenshot, with a94MB console and stale initial sample. This does not establish guest deadlock.",
+      "Producer-quiet control changes only the diagnostic object plus a bounded browser logger; it is not an exact same-WASM comparison. Rendering overlap persists with70application log messages plus5browser WebGPU warnings and zero suppression.",
+      "Original menu confirm reaches save-destination selection, and slot1 confirm triggers three unsupported native mc opens and the original94KB error. This is not measured media capacity.",
+      "The quiet capture has47samples,6038finalframes, advancing audio consumption and unchanged exported card. It demonstrates utility reachability and the storage boundary, not a configuration save."
+    ],
+    "runtime_storage_gaps": [
+      {
+        "source": "vendor/ps2-web-recomp/runtime/src/iop/io.cpp",
+        "finding": "open supports cdrom/ROMVER; unsupported mc path returns-2; getstat accepts only cdrom; ioman write discards data while returning count"
+      },
+      {
+        "source": "vendor/ps2-web-recomp/runtime/src/iop/sif.cpp",
+        "finding": "Both synchronous and asynchronous EE fileio method3 reply with requested byte count without writing"
+      },
+      {
+        "source": "vendor/ps2-web-recomp/runtime/src/iop/sio2.cpp",
+        "finding": "Existing card persistence is serial-device level, not an exported host file API"
+      },
+      {
+        "source": "vendor/ps2-web-recomp/runtime/src/iop/kernel.cpp",
+        "finding": "call_guest is nested interrupt context and suppresses normal scheduling; a blocking native card-file operation cannot be assumed safe"
+      }
+    ],
+    "remaining": [
+      "Observe original card driver registration, operation table and actual return/capacity values; distinguish unsupported device from missing file",
+      "Route real native file operations with normal scheduler completion and all actual write paths; verify persistence through fresh-process readback before configuration success",
+      "Resolve overlapping utility text, in-game executable lifecycle, DEV9/SMAP, then original network/session/battle behavior"
+    ],
+    "next_probe": "Use the retained independent utility build, fresh card clone and two ordinary confirms to reproduce the storage boundary; add bounded registration/operation/return observation before attempting a storage implementation.",
+    "private_review_sha256": "2135767a05392b4fa151009763b6e5087e4cf57dd27389b798fad16daeb238fc",
+    "validation": [
+      "Full generic utility fresh compilation and link passed with Emscripten6.0.11; quiet diagnostic object recompiled/relinked and tested",
+      "12original word checks and both missing-to-present dispatch assertions passed",
+      "Unsupported target rejected before workspace creation",
+      "Two generated entry seeds regenerate byte-identical observed translation",
+      "Browser output muted; no system volume change; external app sockets blocked; no guest-state writes",
+      "Wiki build and report checks passed",
+      "Reader layouts at320,390,1440pixels passed for chapters08and10",
+      "Publication selected-marker/payload scan passed; no remote action"
+    ],
+    "cleanup": {
+      "owned_scheduled_tasks_removed": 4,
+      "owned_servers_stopped": 4,
+      "owned_node_processes_remaining": 0,
+      "base_archive_sha256": {
+        "libps2game.a": "78eff5c002c95db5a202a0297be636375aa363eccf1d140d51c2ac01b19aafe4",
+        "libps2runtime.a": "b55a7fe68a220412c637f412f3a9e61250f66f71f6a2cc8abbecce251ccc155f"
+      }
+    },
+    "raw_archive": ".local/original-online/followup/utility-*",
+    "original_startup_words": {
+      "0x1001A4": "0x3C07002C",
+      "0x1001B8": "0x24E7F700",
+      "0x1001C4": "0x2403003C",
+      "0x1001C8": "0x0000000C",
+      "meaning": "a3=0x002BF700 at SetupThread syscall3C; live reads confirm argc3 and exact strings"
+    },
+    "preparation_failures": [
+      {
+        "failure": "PC native analyzer build unavailable: cmake missing, then older g++ lacks <format>",
+        "recovery": "Used retained fingerprinted local native analyzer for static translation only; WASM compilation/game runs stayed on granted PC"
+      },
+      {
+        "failure": "First SSH compound shell quoting failed before build started",
+        "recovery": "Uploaded a bounded shell script and retained exact build commands"
+      },
+      {
+        "failure": "First canonical build used incomplete PC vendor source copy and could not find gs.wgsl",
+        "raw_log_sha256": "b7c75f9b1448522fee6a65434be7c416b5890690ac0246b436406408c3a89c4a",
+        "recovery": "Copied unchanged pinned source into owned PC workspace, then fresh compilation and link succeeded"
+      },
+      {
+        "failure": "First reader screenshot assertion ran before a lazy image decoded",
+        "recovery": "Waited for image.decode before visual validation"
+      }
+    ]
   }
 }

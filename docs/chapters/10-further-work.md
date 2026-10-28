@@ -26,7 +26,7 @@ The checkout now includes pinned runtime sources, complete adaptive hooks, gener
 ### 2 · Complete multiplayer acceptance
 
 - **Stream Mode:** Compare selectable direct/relay ICE and supported media hints, then complete a host-plus-two-client match. Measure latency and recovery. See [the proposed settings](07-host-streaming.md#reduce-streaming-latency-the-proposed-experiment).
-- **Online Mode:** Boot the original network-settings utility separately, then resolve the observed executable-handoff stop and validate native configuration saving. See [the original-mode experiment](08-independent-clients.md#the-native-boundary-and-first-bounded-implementation).
+- **Online Mode:** Implement genuine card-file operations for the separately booted original utility, verify configuration readback, then resolve the in-game executable handoff. See [the original-mode experiment](08-independent-clients.md#the-native-boundary-and-first-bounded-implementation).
 
 Keep the existing local-Versus lockstep experiment available independently. Its next acceptance work is battle-to-rematch checkpoints across separate devices and input-wait measurements. It does not implement original Online Mode. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
 

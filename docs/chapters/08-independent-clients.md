@@ -5,7 +5,7 @@
 > **At a glance**
 >
 > - **Question:** Can two independent game instances use the original 通信対戦 lifecycle?
-> - **Result:** The experimental lockstep POC synchronized local Versus through checkpoint 13,560. Original mode `7` now reaches its own connection setup through ordinary input. Its RPC boundary remains separate.
+> - **Result:** The experimental lockstep POC synchronized local Versus through checkpoint 13,560. Original mode `7` reaches its settings handoff; a separate utility boot reaches unsupported card-file access.
 > - **Still open:** A working original network connection and battle. Lockstep results do not establish Online Mode.
 
 **🟡 Partially verified · Experimental local-Versus lockstep.** The retained POC runs a copy on each device and exchanges inputs and state checks. It has no video stream. Its normal-boot results preserve useful transport evidence.
@@ -130,7 +130,7 @@ These are separate implementations with different acceptance criteria:
 | Integration option | Work needed | Current status |
 | --- | --- | --- |
 | Experimental lockstep POC | Agree on settings, then synchronize local Versus | Normal boot, selection and battle tested. Does not implement Online Mode. |
-| Original Online Mode | Preserve mode `7` and bridge its native network/session requests | Native RPC boundary mapped. No working connection or online battle demonstrated. |
+| Original Online Mode | Preserve mode `7` and bridge its native network/session requests | Native RPC boundary mapped; separate utility reaches card-file failure. In-game handoff and online connection remain unsupported. |
 
 An Online Mode invitation should identify its server and room. Browser invitation handling alone cannot replace the native session lifecycle.
 
@@ -169,7 +169,23 @@ The decisive trace retained **5,542 observer events with no reported drops**. Th
 
 Earlier attempts exposed test limitations: a neutral-only capture had a black game area, an export preceded saving, one trace hit its cap, and an automated confirm arrived before the first native timer expired. The corrected harness waits for both timers and records input phases. The interactive desktop displayed the original UI, but the runner and observer both changed, so the black capture's cause remains unisolated. The optional module-discovery slice remains off; its static gaps were not the observed cause of this halt.
 
-The next bounded experiment is a separate original-utility bootstrap with its own dispatch, verified arguments, original disc and a copy of the fresh test card. Static analysis generated **48 files, about 12 MB**, for that utility; it has not been compiled or executed. A faithful process handoff and a working Online Mode remain separate acceptance steps.
+### A separate utility boot reaches the card-file boundary
+
+**Measured · Original utility, one isolated PC instance.** The network-settings utility now runs separately with its own generated dispatch, the pinned generic runtime and a copy of the fresh test card. Its live startup arguments are the helper pathname, main-game pathname and `1`. This separate boot does not implement the unsupported in-game executable handoff.
+
+The first automatic translation stopped at indirect callback `0x1B2DA0`. Adding that observed entry reached an untranslated original thread at `0x1B4960`. Original caller/prologue words and both missing dispatch entries were checked. Adding only those two translation seeds preserved the guest instructions and reached the utility's own menu.
+
+Two ordinary Circle confirmations then reached save-destination selection and chose memory-card slot 1. The utility attempted **`mc0:/BWNETCNF/BWNETCNF`** three times. The runtime reported an unsupported device, and the original UI displayed an error saying that saving requires **94 KB**. That message is **not a measurement of actual free space**; the native error-to-capacity path remains to be traced.
+
+![Original network utility reports a save-space error after the unsupported card-file opens](../media/original-online-utility-card-error.png)
+
+*The separately booted original utility accepted normal menu input and reached its card-file path. The exported test card remained byte-for-byte unchanged. No network configuration was saved.*
+
+The controlled capture retained **47 samples through frame 6,038**, with advancing audio consumption and output muted. Producer tracing was disabled: 70 application log messages and five browser WebGPU warnings were captured, with zero browser-log suppression. An earlier full-trace attempt timed out during a screenshot and retained about 94 MB of console output; its stale sample does not establish a guest deadlock. Menu text still overlaps in the quiet capture, so rendering also needs correction. [Builds, original words, input timestamps, screenshots and failed attempts](../evidence/original-online-boundary.json).
+
+Existing game saves use the serial card device. They do not establish a host file interface for the utility's `mc0:` path. The generic file layer accepts disc/ROM files and returns `-2` for this unsupported device. Its IOP write implementation and both EE fileio write handlers can return a byte count without persisting data. An open-only change would therefore risk a false save result.
+
+The next bounded step is to observe the original card driver's registration, operation table and real completion/error values. A faithful adapter must preserve scheduling and all write paths, then demonstrate close, flush and fresh-process readback on a disposable card clone. The current nested guest-callback helper suppresses normal scheduling, so it cannot simply be assumed safe for blocking card operations. Utility rendering, executable replacement, DEV9/SMAP and the original network session remain separate gaps.
 
 ## What Co-op Anything contributes
 
@@ -181,4 +197,4 @@ Rendering interpolation is useful observability, but positions alone are not a r
 
 Carry the next briefing into a second battle with matching checkpoints, then test cancellation and session restart. Repeat on separate devices, delayed networks and an actual phone. The current normal-boot profile already excludes personal memory cards and agrees on the initial settings. Session interruption stops safely; in-match resynchronization remains future work.
 
-Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. For Online Mode, boot the original network utility independently and observe its settings/save path. Then resolve the measured executable handoff and capture the next native network boundary. Preserve the original lobby and battle synchronization throughout. A successful login alone will not establish playable Online Mode.
+Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. For Online Mode, resolve the observed native card-file boundary and verify original configuration persistence. Then resolve the measured executable handoff and capture the next native network boundary. Preserve the original lobby and battle synchronization throughout. A successful login alone will not establish playable Online Mode.
