@@ -40,8 +40,11 @@ def main():
     includes = ['-I' + str(p) for p in [prepared, ROOT / 'src/hooks',
         ROOT / 'research/source/render-hooks', base / 'upstream/runtime/include',
         base / 'upstream/runtime/src', ROOT / 'generated/gundam-vs-z-gundam']]
+    commands = []
     def run(command, cwd=None):
-        subprocess.run([str(x) for x in command], env=env, cwd=cwd, check=True)
+        command = [str(x) for x in command]
+        commands.append({'argv': command, 'cwd': str(cwd or ROOT)})
+        subprocess.run(command, env=env, cwd=cwd, check=True)
     for name in prepare.POINTS:
         print('Compile observer:', name, flush=True)
         run([em / 'em++', *build.FLAGS, *includes, '-c', prepared / name,
@@ -60,7 +63,7 @@ def main():
     output = work / 'web'; output.mkdir()
     objects = [prepared / (name + '.o') for name in ['system', 'web',
         'full_game_web_hooks', 'full_game_interpolation', 'vif', 'unit_0044',
-        'unit_0039', 'unit_0049', 'unit_004D', 'unit_0047', 'unit_0001', 'unit_0081', 'unit_009A']]
+        'unit_0039', 'unit_0049', 'unit_004D', 'unit_0047', 'unit_0001', 'unit_0081', 'unit_009A', 'unit_0099']]
     archives = [base / 'base/libps2game.a', base / 'base/libps2runtime.a']
     provenance = {str(p.relative_to(base)): build.digest(p) for p in archives}
     run([em / 'em++', *build.FLAGS, '-sJSPI', '-sALLOW_MEMORY_GROWTH=1',
@@ -75,9 +78,20 @@ def main():
         if file.is_file() and file.name != 'package.json': shutil.copy2(file, output / file.name)
     for name in ['netplay-game.js', 'netplay-transport.js']:
         shutil.copy2(ROOT / 'poc/lockstep/web' / name, output / name)
-    result = {'profile': 'original-online-observer-v1', 'fresh_build': False,
+    result = {'profile': 'original-online-observer-v3', 'fresh_build': False,
         'toolchain': version.splitlines()[0], 'archives_sha256': provenance,
-        'observer': manifest, 'files_sha256': {p.name: build.digest(p) for p in output.iterdir()}}
+        'observer': manifest,
+        'linked_objects_sha256': {str(p.relative_to(work)): build.digest(p) for p in objects + runtime_objects},
+        'inputs_sha256': {p.name: build.digest(p) for p in (work / 'inputs').iterdir() if p.is_file()},
+        'build_sources_sha256': {str(p.relative_to(ROOT)): build.digest(p) for p in [
+            Path(__file__), Path(prepare.__file__), ROOT / 'poc/original-online/observer.hpp',
+            ROOT / 'poc/original-online/prepare_runtime.py', ROOT / 'poc/original-online/module_names.hpp',
+            ROOT / 'scripts/game/build.py', ROOT / 'apps/game/shell.html']},
+        'sdk_sha256': {str(p.relative_to(sdk)): build.digest(p) for p in [
+            sdk / '.emscripten', em / 'em++', em / 'emcc.py',
+            sdk / 'upstream/bin/clang', sdk / 'upstream/bin/wasm-opt']},
+        'commands': commands,
+        'files_sha256': {p.name: build.digest(p) for p in output.iterdir()}}
     (output / 'build-info.json').write_text(json.dumps(result, indent=2) + '\n')
     print('Observer ready:', output, flush=True)
 

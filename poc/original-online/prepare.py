@@ -9,8 +9,12 @@ ROOT = Path(__file__).resolve().parents[2]
 POINTS = {
     'unit_0044.cpp': {0x211180: 'enter'},
     'unit_0081.cpp': {0x306720: 'mode', 0x307E30: 'battle'},
-    'unit_009A.cpp': {0x368A80: 'connection'},
-    'unit_0001.cpp': {0x1074D8: 'bind', 0x1076A8: 'call'},
+    'unit_009A.cpp': {0x368A80: 'connection', 0x369AC0: 'ui_produced',
+                    0x369AC8: 'confirm_result', 0x369B08: 'cancel_result',
+                    0x369BD0: 'activity_result'},
+    'unit_0099.cpp': {0x364B10: 'ui_render', 0x364D70: 'ui_queue1', 0x365048: 'ui_queue2'},
+    'unit_0001.cpp': {0x1074D8: 'bind', 0x1076A8: 'call', 0x107040: 'rpc_end',
+                    0x1075FC: 'bind_return', 0x10786C: 'call_return'},
 }
 
 
@@ -34,7 +38,7 @@ def prepare(source, output):
             raise ValueError('Original mode 7 selection changed')
         originals[name] = (text, hashlib.sha256(path.read_bytes()).hexdigest())
     output.mkdir(parents=True)
-    manifest = {'profile': 'original-online-observer-v1', 'network_backend': None,
+    manifest = {'profile': 'original-online-observer-v3', 'network_backend': None,
                 'guest_writes': False, 'lockstep': False, 'sources': {}}
     for name, (text, digest) in originals.items():
         for address, kind in POINTS[name].items():
@@ -44,7 +48,11 @@ def prepare(source, output):
         (output / name).write_text(text)
         manifest['sources'][name] = {'input_sha256': digest,
             'output_sha256': hashlib.sha256(text.encode()).hexdigest()}
-    (output / 'observer.hpp').write_bytes(Path(__file__).with_name('observer.hpp').read_bytes())
+    observer = Path(__file__).with_name('observer.hpp').read_bytes()
+    (output / 'observer.hpp').write_bytes(observer)
+    manifest['observer_sha256'] = hashlib.sha256(observer).hexdigest()
+    manifest['sites'] = {name: {hex(address): kind for address, kind in points.items()}
+                         for name, points in POINTS.items()}
     (output / 'observer-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     return manifest
 
