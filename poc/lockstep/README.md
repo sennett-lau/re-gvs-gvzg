@@ -1,6 +1,6 @@
-# Route B: independent clients
+# Experimental local-Versus lockstep
 
-This source-only prototype runs the game on both devices and exchanges controller inputs and periodic state hashes. It is separate from the normal-boot adaptive package. It is not an implementation of the original official online service.
+This prototype runs a local-Versus game on both devices and exchanges controller inputs and periodic state hashes. Its menu bridge returns mode `4`. It is separate from the normal-boot adaptive package and does not implement **Online Mode**, which requires independent instances using original 通信対戦 mode `7`. See the canonical [Online Mode and independent-client experiments chapter](../../docs/chapters/08-independent-clients.md) for the distinction and retained results.
 
 | Directory | Content |
 | --- | --- |
@@ -22,6 +22,6 @@ The retained game experiment used a fixed versus save state, 60-Hz gameplay, a t
 
 ## Remaining game integration
 
-The private versus save-state fixture and its derivative WASM build are excluded from this source export. A standalone Route B build still needs a repeatable normal-boot-to-versus fixture procedure, an identity manifest covering that fixture and every executable asset, and another two-client game acceptance run. The controller sequences here start from an existing battle checkpoint; they are not a complete fixture-from-disc recipe.
+The private versus save-state fixture and its derivative WASM build are excluded from this source export. The controller sequences here start from an existing battle checkpoint; they are not a complete fixture-from-disc recipe. The later normal-boot local-Versus integration and its acceptance evidence are documented in [chapter 08](../../docs/chapters/08-independent-clients.md#move-from-the-fixture-into-the-full-game).
 
-The normal game UI therefore does not advertise a working online battle button. Preserve input ownership, startup identity checks and mismatch stops when integrating this prototype. Original-menu online-service integration, adaptive RTT-based delay and rollback remain further work.
+Preserve input ownership, startup identity checks and mismatch stops when integrating this prototype. Original Online Mode research stays isolated in [its own experiment](../original-online/README.md). Adaptive RTT-based delay and rollback remain further work for lockstep.

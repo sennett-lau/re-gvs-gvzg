@@ -473,9 +473,11 @@
     }
   },
   "original_online_scope": {
-    "goal": "Two independent instances using original 通信対戦 mode 7",
+    "goal": "Two independent instances using original \u901a\u4fe1\u5bfe\u6226 mode 7",
     "existing_poc": "Menu address 0x211180 is intercepted and returns mode 4 local Versus; lockstep does not implement original Online Mode",
     "next_evidence": "original-online-boundary.json",
-    "network_success": false
+    "network_success": false,
+    "observed_progress": "Normal boot through original mode7 NET save/load and broadband settings; affirmative editor choice halts at unsupported LoadExecPS2 handoff to NTGUIDVD/NTGDVDJ.BIN",
+    "runtime_fix_status": "No original network backend enabled; optional module-discovery slice remains separate"
   }
 }

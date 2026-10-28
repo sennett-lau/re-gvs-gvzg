@@ -116,6 +116,156 @@
       "file_offset": "0x239c58",
       "word": "34450010",
       "meaning": "module control bind low half, delay slot"
+    },
+    {
+      "address": "0x107040",
+      "file_offset": "0x9940",
+      "word": "27bdffc0",
+      "meaning": "EE RPC-end handler entry before original stack change"
+    },
+    {
+      "address": "0x1075fc",
+      "file_offset": "0x9efc",
+      "word": "dfbf0060",
+      "meaning": "bind return before restoring saved registers"
+    },
+    {
+      "address": "0x10786c",
+      "file_offset": "0xa16c",
+      "word": "dfbf00b0",
+      "meaning": "call return before restoring saved registers"
+    },
+    {
+      "address": "0x369ac0",
+      "file_offset": "0x26c3c0",
+      "word": "0c0d8db0",
+      "meaning": "state 1 calls confirm input helper"
+    },
+    {
+      "address": "0x369ac8",
+      "file_offset": "0x26c3c8",
+      "word": "1040000d",
+      "meaning": "confirm zero branch; observed v0 is still intact"
+    },
+    {
+      "address": "0x369b00",
+      "file_offset": "0x26c400",
+      "word": "0c0d8dd8",
+      "meaning": "state 1 calls cancel input helper"
+    },
+    {
+      "address": "0x369b08",
+      "file_offset": "0x26c408",
+      "word": "1040003d",
+      "meaning": "cancel zero branch; observed v0 is still intact"
+    },
+    {
+      "address": "0x369b24",
+      "file_offset": "0x26c424",
+      "word": "2402000a",
+      "meaning": "cancel selects substate 10"
+    },
+    {
+      "address": "0x369b30",
+      "file_offset": "0x26c430",
+      "word": "a0221361",
+      "meaning": "store cancellation substate at CD1361"
+    },
+    {
+      "address": "0x369bc8",
+      "file_offset": "0x26c4c8",
+      "word": "0c0d8e1c",
+      "meaning": "cancellation polls activity predicate"
+    },
+    {
+      "address": "0x369bd0",
+      "file_offset": "0x26c4d0",
+      "word": "1440000b",
+      "meaning": "nonzero activity continues waiting"
+    },
+    {
+      "address": "0x363870",
+      "file_offset": "0x266170",
+      "word": "8f82a814",
+      "meaning": "activity reads gp-22508, not RPC status"
+    },
+    {
+      "address": "0x363878",
+      "file_offset": "0x266178",
+      "word": "0002102b",
+      "meaning": "activity normalizes the word to a boolean"
+    },
+    {
+      "address": "0x3636d0",
+      "file_offset": "0x265fd0",
+      "word": "80229148",
+      "meaning": "input gate at 0x839148"
+    },
+    {
+      "address": "0x2276e0",
+      "file_offset": "0x129fe0",
+      "word": "94222544",
+      "meaning": "player-one input halfword at 0x6F2544"
+    },
+    {
+      "address": "0x22770c",
+      "file_offset": "0x12a00c",
+      "word": "30420020",
+      "meaning": "confirm input mask 0x20"
+    },
+    {
+      "address": "0x22778c",
+      "file_offset": "0x12a08c",
+      "word": "30420040",
+      "meaning": "cancel input mask 0x40"
+    },
+    {
+      "address": "0x36983c",
+      "file_offset": "0x26c13c",
+      "word": "9022136e",
+      "meaning": "renderer control byte at 0xCD136E"
+    },
+    {
+      "address": "0x369840",
+      "file_offset": "0x26c140",
+      "word": "30420002",
+      "meaning": "renderer suppression mask 2"
+    },
+    {
+      "address": "0x369844",
+      "file_offset": "0x26c144",
+      "word": "14400004",
+      "meaning": "set mask suppresses renderer call"
+    },
+    {
+      "address": "0x36984c",
+      "file_offset": "0x26c14c",
+      "word": "0c0d8e18",
+      "meaning": "otherwise call renderer wrapper 0x363860"
+    },
+    {
+      "address": "0x363860",
+      "file_offset": "0x266160",
+      "word": "080d92c4",
+      "meaning": "tail jump to original renderer 0x364B10"
+    },
+    {
+      "address": "0x364b10",
+      "file_offset": "0x267410",
+      "word": "27bdffd0",
+      "meaning": "original renderer entry"
+    },
+    {
+      "address": "0x364d70",
+      "file_offset": "0x267670",
+      "word": "3c0100cd",
+      "meaning": "first queue-consumption block entry"
+    },
+    {
+      "address": "0x365048",
+      "file_offset": "0x267948",
+      "word": "3c0100cd",
+      "meaning": "second queue-consumption block entry"
     }
   ],
   "iop_checks": [
@@ -816,7 +966,7 @@
   },
   "validation": {
     "original_words": {
-      "ee": 19,
+      "ee": 44,
       "iop": 16,
       "dispatch_slots": 66,
       "failures": 0
@@ -860,19 +1010,23 @@
         1440
       ],
       "page_errors": 0
+    },
+    "native_observer_test": {
+      "passed": true,
+      "synthetic_only": true,
+      "scope": [
+        "No guest/register mutation",
+        "Changed-value suppression",
+        "Boot custom-service RPC acknowledgement",
+        "Ambiguous reply correlation rejected",
+        "First/changed card reply retention and custom-service exemption",
+        "Explicit cap/drop counters"
+      ],
+      "raw": ".local/original-online/followup/dedup-evidence/.local/followup/expanded-observer-test.jsonl",
+      "sha256": "8056e1b16648329672be15f07c9b60a69ded270a1ed53fa10c04d39d753be4f4"
     }
   },
-  "next_experiment": "Use timestamped input phases and confirm in original connection state1; diagnose the black UI, then observe the first actual LoadFile09/custom service bind before evaluating the optional module-discovery slice",
-  "next_harness": {
-    "state": "syntax checked; not executed in-game",
-    "changes": [
-      "Monotonic timestamps for observer events and inputs",
-      "Explicit phases and pre-cancel snapshot",
-      "Optional ordinary confirm input and fresh default/no-card comparison",
-      "New output directory and HTTP readiness precondition",
-      "Require cancel return, running audio/ring consumption and no engine/page failure"
-    ]
-  },
+  "next_experiment": "Boot only NTGDVDJ.BIN in a separate translation/dispatch and fresh machine/browser, with helper/game/1 arguments, original disc and a copy of the private fresh card; observe ordinary settings/save or its first blocker before considering integrated LoadExec lifecycle",
   "review": {
     "source": ".local/original-online/consultation.md",
     "sha256": "ea87149ec3927c08841b98e0faaa229b40eb0989f9bc87a8d16b65b738522a09",
@@ -883,8 +1037,4016 @@
       "Stronger future harness acceptance"
     ],
     "remaining": [
-      "Actual SIF/lifecycle regression and optional linked-game test",
-      "Completion/status instrumentation once the original network boundary is reached"
+      "Separate original utility bootstrap and native network configuration save",
+      "Active-executable dispatch, argv reconstruction, non-returning transfer and EE/IOP/SIF/event reset contracts for integrated LoadExec",
+      "Original network requests and server/battle lifecycle after valid configuration"
+    ],
+    "second": {
+      "source": ".local/original-online/consultation-second.md",
+      "sha256": "c99688cbb91cf6f01db4e4bba58e99573ac46556aa9bac1df380a246bca286d8",
+      "scope": "Read-only review; confirmed input/render observation and boot custom-service coverage requirements"
+    }
+  },
+  "historical_harness_after_first_probe": {
+    "state": "syntax checked; not executed in-game",
+    "changes": [
+      "Monotonic timestamps for observer events and inputs",
+      "Explicit phases and pre-cancel snapshot",
+      "Optional ordinary confirm input and fresh default/no-card comparison",
+      "New output directory and HTTP readiness precondition",
+      "Require cancel return, running audio/ring consumption and no engine/page failure"
     ]
+  },
+  "followup": {
+    "scope": "One original mode7 instance; normal inputs and private fresh test card; no network success",
+    "raw_archive": ".local/original-online/followup",
+    "clock_notes": "Guest cycles and monotonic host-receipt milliseconds are separate clocks; started_utc anchors each run",
+    "environment": "Interactive Windows desktop session, Chrome 156.0.8078.48, GPU nvidia ampere; output mute with active audio and ring",
+    "runtime_slice_enabled": false,
+    "network_success": false,
+    "trials": {
+      "confirm": {
+        "started_utc": "2026-10-28T19:37:44.325Z",
+        "card": "none",
+        "fixture": null,
+        "harness_sha256": "a3a5ad48ad55f544fe29a9c3c70b36ebaf1fcc2633b8586dd71582143cc4035b",
+        "build_info_sha256": "3f1382ff8dbe78756ff5f3e56c10e9a8d84dcedae5c52e8a1583fbfeb3a04650",
+        "passed": true,
+        "checks": {
+          "original_mode": true,
+          "no_versus": true,
+          "audio_running": true,
+          "audio_consumed": true,
+          "no_failure": true,
+          "trace_complete": true,
+          "confirm_accepted": true
+        },
+        "failure": null,
+        "confirm": {
+          "requested": true,
+          "input_accepted": true,
+          "connection_state2_seen": true,
+          "input_start_ms": 40504.7026,
+          "input_end_ms": 41218.6351
+        },
+        "after_cancel_mode": 7,
+        "events": 963,
+        "event_counts": {
+          "bind": 1,
+          "rpc_end": 46,
+          "bind_return": 1,
+          "call": 45,
+          "call_return": 45,
+          "menu": 1,
+          "mode": 3,
+          "connection": 200,
+          "counters": 19,
+          "ui_render": 198,
+          "ui_queue1": 198,
+          "ui_queue2": 198,
+          "ui_produced": 3,
+          "confirm_result": 3,
+          "cancel_result": 2
+        },
+        "last_counters": {
+          "event": "counters",
+          "guest_cycles": 21361741964,
+          "emitted": 842,
+          "dropped": 0,
+          "boot_emitted": 102,
+          "boot_dropped": 0,
+          "connection_hits": 2160,
+          "producer_hits": 32,
+          "render_hits": 2159,
+          "queue1_hits": 2159,
+          "queue2_hits": 2159,
+          "confirm_hits": 32,
+          "cancel_hits": 31,
+          "activity_hits": 0,
+          "bind_hits": 1,
+          "call_hits": 413,
+          "end_hits": 1080,
+          "background_calls": 368,
+          "pending_collisions": 0,
+          "pending_overflow": 0
+        },
+        "trace_caps": [],
+        "state_changes": [
+          {
+            "elapsed_ms": 39191.0207,
+            "phase": "neutral",
+            "guest_cycles": 10749760920,
+            "state_word": 0,
+            "state_bytes": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 39197.7711,
+            "phase": "neutral",
+            "guest_cycles": 10754676314,
+            "state_word": 256,
+            "state_bytes": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 39220.5698,
+            "phase": "neutral",
+            "guest_cycles": 10759591518,
+            "state_word": 512,
+            "state_bytes": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 39840.1521,
+            "phase": "neutral",
+            "guest_cycles": 10941457940,
+            "state_word": 1,
+            "state_bytes": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 39845.7774,
+            "phase": "neutral",
+            "guest_cycles": 10946380084,
+            "state_word": 257,
+            "state_bytes": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 40552.017,
+            "phase": "connection-confirm",
+            "guest_cycles": 11152863572,
+            "state_word": 769,
+            "state_bytes": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 40567.0221,
+            "phase": "connection-confirm",
+            "guest_cycles": 11157778064,
+            "state_word": 2,
+            "state_bytes": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 41237.4614,
+            "phase": "after-confirm",
+            "guest_cycles": 11354386375,
+            "state_word": 258,
+            "state_bytes": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 41776.284,
+            "phase": "after-confirm",
+            "guest_cycles": 11516587924,
+            "state_word": 2562,
+            "state_bytes": [
+              2,
+              10,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 41949.2843,
+            "phase": "after-confirm",
+            "guest_cycles": 11565716748,
+            "state_word": 2818,
+            "state_bytes": [
+              2,
+              11,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 71666.7109,
+            "phase": "cancel",
+            "guest_cycles": 20329526615,
+            "state_word": 3074,
+            "state_bytes": [
+              2,
+              12,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 72008.5915,
+            "phase": "cancel",
+            "guest_cycles": 20427853109,
+            "state_word": 2,
+            "state_bytes": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 72025.2726,
+            "phase": "cancel",
+            "guest_cycles": 20432745101,
+            "state_word": 258,
+            "state_bytes": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 72569.2746,
+            "phase": "cancel",
+            "guest_cycles": 20594971493,
+            "state_word": 2562,
+            "state_bytes": [
+              2,
+              10,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 72727.5446,
+            "phase": "cancel",
+            "guest_cycles": 20644097717,
+            "state_word": 2818,
+            "state_bytes": [
+              2,
+              11,
+              0,
+              0
+            ]
+          }
+        ],
+        "inputs": [
+          {
+            "elapsed_ms": 40504.7059,
+            "phase": "connection-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 71636.2658,
+            "phase": "cancel",
+            "event": "keydown",
+            "code": "KeyZ"
+          }
+        ],
+        "calls": [
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 0,
+            "records": 1
+          },
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 1,
+            "records": 32
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 1,
+            "records": 12
+          }
+        ],
+        "reply_word0": {
+          "boot_network/0x01270010/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "boot_network/0x01270010/1": [
+            {
+              "word": "0xffffffff",
+              "signed": -1,
+              "records": 32
+            }
+          ],
+          "post_menu/0x80000400/1": [
+            {
+              "word": "0xfffffff5",
+              "signed": -11,
+              "records": 12
+            }
+          ]
+        },
+        "audio_contexts_running": true,
+        "audio_ring_first": [
+          1963936,
+          1960384,
+          16384,
+          1
+        ],
+        "audio_ring_last": [
+          3531136,
+          3526592,
+          16384,
+          1
+        ],
+        "page_errors": [],
+        "blocked_requests": [],
+        "network_success": false,
+        "raw_archive": ".local/original-online/followup/confirm",
+        "raw_sha256": {
+          "build-info.json": "3f1382ff8dbe78756ff5f3e56c10e9a8d84dcedae5c52e8a1583fbfeb3a04650",
+          "entry-8.png": "078f2353d9d9a770bfe2019b33d2b77379deb5cf4c23fd00d6afbd62cc2869d7",
+          "main-menu.png": "fbc1d4be2b005448d238db6456e90d259bcd6cc3636616fba8a0d45912a8b0a3",
+          "result.json": "83b76c88e11587d609089854857e291a6bdb82acaaf43c67529c7160f3951514",
+          "samples.json": "9c1e247f3cd0839da62a3cb57cddcd283696c559246d8abcf964d9d7b82968eb",
+          "timeline.jsonl": "ab28c83e4814ca4b7713264a2e4accea07059e654ab97711a54b9fc72c400eea",
+          "console.log": "ce18c572d33fd9b6c7b41edca6605abf2a9a2ac8682bd5001c03396019561370",
+          "before-confirm.json": "2af5a4b6e60b61108c613d5eb70e16f38bc0da55097342c63cdf1ba5c26a90bb",
+          "before-confirm.png": "cd5a8fcc9815c44f5056c0be96326aea57a83d173b1493df69f0f08d75522c42",
+          "entry-0.png": "674c95a3cd81d0b2a432cbc2ff71deab32a24a73b2b3e6c63d406ef4c9246909",
+          "before-cancel.json": "28ccca90016dacacb8d730182f6f2096de94ac19168ee40a165b60de022cc796",
+          "run.json": "4fdfce3020202c6bb0f276185b1a6c3cc13288c5b425079225ef160822a5f47d",
+          "entry-4.png": "df1fbc01d43602fac5f944ff9682365d13f59a1c246582c6a7f1002fda21008e",
+          "original-mode7.png": "c29cc30646bc8f808bd120459e8f688055bc8c8623cbdcf186b7fdc2a558c28e"
+        },
+        "raw_state_change_count": 21,
+        "selection_note": "State changes retain first occurrence per phase/state/substate; selected keydowns omit startup/menu inputs. Complete events, keyup timing and nested state changes remain in fingerprinted raw captures."
+      },
+      "default-card": {
+        "started_utc": "2026-10-28T19:40:58.118Z",
+        "card": "default",
+        "fixture": null,
+        "harness_sha256": "84fd1691c6e9213835a72aefb26f2bd5124315c5b97e52bc2e92f06ff2ad6ba6",
+        "build_info_sha256": "3f1382ff8dbe78756ff5f3e56c10e9a8d84dcedae5c52e8a1583fbfeb3a04650",
+        "passed": true,
+        "checks": {
+          "original_mode": true,
+          "no_versus": true,
+          "audio_running": true,
+          "audio_consumed": true,
+          "no_failure": true,
+          "trace_complete": true,
+          "confirm_accepted": true
+        },
+        "failure": null,
+        "confirm": {
+          "requested": true,
+          "input_accepted": true,
+          "connection_state2_seen": true,
+          "input_start_ms": 33544.6436,
+          "input_end_ms": 34259.905099999996
+        },
+        "after_cancel_mode": 2,
+        "events": 634,
+        "event_counts": {
+          "bind": 1,
+          "rpc_end": 40,
+          "bind_return": 1,
+          "call": 39,
+          "call_return": 39,
+          "menu": 1,
+          "mode": 3,
+          "connection": 122,
+          "counters": 17,
+          "ui_render": 121,
+          "ui_queue1": 121,
+          "ui_queue2": 121,
+          "ui_produced": 3,
+          "confirm_result": 3,
+          "cancel_result": 2
+        },
+        "last_counters": {
+          "event": "counters",
+          "guest_cycles": 18314314751,
+          "emitted": 499,
+          "dropped": 0,
+          "boot_emitted": 102,
+          "boot_dropped": 0,
+          "connection_hits": 1920,
+          "producer_hits": 26,
+          "render_hits": 1919,
+          "queue1_hits": 1919,
+          "queue2_hits": 1919,
+          "confirm_hits": 26,
+          "cancel_hits": 25,
+          "activity_hits": 0,
+          "bind_hits": 1,
+          "call_hits": 375,
+          "end_hits": 1030,
+          "background_calls": 336,
+          "pending_collisions": 0,
+          "pending_overflow": 0
+        },
+        "trace_caps": [],
+        "state_changes": [
+          {
+            "elapsed_ms": 32343.6964,
+            "phase": "neutral",
+            "guest_cycles": 8881983292,
+            "state_word": 0,
+            "state_bytes": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 32350.3121,
+            "phase": "neutral",
+            "guest_cycles": 8886898703,
+            "state_word": 256,
+            "state_bytes": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 32378.9826,
+            "phase": "neutral",
+            "guest_cycles": 8891813905,
+            "state_word": 512,
+            "state_bytes": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 32970.8844,
+            "phase": "neutral",
+            "guest_cycles": 9068765102,
+            "state_word": 1,
+            "state_bytes": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 32993.2847,
+            "phase": "neutral",
+            "guest_cycles": 9073687267,
+            "state_word": 257,
+            "state_bytes": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 33593.2431,
+            "phase": "connection-confirm",
+            "guest_cycles": 9250679325,
+            "state_word": 769,
+            "state_bytes": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 33611.1678,
+            "phase": "connection-confirm",
+            "guest_cycles": 9255570792,
+            "state_word": 2,
+            "state_bytes": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34277.796,
+            "phase": "after-confirm",
+            "guest_cycles": 9452202156,
+            "state_word": 258,
+            "state_bytes": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34825.4792,
+            "phase": "after-confirm",
+            "guest_cycles": 9614381021,
+            "state_word": 5122,
+            "state_bytes": [
+              2,
+              20,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34996.0737,
+            "phase": "after-confirm",
+            "guest_cycles": 9663556280,
+            "state_word": 5378,
+            "state_bytes": [
+              2,
+              21,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 64754.8521,
+            "phase": "cancel",
+            "guest_cycles": 18442111060,
+            "state_word": 3330,
+            "state_bytes": [
+              2,
+              13,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 65158.3777,
+            "phase": "cancel",
+            "guest_cycles": 18560019915,
+            "state_word": 3586,
+            "state_bytes": [
+              2,
+              14,
+              0,
+              0
+            ]
+          }
+        ],
+        "inputs": [
+          {
+            "elapsed_ms": 33544.6466,
+            "phase": "connection-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 64711.4228,
+            "phase": "cancel",
+            "event": "keydown",
+            "code": "KeyZ"
+          }
+        ],
+        "calls": [
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 0,
+            "records": 1
+          },
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 1,
+            "records": 32
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 1,
+            "records": 6
+          }
+        ],
+        "reply_word0": {
+          "boot_network/0x01270010/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "boot_network/0x01270010/1": [
+            {
+              "word": "0xffffffff",
+              "signed": -1,
+              "records": 32
+            }
+          ],
+          "post_menu/0x80000400/1": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 3
+            },
+            {
+              "word": "0xfffffff5",
+              "signed": -11,
+              "records": 3
+            }
+          ]
+        },
+        "audio_contexts_running": true,
+        "audio_ring_first": [
+          1655136,
+          1651456,
+          16384,
+          1
+        ],
+        "audio_ring_last": [
+          3223136,
+          3218688,
+          16384,
+          1
+        ],
+        "page_errors": [],
+        "blocked_requests": [],
+        "network_success": false,
+        "raw_archive": ".local/original-online/followup/default-card",
+        "raw_sha256": {
+          "build-info.json": "3f1382ff8dbe78756ff5f3e56c10e9a8d84dcedae5c52e8a1583fbfeb3a04650",
+          "entry-8.png": "223b243a750e253059b3172bbf12290db06a1e74fe8933cd3e562242e513d45d",
+          "main-menu.png": "ce232c8e08061051374b11e109c17ea1a798a6a5bbdbdda44313a9f5dc51bd66",
+          "result.json": "d87910cad7cd28b44207ec8b98d2fdc1fd9faf0c2dbcf19e945d7bf3061b1c67",
+          "samples.json": "7d778592867289b555aa842f0eda5b3d9ebe20169342e4bdb285d104d9d2684f",
+          "timeline.jsonl": "651af45144fed3cd0998118c1930c2fab1ed81b082be3ca76dcce1addea62617",
+          "console.log": "949565666e40f58ea2ae6759ad735a0eeff14d7cd260e2784946f36f9dd814c1",
+          "before-confirm.json": "8f4e66fe1a58e20bb22854444288b793ba25ac6a21a9aa13650e9c0f67363b1f",
+          "before-confirm.png": "d4f8527dac8a0ad87e8586500fc28644948c7fa7cc95202b2c6fe9cba16d571c",
+          "entry-0.png": "c32db20a37432946196fa92790071012537a9d5454af9f07abceabc83c390d64",
+          "before-cancel.json": "a78bca59c71ce88a9966ef912661ce49850cd214b52ba2f92a34c7aaab021b9d",
+          "run.json": "6bd7188769718b9fbada5f1dd087a5bfa9df42c1ab99ff5838f6c1465361873c",
+          "entry-4.png": "c3e17961e22ac1d0e466c7d80a1293a7116059ec061433c0e85a6790dda3d17d",
+          "original-mode7.png": "eeb9ea6978c3c25ba09e2e688b483ebdbb8be87e1921daa85754c3826c4dfbbf"
+        },
+        "raw_state_change_count": 15,
+        "selection_note": "State changes retain first occurrence per phase/state/substate; selected keydowns omit startup/menu inputs. Complete events, keyup timing and nested state changes remain in fingerprinted raw captures."
+      },
+      "create-net": {
+        "started_utc": "2026-10-28T19:46:37.603Z",
+        "card": "default",
+        "fixture": null,
+        "harness_sha256": "64ba1fb66b703d036384f29af618509083d4ad094c8527628bf4b67f9b9287c5",
+        "build_info_sha256": "3f1382ff8dbe78756ff5f3e56c10e9a8d84dcedae5c52e8a1583fbfeb3a04650",
+        "passed": false,
+        "checks": null,
+        "failure": {
+          "message": "TimeoutError: page.waitForEvent: Timeout 90000ms exceeded while waiting for event \"download\"\n=========================== logs ===========================\nwaiting for event \"download\"\n============================================================",
+          "errors": [],
+          "blocked": []
+        },
+        "confirm": null,
+        "after_cancel_mode": null,
+        "events": 776,
+        "event_counts": {
+          "bind": 1,
+          "rpc_end": 40,
+          "bind_return": 1,
+          "call": 39,
+          "call_return": 39,
+          "menu": 1,
+          "mode": 3,
+          "connection": 146,
+          "counters": 63,
+          "ui_render": 145,
+          "ui_queue1": 145,
+          "ui_queue2": 145,
+          "ui_produced": 3,
+          "confirm_result": 3,
+          "cancel_result": 2
+        },
+        "last_counters": {
+          "event": "counters",
+          "guest_cycles": 45475732380,
+          "emitted": 611,
+          "dropped": 0,
+          "boot_emitted": 102,
+          "boot_dropped": 0,
+          "connection_hits": 7440,
+          "producer_hits": 35,
+          "render_hits": 7439,
+          "queue1_hits": 7439,
+          "queue2_hits": 7439,
+          "confirm_hits": 35,
+          "cancel_hits": 34,
+          "activity_hits": 0,
+          "bind_hits": 1,
+          "call_hits": 1160,
+          "end_hits": 1813,
+          "background_calls": 1121,
+          "pending_collisions": 0,
+          "pending_overflow": 0
+        },
+        "trace_caps": [],
+        "state_changes": [
+          {
+            "elapsed_ms": 34424.3462,
+            "phase": "neutral",
+            "guest_cycles": 8911474612,
+            "state_word": 0,
+            "state_bytes": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34432.2171,
+            "phase": "neutral",
+            "guest_cycles": 8916389996,
+            "state_word": 256,
+            "state_bytes": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34455.518500000006,
+            "phase": "neutral",
+            "guest_cycles": 8921305199,
+            "state_word": 512,
+            "state_bytes": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35073.4398,
+            "phase": "neutral",
+            "guest_cycles": 9103171652,
+            "state_word": 1,
+            "state_bytes": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35085.2289,
+            "phase": "neutral",
+            "guest_cycles": 9108093818,
+            "state_word": 257,
+            "state_bytes": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35844.1468,
+            "phase": "connection-confirm",
+            "guest_cycles": 9329324211,
+            "state_word": 769,
+            "state_bytes": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35855.094600000004,
+            "phase": "connection-confirm",
+            "guest_cycles": 9334237376,
+            "state_word": 2,
+            "state_bytes": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36538.463200000006,
+            "phase": "after-confirm",
+            "guest_cycles": 9530822299,
+            "state_word": 258,
+            "state_bytes": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37079.1966,
+            "phase": "after-confirm",
+            "guest_cycles": 9693047259,
+            "state_word": 5122,
+            "state_bytes": [
+              2,
+              20,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37232.689300000005,
+            "phase": "after-confirm",
+            "guest_cycles": 9742176079,
+            "state_word": 5378,
+            "state_bytes": [
+              2,
+              21,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37704.64720000001,
+            "phase": "create-net-confirm",
+            "guest_cycles": 9879825526,
+            "state_word": 5634,
+            "state_bytes": [
+              2,
+              22,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 38278.4011,
+            "phase": "create-net-confirm",
+            "guest_cycles": 10046918717,
+            "state_word": 5890,
+            "state_bytes": [
+              2,
+              23,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 38683.083000000006,
+            "phase": "after-create-net",
+            "guest_cycles": 10169822209,
+            "state_word": 136962,
+            "state_bytes": [
+              2,
+              23,
+              2,
+              0
+            ]
+          }
+        ],
+        "inputs": [
+          {
+            "elapsed_ms": 35797.23130000001,
+            "phase": "connection-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 37658.845400000006,
+            "phase": "create-net-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          }
+        ],
+        "calls": [
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 0,
+            "records": 1
+          },
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 1,
+            "records": 32
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 1,
+            "records": 6
+          }
+        ],
+        "reply_word0": {
+          "boot_network/0x01270010/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "boot_network/0x01270010/1": [
+            {
+              "word": "0xffffffff",
+              "signed": -1,
+              "records": 32
+            }
+          ],
+          "post_menu/0x80000400/1": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 3
+            },
+            {
+              "word": "0xfffffff5",
+              "signed": -11,
+              "records": 3
+            }
+          ]
+        },
+        "audio_contexts_running": null,
+        "audio_ring_first": null,
+        "audio_ring_last": null,
+        "page_errors": [],
+        "blocked_requests": [],
+        "network_success": false,
+        "raw_archive": ".local/original-online/followup/create-net",
+        "raw_sha256": {
+          "build-info.json": "3f1382ff8dbe78756ff5f3e56c10e9a8d84dcedae5c52e8a1583fbfeb3a04650",
+          "entry-8.png": "bd159b0a94eda50ce4baea17bbcc4e5e247c4c62697b914fffec6ab2f74f59c4",
+          "main-menu.png": "847e1d68e662b672d6696809508d84537b159b57d7b12c3bf4319bbeceb3526e",
+          "samples.json": "1668aa5449a68aedcd56a54ff7f3fc128a6203931d3d9eb56cb030156981797d",
+          "timeline.jsonl": "bd8b31514998ce6a9526afa6be545aaaf95b7c62d32f8d405d1a109e8a468c2a",
+          "before-create-net.json": "5e2cf44889f1ae78971eeaf8bf438a732546b7690ca516584234e04aecc51acb",
+          "console.log": "4b707e69a03ad0265c915596c4ee51293e816a389f5876bf53a8468125202cb4",
+          "before-create-net.png": "6ffc6d00af2aae798221a99f22b4b7fd06b033673441d645dbb5d98f4c8daa56",
+          "before-confirm.json": "6f98b3b2d61c8f086b2f51d8e36f6ddb0c420cc19f8d6347e8196c4e81b295ab",
+          "before-confirm.png": "0a7efd99bf7a0eb9e3698ca7e9c4626b4126e4ae50be29b8315ddfcab1bc46de",
+          "entry-0.png": "ed58b39e5f0e9fab24d9324848da79fad0c299aaa04d26b63e08e5990cff4f73",
+          "failure.json": "25a5ae1f9f9f72d6f30e71e8c4d73119b7ae6375f75022397f6e6968973cbcca",
+          "run.json": "9f06a25cdba0d834992a4db86bbbb2c82c9c35f46de41eb830a1b5cba684f6a4",
+          "entry-4.png": "e9bf6f27129988dac7698c147cad47a6d4e2780c260cb55bb116c69c48019e4b",
+          "original-mode7.png": "cf43b131f0a62f6f29df372bdf8b95893ae5a50bb6987165ef0b3134cba375de"
+        },
+        "raw_state_change_count": 19,
+        "selection_note": "State changes retain first occurrence per phase/state/substate; selected keydowns omit startup/menu inputs. Complete events, keyup timing and nested state changes remain in fingerprinted raw captures."
+      },
+      "net-slot1": {
+        "started_utc": "2026-10-28T19:50:09.216Z",
+        "card": "default",
+        "fixture": null,
+        "harness_sha256": "927e15fa8911efdf70f28ad3e0421757267d15ffa986cd1efe6af5360b9fc623",
+        "build_info_sha256": "3f1382ff8dbe78756ff5f3e56c10e9a8d84dcedae5c52e8a1583fbfeb3a04650",
+        "passed": false,
+        "checks": {
+          "original_mode": true,
+          "no_versus": true,
+          "audio_running": true,
+          "audio_consumed": true,
+          "no_failure": true,
+          "trace_complete": false,
+          "confirm_accepted": true
+        },
+        "failure": {
+          "message": "Error: Bounded original-mode probe failed: {\"original_mode\":true,\"no_versus\":true,\"audio_running\":true,\"audio_consumed\":true,\"no_failure\":true,\"trace_complete\":false,\"confirm_accepted\":true}",
+          "errors": [],
+          "blocked": []
+        },
+        "confirm": {
+          "requested": true,
+          "input_accepted": true,
+          "connection_state2_seen": true,
+          "input_start_ms": 34684.953299999994,
+          "input_end_ms": 35405.795099999996
+        },
+        "after_cancel_mode": 2,
+        "events": 1191,
+        "event_counts": {
+          "bind": 1,
+          "rpc_end": 108,
+          "bind_return": 1,
+          "call": 107,
+          "call_return": 107,
+          "menu": 1,
+          "mode": 3,
+          "connection": 199,
+          "counters": 64,
+          "ui_render": 197,
+          "ui_queue1": 197,
+          "ui_queue2": 197,
+          "ui_produced": 3,
+          "confirm_result": 3,
+          "cancel_result": 2,
+          "trace_cap": 1
+        },
+        "last_counters": {
+          "event": "counters",
+          "guest_cycles": 46070449374,
+          "emitted": 1024,
+          "dropped": 7915,
+          "boot_emitted": 102,
+          "boot_dropped": 0,
+          "connection_hits": 7560,
+          "producer_hits": 27,
+          "render_hits": 7559,
+          "queue1_hits": 7559,
+          "queue2_hits": 7559,
+          "confirm_hits": 27,
+          "cancel_hits": 26,
+          "activity_hits": 0,
+          "bind_hits": 1,
+          "call_hits": 2585,
+          "end_hits": 3248,
+          "background_calls": 1137,
+          "pending_collisions": 0,
+          "pending_overflow": 0
+        },
+        "trace_caps": [
+          {
+            "elapsed_ms": 71596.53349999999,
+            "phase": "operator",
+            "event": "observer",
+            "observed": {
+              "event": "trace_cap",
+              "guest_cycles": 20162409498,
+              "emitted": 1024,
+              "dropped": 1
+            }
+          }
+        ],
+        "state_changes": [
+          {
+            "elapsed_ms": 33466.414899999996,
+            "phase": "neutral",
+            "guest_cycles": 8916389795,
+            "state_word": 0,
+            "state_bytes": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 33476.346699999995,
+            "phase": "neutral",
+            "guest_cycles": 8921305179,
+            "state_word": 256,
+            "state_bytes": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 33497.4281,
+            "phase": "neutral",
+            "guest_cycles": 8926220382,
+            "state_word": 512,
+            "state_bytes": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34105.6262,
+            "phase": "neutral",
+            "guest_cycles": 9103171572,
+            "state_word": 1,
+            "state_bytes": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34121.728599999995,
+            "phase": "neutral",
+            "guest_cycles": 9108093731,
+            "state_word": 257,
+            "state_bytes": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34725.4016,
+            "phase": "connection-confirm",
+            "guest_cycles": 9290000990,
+            "state_word": 769,
+            "state_bytes": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34745.187699999995,
+            "phase": "connection-confirm",
+            "guest_cycles": 9294892452,
+            "state_word": 2,
+            "state_bytes": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35413.7489,
+            "phase": "after-confirm",
+            "guest_cycles": 9491523823,
+            "state_word": 258,
+            "state_bytes": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35964.883299999994,
+            "phase": "after-confirm",
+            "guest_cycles": 9653725571,
+            "state_word": 5122,
+            "state_bytes": [
+              2,
+              20,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36124.01869999999,
+            "phase": "after-confirm",
+            "guest_cycles": 9702854747,
+            "state_word": 5378,
+            "state_bytes": [
+              2,
+              21,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36569.9721,
+            "phase": "create-net-confirm",
+            "guest_cycles": 9830673431,
+            "state_word": 5634,
+            "state_bytes": [
+              2,
+              22,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37132.68689999999,
+            "phase": "create-net-confirm",
+            "guest_cycles": 9997789848,
+            "state_word": 5890,
+            "state_bytes": [
+              2,
+              23,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37557.975999999995,
+            "phase": "slot1-confirm",
+            "guest_cycles": 10120646770,
+            "state_word": 136962,
+            "state_bytes": [
+              2,
+              23,
+              2,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 68525.7278,
+            "phase": "operator",
+            "guest_cycles": 19258035263,
+            "state_word": 202498,
+            "state_bytes": [
+              2,
+              23,
+              3,
+              0
+            ]
+          }
+        ],
+        "inputs": [
+          {
+            "elapsed_ms": 34684.959599999995,
+            "phase": "connection-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 36518.5297,
+            "phase": "create-net-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 37334.4405,
+            "phase": "slot1-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 68405.491,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 1,
+              "action": "press",
+              "code": "KeyX",
+              "state": 2,
+              "substate": 23
+            }
+          },
+          {
+            "elapsed_ms": 68486.4813,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 91668.3513,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 2,
+              "action": "press",
+              "code": "ArrowUp",
+              "state": 2,
+              "substate": 23
+            }
+          },
+          {
+            "elapsed_ms": 91758.6247,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "ArrowUp"
+          },
+          {
+            "elapsed_ms": 110063.8766,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 3,
+              "action": "press",
+              "code": "KeyX",
+              "state": 2,
+              "substate": 23
+            }
+          },
+          {
+            "elapsed_ms": 110151.7514,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 206288.63390000002,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 4,
+              "action": "finish"
+            }
+          },
+          {
+            "elapsed_ms": 237469.08680000002,
+            "phase": "cancel",
+            "event": "keydown",
+            "code": "KeyZ"
+          }
+        ],
+        "calls": [
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 0,
+            "records": 1
+          },
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 1,
+            "records": 32
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 1,
+            "records": 74
+          }
+        ],
+        "reply_word0": {
+          "boot_network/0x01270010/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "boot_network/0x01270010/1": [
+            {
+              "word": "0xffffffff",
+              "signed": -1,
+              "records": 32
+            }
+          ],
+          "post_menu/0x80000400/1": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 39
+            },
+            {
+              "word": "0xfffffff5",
+              "signed": -11,
+              "records": 35
+            }
+          ]
+        },
+        "audio_contexts_running": true,
+        "audio_ring_first": [
+          9836768,
+          9833152,
+          16384,
+          1
+        ],
+        "audio_ring_last": [
+          11430016,
+          11430016,
+          16384,
+          1
+        ],
+        "page_errors": [],
+        "blocked_requests": [],
+        "network_success": false,
+        "raw_archive": ".local/original-online/followup/net-slot1",
+        "raw_sha256": {
+          "build-info.json": "3f1382ff8dbe78756ff5f3e56c10e9a8d84dcedae5c52e8a1583fbfeb3a04650",
+          "entry-8.png": "339f8ed2ba2eb2cc5769d2ca1dc34818a1754eecf904d97c915cda00be60dbf0",
+          "operator-1-before.png": "610f8d2d0c3e57afa19480ee1be70b75642904dd5f8384afbf1d59ffc30f49f7",
+          "main-menu.png": "5e9eff52f0a9c2a501a063ba0664a428fb4d2bb7f22921ef34b1a4a89a86547b",
+          "before-slot1.json": "72b254ae035cc08e9281bd2fc6896a2dcc1f6dd36a4cfa38d04f1a98069a3878",
+          "result.json": "a85bb5dc21b3761bc2470231be7879f89d6e00c5f24198d13ba00d954efd5d8d",
+          "operator-3-after.json": "00149632951e5cb1b295fcc8507d53086f3f3c6aea5aedefd6a7d6b66a72abe5",
+          "samples.json": "13b80843b0c61bd3dd22f5bd727c6e7333bc777d6cbbfa7efdf97f36cb7bfa78",
+          "operator-3-before.png": "d21baa2448947c6443dbe3c9b603c37fa32ba47a4a0732d43a48c0d636ec62ff",
+          "timeline.jsonl": "428d38b0d8d80dff9d50d0a6d9840228c24c8125675f838bb1b9ed0124a2cf2f",
+          "operator-live.png": "f51894104466bb6864e58909794f6a875ba6ceb7d411f0a6d8d35163a3033ebe",
+          "operator-1-after.png": "38be9d7b25190778841158f4628aeff0d2f754b29ae38a12e8bfe9bbd3393d58",
+          "before-create-net.json": "098a23d28641d5495ef5debecdb7e3cf635faa251748ba1f20873ac690b437e2",
+          "console.log": "02c7a1e4693803d8f2fc118105bd3afe2247064db8ccabd330fc3496c15245fe",
+          "before-create-net.png": "139e718a3f6a9fe45805c5a08ebb38a59152810297c0ff8a9d985621c9c5a32e",
+          "operator-1-after.json": "643e5d930ae0e5a4a0896ef7fe1c398fca7d8e4bc365dd242a13fccc2a6cd6c1",
+          "operator-ack.json": "a22883e93273fa52419f3f34bb7e1125f2cd14a1f32561e419adc15324916c4b",
+          "operator-2-after.json": "c148bd7b872d25e0617c61d62b7986426bd322189077418913a45cf97accf539",
+          "fresh-test-card.ps2": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "before-confirm.json": "885bc5598d033016e8f43c70b9d5cc920dd696eb29f33c356ebf0b4a79cfeb38",
+          "before-slot1.png": "e05985af797421650943fdc488c3b165537a751d4351e610dc02dff7f084edb4",
+          "fresh-test-card.json": "e45f4d9e5babe54d309e1fc1abdab8249eb8e0f5e686554d466868c73ff13d45",
+          "operator-2-after.png": "9ad78dd3c9912aec9760ad7ace9c3cef280cf71e3a6e09307ff97268c6b33892",
+          "before-confirm.png": "741a3ad124ccf2b499e4df88b9fdee754783c99d31143802c7896b5a256b9fe5",
+          "entry-0.png": "38bccf97400dfdcae4ad671451d3f4393c117bf352042cc95e1cddacc7619d2e",
+          "operator-live.json": "83e4945974146ba9947e79d7d21cefbae70b1e4ab10ad96f99029a21cb8d6130",
+          "failure.json": "0b27f860fb61b6874a11fc52925bbafba556caaeb5bfb5a1922be616cd39c0d4",
+          "before-cancel.json": "8ce1619747b52cad5b9d5307f19fbf6b1b89cc0f37776e6b67c6a58dea27854f",
+          "operator-3-after.png": "1506a43fc6dfd82383a6273bd8165113829ef1b268f62a7e3ab8790cc681342a",
+          "run.json": "c3422c6605cb0413cccd64a207410d465ce3257aca191c3d5aec9c724b6f8f72",
+          "operator-2-before.png": "b28bb839f0e2f3138957c2a976c22a4fc20ff6f1cfc6e98d177167b4bcf18b00",
+          "entry-4.png": "3e8fb5c31b94e7b558d4bb9802ec628c450f56ff47bea84181e21f8bb5d9b3bd",
+          "original-mode7.png": "c62a58e1d459993e544d25e12db7b997a078fd5110c8d1d1eaf841dda6ce270d"
+        },
+        "raw_state_change_count": 21,
+        "selection_note": "State changes retain first occurrence per phase/state/substate; selected keydowns omit startup/menu inputs. Complete events, keyup timing and nested state changes remain in fingerprinted raw captures."
+      },
+      "fixture-replay": {
+        "started_utc": "2026-10-28T20:01:26.535Z",
+        "card": "default",
+        "fixture": {
+          "sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "size": 8650752,
+          "source": "Previously exported isolated test card"
+        },
+        "harness_sha256": "3ebedf3bba37da8c808a0837c565f877e163ebf4f00aca8c19abac9cbcb3de04",
+        "build_info_sha256": "d5f2f625f0a21e051c947001dd403d445c2ddd119d2fb8787a63d95c0a6c7fef",
+        "passed": true,
+        "checks": {
+          "original_mode": true,
+          "no_versus": true,
+          "audio_running": true,
+          "audio_consumed": true,
+          "no_failure": true,
+          "trace_complete": true,
+          "confirm_accepted": true
+        },
+        "failure": null,
+        "confirm": {
+          "requested": true,
+          "input_accepted": true,
+          "connection_state2_seen": true,
+          "input_start_ms": 36114.234,
+          "input_end_ms": 36824.5949
+        },
+        "after_cancel_mode": 7,
+        "events": 5231,
+        "event_counts": {
+          "bind": 1,
+          "rpc_end": 291,
+          "bind_return": 1,
+          "call": 38,
+          "call_return": 38,
+          "menu": 1,
+          "mode": 3,
+          "connection": 1201,
+          "counters": 64,
+          "ui_render": 1196,
+          "ui_queue1": 1196,
+          "ui_queue2": 1193,
+          "ui_produced": 3,
+          "confirm_result": 3,
+          "cancel_result": 2
+        },
+        "last_counters": {
+          "event": "counters",
+          "guest_cycles": 46075387277,
+          "emitted": 4661,
+          "dropped": 0,
+          "boot_emitted": 102,
+          "boot_dropped": 0,
+          "connection_hits": 7560,
+          "producer_hits": 28,
+          "render_hits": 7559,
+          "queue1_hits": 7559,
+          "queue2_hits": 7559,
+          "confirm_hits": 28,
+          "cancel_hits": 27,
+          "activity_hits": 0,
+          "bind_hits": 1,
+          "call_hits": 1677,
+          "end_hits": 2341,
+          "background_calls": 1132,
+          "pending_collisions": 0,
+          "pending_overflow": 0,
+          "card_service": 2147484672,
+          "card_calls": 512,
+          "card_ends": 512,
+          "card_call_repeats": 507,
+          "card_return_repeats": 507,
+          "card_reply_repeats": 255
+        },
+        "trace_caps": [],
+        "state_changes": [
+          {
+            "elapsed_ms": 34887.93719999999,
+            "phase": "neutral",
+            "guest_cycles": 8921305046,
+            "state_word": 0,
+            "state_bytes": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34898.434799999995,
+            "phase": "neutral",
+            "guest_cycles": 8926220430,
+            "state_word": 256,
+            "state_bytes": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 34929.4963,
+            "phase": "neutral",
+            "guest_cycles": 8931135633,
+            "state_word": 512,
+            "state_bytes": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35519.638399999996,
+            "phase": "neutral",
+            "guest_cycles": 9108086848,
+            "state_word": 1,
+            "state_bytes": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35536.567299999995,
+            "phase": "neutral",
+            "guest_cycles": 9113009010,
+            "state_word": 257,
+            "state_bytes": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36170.703199999996,
+            "phase": "connection-confirm",
+            "guest_cycles": 9299808618,
+            "state_word": 769,
+            "state_bytes": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36186.5807,
+            "phase": "connection-confirm",
+            "guest_cycles": 9304746173,
+            "state_word": 2,
+            "state_bytes": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36914.08349999999,
+            "phase": "operator",
+            "guest_cycles": 9501331450,
+            "state_word": 258,
+            "state_bytes": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37256.798599999995,
+            "phase": "operator",
+            "guest_cycles": 9619319404,
+            "state_word": 770,
+            "state_bytes": [
+              2,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37428.32369999999,
+            "phase": "operator",
+            "guest_cycles": 9668448230,
+            "state_word": 1026,
+            "state_bytes": [
+              2,
+              4,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 62523.751599999996,
+            "phase": "operator",
+            "guest_cycles": 17070768786,
+            "state_word": 1538,
+            "state_bytes": [
+              2,
+              6,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 62866.668399999995,
+            "phase": "operator",
+            "guest_cycles": 17173964150,
+            "state_word": 1794,
+            "state_bytes": [
+              2,
+              7,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 108469.1954,
+            "phase": "operator",
+            "guest_cycles": 30621962483,
+            "state_word": 526338,
+            "state_bytes": [
+              2,
+              8,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 108495.06319999999,
+            "phase": "operator",
+            "guest_cycles": 30626900905,
+            "state_word": 549890,
+            "state_bytes": [
+              2,
+              100,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 108887.76,
+            "phase": "operator",
+            "guest_cycles": 30744842566,
+            "state_word": 524291,
+            "state_bytes": [
+              3,
+              0,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 108897.5548,
+            "phase": "operator",
+            "guest_cycles": 30749780990,
+            "state_word": 524547,
+            "state_bytes": [
+              3,
+              1,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 108916.0529,
+            "phase": "operator",
+            "guest_cycles": 30754672965,
+            "state_word": 524803,
+            "state_bytes": [
+              3,
+              2,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 133749.3665,
+            "phase": "operator",
+            "guest_cycles": 38078350684,
+            "state_word": 771,
+            "state_bytes": [
+              3,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 136750.8072,
+            "phase": "operator",
+            "guest_cycles": 38963042386,
+            "state_word": 1027,
+            "state_bytes": [
+              3,
+              4,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 136766.6863,
+            "phase": "operator",
+            "guest_cycles": 38968022847,
+            "state_word": 4,
+            "state_bytes": [
+              4,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 136781.934,
+            "phase": "operator",
+            "guest_cycles": 38972917286,
+            "state_word": 260,
+            "state_bytes": [
+              4,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 136797.9527,
+            "phase": "operator",
+            "guest_cycles": 38977832489,
+            "state_word": 516,
+            "state_bytes": [
+              4,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 174508.0675,
+            "phase": "operator",
+            "guest_cycles": 50096024765,
+            "state_word": 772,
+            "state_bytes": [
+              4,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 174523.2495,
+            "phase": "operator",
+            "guest_cycles": 50100916226,
+            "state_word": 5,
+            "state_bytes": [
+              5,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 174527.4807,
+            "phase": "operator",
+            "guest_cycles": 50105854653,
+            "state_word": 261,
+            "state_bytes": [
+              5,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 174553.7594,
+            "phase": "operator",
+            "guest_cycles": 50110769859,
+            "state_word": 517,
+            "state_bytes": [
+              5,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 247971.7379,
+            "phase": "cancel",
+            "guest_cycles": 71762220498,
+            "state_word": 1541,
+            "state_bytes": [
+              5,
+              6,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 247979.2593,
+            "phase": "cancel",
+            "guest_cycles": 71767159557,
+            "state_word": 4,
+            "state_bytes": [
+              4,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 248002.5704,
+            "phase": "cancel",
+            "guest_cycles": 71772074759,
+            "state_word": 260,
+            "state_bytes": [
+              4,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 248019.2191,
+            "phase": "cancel",
+            "guest_cycles": 71776945399,
+            "state_word": 516,
+            "state_bytes": [
+              4,
+              2,
+              0,
+              0
+            ]
+          }
+        ],
+        "inputs": [
+          {
+            "elapsed_ms": 36114.239799999996,
+            "phase": "connection-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 62392.084899999994,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 1,
+              "action": "press",
+              "code": "KeyX",
+              "state_word": 1026
+            }
+          },
+          {
+            "elapsed_ms": 62471.707599999994,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 80686.97099999999,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 2,
+              "action": "press",
+              "code": "KeyX",
+              "state_word": 67330
+            }
+          },
+          {
+            "elapsed_ms": 80773.9648,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 97509.1284,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 3,
+              "action": "press",
+              "code": "KeyX",
+              "state_word": 198402
+            }
+          },
+          {
+            "elapsed_ms": 97605.5187,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 133623.4867,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 4,
+              "action": "press",
+              "code": "KeyX",
+              "state_word": 524803
+            }
+          },
+          {
+            "elapsed_ms": 133715.9156,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 174379.8474,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 5,
+              "action": "press",
+              "code": "KeyX",
+              "state_word": 516
+            }
+          },
+          {
+            "elapsed_ms": 174467.76679999998,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 202363.8447,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 6,
+              "action": "press",
+              "code": "ArrowUp",
+              "state_word": 517
+            }
+          },
+          {
+            "elapsed_ms": 202461.0624,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "ArrowUp"
+          },
+          {
+            "elapsed_ms": 247913.388,
+            "phase": "cancel",
+            "event": "keydown",
+            "code": "KeyZ"
+          }
+        ],
+        "calls": [
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 0,
+            "records": 1
+          },
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 1,
+            "records": 32
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 1,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 13,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 2,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 5,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 3,
+            "records": 1
+          }
+        ],
+        "reply_word0": {
+          "boot_network/0x01270010/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "boot_network/0x01270010/1": [
+            {
+              "word": "0xffffffff",
+              "signed": -1,
+              "records": 32
+            }
+          ],
+          "post_menu/0x80000400/1": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 127
+            },
+            {
+              "word": "0xfffffff5",
+              "signed": -11,
+              "records": 126
+            }
+          ],
+          "post_menu/0x80000400/13": [
+            {
+              "word": "0x00000001",
+              "signed": 1,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/2": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/5": [
+            {
+              "word": "0x00001bec",
+              "signed": 7148,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/3": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ]
+        },
+        "audio_contexts_running": true,
+        "audio_ring_first": [
+          10333600,
+          10329728,
+          16384,
+          1
+        ],
+        "audio_ring_last": [
+          11900736,
+          11896960,
+          16384,
+          1
+        ],
+        "page_errors": [],
+        "blocked_requests": [],
+        "network_success": false,
+        "raw_archive": ".local/original-online/followup/fixture-replay",
+        "raw_sha256": {
+          "build-info.json": "d5f2f625f0a21e051c947001dd403d445c2ddd119d2fb8787a63d95c0a6c7fef",
+          "operator-6-after.json": "3d644f0268594c286b77298d3fa9f9b4067ff3cbd556d65939bde44a78807a0e",
+          "entry-8.png": "95224c14e70ad977dca981351c5ab3adc690dcea39bf3a91fb3be11e7e5f7f52",
+          "operator-1-before.png": "c57e15e8637dee867ff233fcd2d9a2522f2775d0b132fb4c4b2d74b9cc95f99b",
+          "main-menu.png": "7eb30bbb5ad6da6e0807e5bb3ba2e7c1c947c59f3facb886a40f60edba4ab549",
+          "result.json": "6e9d54127a7e7ea6f49665752f3e9cd952e1941a41f291602ce93260948e4dcd",
+          "operator-3-after.json": "a6eb73a7aecea8138bb306933f0f6f920e4bf0c568c3e53fa77a8c519a9f7e72",
+          "operator-4-before.png": "051aabe9c819ffded97806b8beaa8abbd9a6b1ba5a972bf72d6bd27f08c2cb7f",
+          "operator-6-after.png": "6dfd68843f2727787477f0a18ce75ce37aaabea0d2dec2b8e2495c89e30b9eff",
+          "samples.json": "4a6b322c5626f9be4a0a461dfcdbf56a82f5c03d908127276d19614675db3ac4",
+          "operator-3-before.png": "123aeddc7281809d29b4d3bf3de7d796f02ebbb8b473dcb3b4efd72796dd8fb3",
+          "operator-4-after.json": "392a08c53a71136b379d6ff9a7c75f929247214c5aded9949be9114a2abddc61",
+          "timeline.jsonl": "a01d0ea2f1a4e3551ed9d1f1584dd64851bf7763b3dcbc57fedb5725dc9c2003",
+          "operator-live.png": "62dd7e20426a56f42ab4d878457ea41f915015fb1010761b421fa80042570c1f",
+          "operator-1-after.png": "e2fe83c4f3075694b9045bbdcbeb098d3f57a186513814f6e70d2b4661dcb144",
+          "console.log": "6b69af28192dca4fccfde779cd65b9aa574f39b200ce11fc3dbc95cc46ada1cc",
+          "operator-6-before.png": "e07c22920050000d3ca317d5ed158ea6774b91036f3ca46729602ff41a54301a",
+          "operator-1-after.json": "d65828734e9cc95ad1eae6aa37014cf3e1b3a77a157ecabd6ffb1dad7ddbad4d",
+          "operator-ack.json": "5fd21ff37c4fb3db4df4b93f4c8df0a8e537f40aec6a3fd2328dfd27eb7fa9ab",
+          "operator-2-after.json": "cc040be2589c82579daa817c52036a4f9176c85bd35b9483ce42143682b77351",
+          "before-confirm.json": "3fc78a14ff92a559d5fdbe3de262ee7a5591cccea776390dbab3e6969e7b82e9",
+          "operator-2-after.png": "fde94c2793a3b12609ef62600d018c314b384bddc8c00d9c5abf1fd421b2710f",
+          "operator-5-before.png": "24274b3c17c704a2a90829e158fc43115bc66a25a19099a1f900d22993114ea2",
+          "operator-4-after.png": "82966117857e66e00488c9f49a9644990f8022903a7dc7cd7368ab1b1b15e04d",
+          "before-confirm.png": "49b3509fe039528d553a55144aa1d24231909cef5e6f5b6419c66fa6816d93b8",
+          "entry-0.png": "285f43f94bcace1a6775e6fc829ec5d694cc2969024d9ed501632dd3a1dc0ab3",
+          "operator-live.json": "a82cc1d7ee03d44f240c6d11ea9bd24c6639da5212b28240ea5a0b346f16abf4",
+          "before-cancel.json": "ffe625998d8330f9a4f198771f4a8dce4c65a8b01202e09b4bc66dabe69d5531",
+          "operator-3-after.png": "3038e84a55f3796cea3f24e92c6b99c3e9dcce2c2dd9ca13fbd396eaea030b73",
+          "run.json": "8c529f1ee7124bc6fbd330ab3fd7fbf80f13cbe4f96fdcf100502b99393196c3",
+          "operator-2-before.png": "64c02fd066df6c36ffdb3768cf04100ccd2d9f8968fdf8c620eb8ae1693e932b",
+          "operator-5-after.json": "836c9c45a7b3c85ebe05b41ddc1037deac62c5bd69cc91c1baa6f04db9524446",
+          "operator-5-after.png": "45b8d5ceb68079b05be60fce148f3657b9c36638369236e5904754423199aff0",
+          "entry-4.png": "a0fcb26905b75a7aa1ac0b83a1b67592ecb8aaf1bc71a99bdce4949d867e71bf",
+          "original-mode7.png": "b1dbcce4b1e4ea74f1c65c10fba517d770604cdd304227355ac73cd724e8192d"
+        },
+        "raw_state_change_count": 39,
+        "selection_note": "State changes retain first occurrence per phase/state/substate; selected keydowns omit startup/menu inputs. Complete events, keyup timing and nested state changes remain in fingerprinted raw captures."
+      },
+      "broadband": {
+        "started_utc": "2026-10-28T20:06:27.058Z",
+        "card": "default",
+        "fixture": {
+          "sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "size": 8650752,
+          "source": "Previously exported isolated test card"
+        },
+        "harness_sha256": "d86f94ad636f472a95711ff6e0588c50518236464c48093d62e2d976030f86ff",
+        "build_info_sha256": "d5f2f625f0a21e051c947001dd403d445c2ddd119d2fb8787a63d95c0a6c7fef",
+        "passed": false,
+        "checks": null,
+        "failure": {
+          "message": "Error: Expected original prompt not reached: connection-notice",
+          "errors": [],
+          "blocked": []
+        },
+        "confirm": null,
+        "after_cancel_mode": null,
+        "events": 4578,
+        "event_counts": {
+          "bind": 1,
+          "rpc_end": 77,
+          "bind_return": 1,
+          "call": 38,
+          "call_return": 38,
+          "menu": 1,
+          "mode": 3,
+          "connection": 1099,
+          "counters": 29,
+          "ui_render": 1095,
+          "ui_queue1": 1095,
+          "ui_queue2": 1093,
+          "ui_produced": 3,
+          "confirm_result": 3,
+          "cancel_result": 2
+        },
+        "last_counters": {
+          "event": "counters",
+          "guest_cycles": 25397100205,
+          "emitted": 4447,
+          "dropped": 0,
+          "boot_emitted": 102,
+          "boot_dropped": 0,
+          "connection_hits": 3360,
+          "producer_hits": 29,
+          "render_hits": 3359,
+          "queue1_hits": 3359,
+          "queue2_hits": 3359,
+          "confirm_hits": 29,
+          "cancel_hits": 28,
+          "activity_hits": 0,
+          "bind_hits": 1,
+          "call_hits": 661,
+          "end_hits": 1316,
+          "background_calls": 543,
+          "pending_collisions": 0,
+          "pending_overflow": 0,
+          "card_service": 2147484672,
+          "card_calls": 85,
+          "card_ends": 85,
+          "card_call_repeats": 80,
+          "card_return_repeats": 80,
+          "card_reply_repeats": 42
+        },
+        "trace_caps": [],
+        "state_changes": [
+          {
+            "elapsed_ms": 36473.350900000005,
+            "phase": "neutral",
+            "guest_cycles": 8886898529,
+            "state_word": 0,
+            "state_bytes": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36478.464400000004,
+            "phase": "neutral",
+            "guest_cycles": 8891813918,
+            "state_word": 256,
+            "state_bytes": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36503.052,
+            "phase": "neutral",
+            "guest_cycles": 8896729115,
+            "state_word": 512,
+            "state_bytes": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37093.8323,
+            "phase": "neutral",
+            "guest_cycles": 9073680344,
+            "state_word": 1,
+            "state_bytes": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37126.182700000005,
+            "phase": "neutral",
+            "guest_cycles": 9078602499,
+            "state_word": 257,
+            "state_bytes": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37763.5497,
+            "phase": "connection-confirm",
+            "guest_cycles": 9270316970,
+            "state_word": 769,
+            "state_bytes": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37774.682400000005,
+            "phase": "connection-confirm",
+            "guest_cycles": 9275255217,
+            "state_word": 2,
+            "state_bytes": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 38442.2791,
+            "phase": "after-confirm",
+            "guest_cycles": 9471838611,
+            "state_word": 258,
+            "state_bytes": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 38841.7989,
+            "phase": "after-confirm",
+            "guest_cycles": 9589827957,
+            "state_word": 770,
+            "state_bytes": [
+              2,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 39007.6923,
+            "phase": "after-confirm",
+            "guest_cycles": 9638979999,
+            "state_word": 1026,
+            "state_bytes": [
+              2,
+              4,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 39751.762200000005,
+            "phase": "load-net",
+            "guest_cycles": 9855226227,
+            "state_word": 1538,
+            "state_bytes": [
+              2,
+              6,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 40091.9522,
+            "phase": "load-net",
+            "guest_cycles": 9958444996,
+            "state_word": 1794,
+            "state_bytes": [
+              2,
+              7,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 42374.231700000004,
+            "phase": "load-slot1",
+            "guest_cycles": 10631828475,
+            "state_word": 132866,
+            "state_bytes": [
+              2,
+              7,
+              2,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 44968.1622,
+            "phase": "load-confirm",
+            "guest_cycles": 11393685078,
+            "state_word": 263938,
+            "state_bytes": [
+              2,
+              7,
+              4,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 55775.6091,
+            "phase": "load-confirm",
+            "guest_cycles": 14583650936,
+            "state_word": 526338,
+            "state_bytes": [
+              2,
+              8,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 55791.9204,
+            "phase": "load-confirm",
+            "guest_cycles": 14588590533,
+            "state_word": 549890,
+            "state_bytes": [
+              2,
+              100,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 56195.5758,
+            "phase": "load-confirm",
+            "guest_cycles": 14706532209,
+            "state_word": 524291,
+            "state_bytes": [
+              3,
+              0,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 56202.019100000005,
+            "phase": "load-confirm",
+            "guest_cycles": 14711470991,
+            "state_word": 524547,
+            "state_bytes": [
+              3,
+              1,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 56227.369,
+            "phase": "load-confirm",
+            "guest_cycles": 14716385871,
+            "state_word": 524803,
+            "state_bytes": [
+              3,
+              2,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 56741.807700000005,
+            "phase": "broadband",
+            "guest_cycles": 14868757692,
+            "state_word": 771,
+            "state_bytes": [
+              3,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 59744.1296,
+            "phase": "broadband",
+            "guest_cycles": 15753470650,
+            "state_word": 1027,
+            "state_bytes": [
+              3,
+              4,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 59762.786700000004,
+            "phase": "broadband",
+            "guest_cycles": 15758409060,
+            "state_word": 4,
+            "state_bytes": [
+              4,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 59772.1517,
+            "phase": "broadband",
+            "guest_cycles": 15763299875,
+            "state_word": 260,
+            "state_bytes": [
+              4,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 59793.168300000005,
+            "phase": "broadband",
+            "guest_cycles": 15768239824,
+            "state_word": 516,
+            "state_bytes": [
+              4,
+              2,
+              0,
+              0
+            ]
+          }
+        ],
+        "inputs": [
+          {
+            "elapsed_ms": 37715.983,
+            "phase": "connection-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 39708.244,
+            "phase": "load-net",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 42330.368,
+            "phase": "load-slot1",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 44936.0192,
+            "phase": "load-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 56706.1422,
+            "phase": "broadband",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 60267.9156,
+            "phase": "network-connection",
+            "event": "keydown",
+            "code": "KeyX"
+          }
+        ],
+        "calls": [
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 0,
+            "records": 1
+          },
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 1,
+            "records": 32
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 1,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 13,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 2,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 5,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 3,
+            "records": 1
+          }
+        ],
+        "reply_word0": {
+          "boot_network/0x01270010/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "boot_network/0x01270010/1": [
+            {
+              "word": "0xffffffff",
+              "signed": -1,
+              "records": 32
+            }
+          ],
+          "post_menu/0x80000400/1": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 20
+            },
+            {
+              "word": "0xfffffff5",
+              "signed": -11,
+              "records": 19
+            }
+          ],
+          "post_menu/0x80000400/13": [
+            {
+              "word": "0x00000001",
+              "signed": 1,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/2": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/5": [
+            {
+              "word": "0x00001bec",
+              "signed": 7148,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/3": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ]
+        },
+        "audio_contexts_running": null,
+        "audio_ring_first": null,
+        "audio_ring_last": null,
+        "page_errors": [],
+        "blocked_requests": [],
+        "network_success": false,
+        "raw_archive": ".local/original-online/followup/broadband",
+        "raw_sha256": {
+          "build-info.json": "d5f2f625f0a21e051c947001dd403d445c2ddd119d2fb8787a63d95c0a6c7fef",
+          "load-slot1-before.png": "26f88a7660dcaf23421a8399dcd6e686937774027eb69a705003adc7ed83c7d1",
+          "main-menu.png": "7f343d8aba9ec20d1960c872d502fc807b782f858f10a3bbcf16a79c08db4c78",
+          "timeline.jsonl": "6a7e130dd057b71eaa4f36f6a5b69c1b3003c983c6f2aa71ecd186c5690e6c53",
+          "broadband-before.png": "7fa4a3213e0f09de87140c283ec6795786c2f2334349064003c003fd67aef4ab",
+          "console.log": "0d8bb9fd4f38e57e014cf4cde4dab2cd16cca663223fdba32e3c2c857f753d16",
+          "load-confirm-before.png": "38b993bf8011fdb3e36958589d92fe89b55d7f5335c2d428a20e8d462455d204",
+          "load-net-before.json": "949f53069a9a5f641c9465cb669c79957e802cdafba1e57171f4dd8b3f748f01",
+          "load-net-before.png": "99e66e2f9048298760dc8a0b6c5479e1a7a051838f493e60ad6b051d5dd1f8d1",
+          "before-confirm.json": "46816abb4bd36bc0ffa6f1553e266c35d3d1b6b8f3fc5d1b4e20769b05fa71db",
+          "before-confirm.png": "c3db78dbeed1e1661568cf5bc58bb2f2e62d6a580b105abffd62a74bf0f3484e",
+          "broadband-before.json": "c7721e6ecda7fe32c9f3ffc5d258d2384282a672548c984f7301e33ee5952813",
+          "network-connection-before.png": "0159bf9ce0dfa0be509eafc6e7ea8c293637ed9c05905f17e2f8306a6caeb271",
+          "load-slot1-before.json": "d209b91afc56439de961ff94cdc3153afea12e9cfd2a967bc9d7630d6f4f36a5",
+          "failure.json": "bc54cfe8b99bf7fdc54191dfed122fda8ff95a211ff9d743ed696035b6259aa5",
+          "run.json": "ec2ba3deaa58e1a84c79e8e8827f8a7df38cd5c952e1700da6f13f687e4d7fa5",
+          "network-connection-before.json": "5312190f977a168bf85d4879d47be6aa35162819328d468767a0ed1bf78cd662",
+          "load-confirm-before.json": "3522a750b75ffbc621fe947065066c0687091208e3de27cc3049618093685e8b"
+        },
+        "raw_state_change_count": 31,
+        "selection_note": "State changes retain first occurrence per phase/state/substate; selected keydowns omit startup/menu inputs. Complete events, keyup timing and nested state changes remain in fingerprinted raw captures."
+      },
+      "native-boundary": {
+        "started_utc": "2026-10-28T20:09:02.732Z",
+        "card": "default",
+        "fixture": {
+          "sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+          "size": 8650752,
+          "source": "Previously exported isolated test card"
+        },
+        "harness_sha256": "2449a851014aa9cb17b774db3be4aa2ab4c4daf3d1c5a657cb5fe83796ab5e19",
+        "build_info_sha256": "d5f2f625f0a21e051c947001dd403d445c2ddd119d2fb8787a63d95c0a6c7fef",
+        "passed": false,
+        "checks": {
+          "original_mode": true,
+          "no_versus": true,
+          "audio_running": true,
+          "audio_consumed": false,
+          "no_failure": false,
+          "trace_complete": true,
+          "confirm_accepted": true
+        },
+        "failure": {
+          "message": "Error: Bounded original-mode probe failed: {\"original_mode\":true,\"no_versus\":true,\"audio_running\":true,\"audio_consumed\":false,\"no_failure\":false,\"trace_complete\":true,\"confirm_accepted\":true}",
+          "errors": [],
+          "blocked": []
+        },
+        "confirm": {
+          "requested": true,
+          "input_accepted": true,
+          "connection_state2_seen": true,
+          "input_start_ms": 36730.163799999995,
+          "input_end_ms": 37445.6667
+        },
+        "after_cancel_mode": 7,
+        "events": 5542,
+        "event_counts": {
+          "bind": 3,
+          "rpc_end": 585,
+          "bind_return": 3,
+          "call": 75,
+          "call_return": 75,
+          "menu": 1,
+          "mode": 3,
+          "connection": 1193,
+          "counters": 64,
+          "ui_render": 1178,
+          "ui_queue1": 1178,
+          "ui_queue2": 1176,
+          "ui_produced": 3,
+          "confirm_result": 3,
+          "cancel_result": 2
+        },
+        "last_counters": {
+          "event": "counters",
+          "guest_cycles": 46085164807,
+          "emitted": 5368,
+          "dropped": 0,
+          "boot_emitted": 102,
+          "boot_dropped": 0,
+          "connection_hits": 7560,
+          "producer_hits": 26,
+          "render_hits": 1740,
+          "queue1_hits": 1740,
+          "queue2_hits": 1740,
+          "confirm_hits": 26,
+          "cancel_hits": 25,
+          "activity_hits": 0,
+          "bind_hits": 2,
+          "call_hits": 1424,
+          "end_hits": 2083,
+          "background_calls": 331,
+          "pending_collisions": 0,
+          "pending_overflow": 0,
+          "card_service": 2147484672,
+          "card_calls": 1024,
+          "card_ends": 1024,
+          "card_call_repeats": 1019,
+          "card_return_repeats": 1019,
+          "card_reply_repeats": 512
+        },
+        "trace_caps": [],
+        "state_changes": [
+          {
+            "elapsed_ms": 35512.4288,
+            "phase": "neutral",
+            "guest_cycles": 8901644179,
+            "state_word": 0,
+            "state_bytes": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35532.488099999995,
+            "phase": "neutral",
+            "guest_cycles": 8906559572,
+            "state_word": 256,
+            "state_bytes": [
+              0,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 35542.4174,
+            "phase": "neutral",
+            "guest_cycles": 8911474769,
+            "state_word": 512,
+            "state_bytes": [
+              0,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36144.4321,
+            "phase": "neutral",
+            "guest_cycles": 9088425973,
+            "state_word": 1,
+            "state_bytes": [
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36161.4118,
+            "phase": "neutral",
+            "guest_cycles": 9093348128,
+            "state_word": 257,
+            "state_bytes": [
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36763.865999999995,
+            "phase": "connection-confirm",
+            "guest_cycles": 9270340211,
+            "state_word": 769,
+            "state_bytes": [
+              1,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 36780.8889,
+            "phase": "connection-confirm",
+            "guest_cycles": 9275231676,
+            "state_word": 2,
+            "state_bytes": [
+              2,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37448.2984,
+            "phase": "after-confirm",
+            "guest_cycles": 9471863032,
+            "state_word": 258,
+            "state_bytes": [
+              2,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 37857.215599999996,
+            "phase": "after-confirm",
+            "guest_cycles": 9589804721,
+            "state_word": 770,
+            "state_bytes": [
+              2,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 38022.4536,
+            "phase": "after-confirm",
+            "guest_cycles": 9638979987,
+            "state_word": 1026,
+            "state_bytes": [
+              2,
+              4,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 38823.2956,
+            "phase": "load-net",
+            "guest_cycles": 9879802260,
+            "state_word": 1538,
+            "state_bytes": [
+              2,
+              6,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 39179.1581,
+            "phase": "load-net",
+            "guest_cycles": 9983021019,
+            "state_word": 1794,
+            "state_bytes": [
+              2,
+              7,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 41410.4606,
+            "phase": "load-slot1",
+            "guest_cycles": 10641658870,
+            "state_word": 132866,
+            "state_bytes": [
+              2,
+              7,
+              2,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 44014.9381,
+            "phase": "load-confirm",
+            "guest_cycles": 11408430740,
+            "state_word": 263938,
+            "state_bytes": [
+              2,
+              7,
+              4,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 54823.4793,
+            "phase": "load-confirm",
+            "guest_cycles": 14598397868,
+            "state_word": 526338,
+            "state_bytes": [
+              2,
+              8,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 54847.9808,
+            "phase": "load-confirm",
+            "guest_cycles": 14603336296,
+            "state_word": 549890,
+            "state_bytes": [
+              2,
+              100,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 55255.386699999995,
+            "phase": "load-confirm",
+            "guest_cycles": 14721277966,
+            "state_word": 524291,
+            "state_bytes": [
+              3,
+              0,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 55259.3617,
+            "phase": "load-confirm",
+            "guest_cycles": 14726216390,
+            "state_word": 524547,
+            "state_bytes": [
+              3,
+              1,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 55285.0688,
+            "phase": "load-confirm",
+            "guest_cycles": 14731108429,
+            "state_word": 524803,
+            "state_bytes": [
+              3,
+              2,
+              8,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 56065.6241,
+            "phase": "broadband",
+            "guest_cycles": 14962146719,
+            "state_word": 771,
+            "state_bytes": [
+              3,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 59063.840299999996,
+            "phase": "broadband",
+            "guest_cycles": 15846859708,
+            "state_word": 1027,
+            "state_bytes": [
+              3,
+              4,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 59093.8362,
+            "phase": "broadband",
+            "guest_cycles": 15851798129,
+            "state_word": 4,
+            "state_bytes": [
+              4,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 59098.6746,
+            "phase": "broadband",
+            "guest_cycles": 15856690124,
+            "state_word": 260,
+            "state_bytes": [
+              4,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 59110.3954,
+            "phase": "broadband",
+            "guest_cycles": 15861628543,
+            "state_word": 516,
+            "state_bytes": [
+              4,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 60310.6803,
+            "phase": "network-connection",
+            "guest_cycles": 16215500522,
+            "state_word": 772,
+            "state_bytes": [
+              4,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 60341.5371,
+            "phase": "network-connection",
+            "guest_cycles": 16220438415,
+            "state_word": 5,
+            "state_bytes": [
+              5,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 60346.413199999995,
+            "phase": "network-connection",
+            "guest_cycles": 16225330407,
+            "state_word": 261,
+            "state_bytes": [
+              5,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 60371.7593,
+            "phase": "network-connection",
+            "guest_cycles": 16230268825,
+            "state_word": 517,
+            "state_bytes": [
+              5,
+              2,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 63623.814699999995,
+            "phase": "connection-notice",
+            "guest_cycles": 17193626040,
+            "state_word": 773,
+            "state_bytes": [
+              5,
+              3,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 64131.2782,
+            "phase": "connection-notice",
+            "guest_cycles": 17341081908,
+            "state_word": 1029,
+            "state_bytes": [
+              5,
+              4,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 64539.026,
+            "phase": "connection-notice",
+            "guest_cycles": 17459014516,
+            "state_word": 6,
+            "state_bytes": [
+              6,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 64543.5368,
+            "phase": "connection-notice",
+            "guest_cycles": 17463937674,
+            "state_word": 262,
+            "state_bytes": [
+              6,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "elapsed_ms": 64616.6162,
+            "phase": "connection-notice",
+            "guest_cycles": 17483590541,
+            "state_word": 518,
+            "state_bytes": [
+              6,
+              2,
+              0,
+              0
+            ]
+          }
+        ],
+        "inputs": [
+          {
+            "elapsed_ms": 36730.213599999995,
+            "phase": "connection-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 38769.1883,
+            "phase": "load-net",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 41369.8537,
+            "phase": "load-slot1",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 43978.401099999995,
+            "phase": "load-confirm",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 56001.9948,
+            "phase": "broadband",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 60264.7197,
+            "phase": "network-connection",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 62871.1646,
+            "phase": "connection-notice",
+            "event": "keydown",
+            "code": "ArrowUp"
+          },
+          {
+            "elapsed_ms": 63585.5297,
+            "phase": "connection-notice",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 96093.7618,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 1,
+              "action": "press",
+              "code": "KeyX",
+              "state_word": 518
+            }
+          },
+          {
+            "elapsed_ms": 96175.7548,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 142788.1294,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 2,
+              "action": "press",
+              "code": "ArrowUp",
+              "state_word": 518
+            }
+          },
+          {
+            "elapsed_ms": 142868.43990000003,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "ArrowUp"
+          },
+          {
+            "elapsed_ms": 164092.39020000002,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 3,
+              "action": "press",
+              "code": "KeyX",
+              "state_word": 518
+            }
+          },
+          {
+            "elapsed_ms": 164161.1496,
+            "phase": "operator",
+            "event": "keydown",
+            "code": "KeyX"
+          },
+          {
+            "elapsed_ms": 223031.77690000003,
+            "phase": "operator",
+            "event": "operator-command",
+            "command": {
+              "id": 4,
+              "action": "finish"
+            }
+          },
+          {
+            "elapsed_ms": 253459.5541,
+            "phase": "cancel",
+            "event": "keydown",
+            "code": "KeyZ"
+          }
+        ],
+        "calls": [
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 0,
+            "records": 1
+          },
+          {
+            "scope": "boot_network",
+            "service": "0x01270010",
+            "method": 1,
+            "records": 32
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 1,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 13,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 2,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 5,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000400",
+            "method": 3,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x01270010",
+            "method": 0,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x01270010",
+            "method": 1,
+            "records": 32
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000006",
+            "method": 0,
+            "records": 2
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80001101",
+            "method": 101,
+            "records": 1
+          },
+          {
+            "scope": "post_menu",
+            "service": "0x80000592",
+            "method": 0,
+            "records": 1
+          }
+        ],
+        "reply_word0": {
+          "boot_network/0x01270010/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "boot_network/0x01270010/1": [
+            {
+              "word": "0xffffffff",
+              "signed": -1,
+              "records": 32
+            }
+          ],
+          "post_menu/0x80000400/1": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 254
+            },
+            {
+              "word": "0xfffffff5",
+              "signed": -11,
+              "records": 253
+            }
+          ],
+          "post_menu/0x80000400/13": [
+            {
+              "word": "0x00000001",
+              "signed": 1,
+              "records": 1
+            },
+            {
+              "word": "0xfffffffc",
+              "signed": -4,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/2": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/5": [
+            {
+              "word": "0x00001bec",
+              "signed": 7148,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000400/3": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "post_menu/0x01270010/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "post_menu/0x01270010/1": [
+            {
+              "word": "0xffffffff",
+              "signed": -1,
+              "records": 32
+            }
+          ],
+          "post_menu/0x80000006/0": [
+            {
+              "word": "0x00000013",
+              "signed": 19,
+              "records": 1
+            },
+            {
+              "word": "0x00000014",
+              "signed": 20,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80001101/101": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ],
+          "post_menu/0x80000592/0": [
+            {
+              "word": "0x00000000",
+              "signed": 0,
+              "records": 1
+            }
+          ]
+        },
+        "audio_contexts_running": true,
+        "audio_ring_first": [
+          7597600,
+          7597600,
+          16384,
+          1
+        ],
+        "audio_ring_last": [
+          7597600,
+          7597600,
+          16384,
+          1
+        ],
+        "page_errors": [],
+        "blocked_requests": [],
+        "network_success": false,
+        "raw_archive": ".local/original-online/followup/native-boundary",
+        "raw_sha256": {
+          "build-info.json": "d5f2f625f0a21e051c947001dd403d445c2ddd119d2fb8787a63d95c0a6c7fef",
+          "connection-notice-before.json": "aab299a993e72b14f8d539356135fa09f44fe095f2cf487d901344faf2c96706",
+          "entry-8.png": "9bcf02d32930dade9f25ead0416e3ab4cfc096c237b7476503e1e5b0987678b0",
+          "operator-1-before.png": "1e7abb721cda442633c2f7b59f911a9dc758589c9129029876c712514ed6c9ff",
+          "load-slot1-before.png": "5544b7cff2ec86c83a5d43dfb2df6e82cc8515d85521086d70a2711ecdbfc3c9",
+          "main-menu.png": "2501d6cc0f1aa93e6b8b819e18cb0004cffb3bf939d6023e8538224380be9689",
+          "result.json": "fac6b454f6e94f9ae964e13b7a0d2a09aeaa9662dc4efd39e3ceef1cefffeaa9",
+          "operator-3-after.json": "6e7eccbcaea35f01666209b934c606b6d54a2057c8d214fb970245ee8a84171a",
+          "samples.json": "de2195a421e893f0b59e6ac2a6ce7f28dd4114d621f4a6441f25a279f322f86e",
+          "operator-3-before.png": "5262813465324a42bf9a3ab7c358104b52fb4f645d64b33b79219068b35334ad",
+          "timeline.jsonl": "60c165d02661cf74e9c17f8848333623975040aaf3ee3e5488d999f6f86cccfd",
+          "broadband-before.png": "ef71f76fb5cc8f170ecaf73721fc5c7a2d844fa36fbc839ff8d66304cba7d8d2",
+          "operator-live.png": "9bcf02d32930dade9f25ead0416e3ab4cfc096c237b7476503e1e5b0987678b0",
+          "operator-1-after.png": "8d980abe4566015e8cadf68f4d7d79537358a569f0b8fcd88eeb0c0447714cec",
+          "console.log": "7ad9ee8021aa6fac4151e346f1c8a21e165ed0fb76a4891da5090bd4710687b6",
+          "load-confirm-before.png": "81659ac451ea8dd194a5075dadfd29b0630f6286fc3dbe28ddfdf5840a57dbea",
+          "load-net-before.json": "68f24afdfe557beef328ec4f6c403d445921fa862f4f4b9bccd7dc6f466a1fa5",
+          "load-net-before.png": "f1f0028eb4314bf4e14aae241ef12e15e56e2d1167f4e71d523a68ccd039454d",
+          "operator-1-after.json": "90af9f1a2d8e694243d02059750bb4c3c3b3ccdd8489236b11ce4a16652bf72c",
+          "operator-ack.json": "a22883e93273fa52419f3f34bb7e1125f2cd14a1f32561e419adc15324916c4b",
+          "operator-2-after.json": "572999174de6ac0f13e349fd2c34ca942d9d121308a82b4c8fc8d44a43355eeb",
+          "before-confirm.json": "e8bb751300bcfc970e363efa30ae545687e1bafe7bb5e2134638154eaa6b9f6e",
+          "operator-2-after.png": "d3be67c8b10797556ad16e4c9f04cfe6f530b7cee6f478696a66d7ae933e7109",
+          "before-confirm.png": "84a6d0f59fc408c423447d72790ee353a57f369be270f12ab0e7a2f47015b13a",
+          "broadband-before.json": "f94c6046ca714922d4b20b30438ca8d6b6a787416cbd4adeb4b6491dad737a1c",
+          "entry-0.png": "9bcf02d32930dade9f25ead0416e3ab4cfc096c237b7476503e1e5b0987678b0",
+          "network-connection-before.png": "21a51b7b03241c3fb364b6314bfb4b0309173b0e2b350738f1cff8edf1b30855",
+          "load-slot1-before.json": "67608a376acd3ea3fde20a22394426952cc121644487b6786981bb85cbb8ad1d",
+          "operator-live.json": "031a10993e84bedcf29f5f06c8aed1143c74fef2c17f9a6a54fe5be6d9da2a44",
+          "failure.json": "8d2c0574a69dd28effa33e4e18f5c6764faa74a78ac0c47dabe8e59ffac93088",
+          "before-cancel.json": "0c92643e6682bfd0f03417413ad7bf93b3f2ad75c7af253dd1da5930d3c97d79",
+          "operator-3-after.png": "9bcf02d32930dade9f25ead0416e3ab4cfc096c237b7476503e1e5b0987678b0",
+          "run.json": "97dfce657863930c765fd0d94a057e5cf48c4a94effcf756010e3b2cb4fa3da8",
+          "operator-2-before.png": "7418923bb9ef3f962569c3531352989b8682e3eabbcce112fc723d3151f49337",
+          "connection-notice-before.png": "1dd55e46389c3e3620fe1eccef6d32261e446f155617f84ead4f136969bb8943",
+          "network-connection-before.json": "65c8845b522f2cdb7d90b61b2930c61e4530359c32999ac34d508f0f421bcbb8",
+          "load-confirm-before.json": "84cb9a600bfba40c61eb98d66b4c8fdedd7e541a835e1fde08ae6543c146167b",
+          "entry-4.png": "9bcf02d32930dade9f25ead0416e3ab4cfc096c237b7476503e1e5b0987678b0",
+          "original-mode7.png": "9bcf02d32930dade9f25ead0416e3ab4cfc096c237b7476503e1e5b0987678b0"
+        },
+        "raw_state_change_count": 40,
+        "selection_note": "State changes retain first occurrence per phase/state/substate; selected keydowns omit startup/menu inputs. Complete events, keyup timing and nested state changes remain in fingerprinted raw captures."
+      }
+    },
+    "build_v2": {
+      "profile": "original-online-observer-v2",
+      "fresh_build": false,
+      "toolchain": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.11 (a0014542110d6078c3a1a7941fa1ddb3a2281f16)",
+      "archives_sha256": {
+        "base/libps2game.a": "78eff5c002c95db5a202a0297be636375aa363eccf1d140d51c2ac01b19aafe4",
+        "base/libps2runtime.a": "b55a7fe68a220412c637f412f3a9e61250f66f71f6a2cc8abbecce251ccc155f"
+      },
+      "observer": {
+        "profile": "original-online-observer-v2",
+        "network_backend": null,
+        "guest_writes": false,
+        "lockstep": false,
+        "sources": {
+          "unit_0044.cpp": {
+            "input_sha256": "aec5b156eeb38fdea0865461b7f5448c93e1405ade3c9bc8f2ff64629f652fe3",
+            "output_sha256": "d012e5fc9243a1c49bd0dd9cedeb6aebacad5bce807a9064d1587b9a46830708"
+          },
+          "unit_0081.cpp": {
+            "input_sha256": "19468c16bd1158ced8c78616467a72bd638c66e824e28fe37402d7a87702bbc6",
+            "output_sha256": "88ef732cad00516c3baf375bbf2ed7967eb63af8a6e1ab1a3776b076cf66605f"
+          },
+          "unit_009A.cpp": {
+            "input_sha256": "60063d0b3fc5efdfceee7f612801f046cb2741e00e6b21466c88187ba1f399fa",
+            "output_sha256": "b08a37c7ad7bfdccd162b2967fbd6509ee8f0b29f4b7369d959e434959778aab"
+          },
+          "unit_0099.cpp": {
+            "input_sha256": "70ecdc15dcc1034e8f937e207f639f60808f061c5b5ab55d2dfa7d00f4572bc9",
+            "output_sha256": "7bb3bc1f44af8c21908d49e67c330f006b9409651acde68bc7c3a11518a19621"
+          },
+          "unit_0001.cpp": {
+            "input_sha256": "86841eb31be1937f7125ddd6ed5626e70e871159ddc4b0113b94c99762985992",
+            "output_sha256": "ca7cc4438de86aadfa90425dac9e6a1302e8be5d9f0aecbb5422a8a450dcb1d5"
+          }
+        },
+        "observer_sha256": "f2f653df33065b0bc290884ba62c2e72d13fe94fe2919b95dd7f1e7ea3fe844f",
+        "sites": {
+          "unit_0044.cpp": {
+            "0x211180": "enter"
+          },
+          "unit_0081.cpp": {
+            "0x306720": "mode",
+            "0x307e30": "battle"
+          },
+          "unit_009A.cpp": {
+            "0x368a80": "connection",
+            "0x369ac0": "ui_produced",
+            "0x369ac8": "confirm_result",
+            "0x369b08": "cancel_result",
+            "0x369bd0": "activity_result"
+          },
+          "unit_0099.cpp": {
+            "0x364b10": "ui_render",
+            "0x364d70": "ui_queue1",
+            "0x365048": "ui_queue2"
+          },
+          "unit_0001.cpp": {
+            "0x1074d8": "bind",
+            "0x1076a8": "call",
+            "0x107040": "rpc_end",
+            "0x1075fc": "bind_return",
+            "0x10786c": "call_return"
+          }
+        }
+      },
+      "linked_objects_sha256": {
+        "overrides/system.o": "9039f7d9ecfa32555423e6f1b2a18fa9a60a6a87926f3a5e25f6e36612a895e7",
+        "overrides/web.o": "64adf15ef1bd8fb8a5b4ba786aaf1ab9e69c389005530010939ce82ce754d751",
+        "overrides/full_game_web_hooks.o": "ef77cfa71106056ebb0fa8d32213dcf911ada75ba0893b7e516e2c945ecf7214",
+        "overrides/full_game_interpolation.o": "c7ab141f62ac7603adbec1f17dcbc9ff8a309387a88a8a53d48e091a146f7678",
+        "overrides/vif.o": "ac4770d900017b98a60773d2cc3818ae228412e7c0e3ff7c32742d6f7dccd9aa",
+        "overrides/unit_0044.o": "02cd46d6fc552f84ff6853dd4ad6f0941b75ae0a0c5f0ef2347f2f752aa78ce1",
+        "overrides/unit_0039.o": "f4928f4539d4b12a4a22b52d9cc20a161fdf28e720f7a0d852d14c7c4d13a5a3",
+        "overrides/unit_0049.o": "405c0ff0a63cec33bf89635596b3667855573c22290b46ff3ee79a823c1a5042",
+        "overrides/unit_004D.o": "66879546b829c5abc4c07151e36968b5cb20dfe2b639a2f1fe751a1359dd56d9",
+        "overrides/unit_0047.o": "3a686bb8b56ddf1532f653070d86fd99a7ecd01a0ff1fa7fe128e16d0e4c9cb4",
+        "overrides/unit_0001.o": "3394b01e3dfe3ba902372af6a40bc0ad12eedc0cf0ff6ae20e55ac0c5cea958f",
+        "overrides/unit_0081.o": "337c5aee3bf296f8fe94261d57ed1754fefe68e31f0908b6bc6c7d587ba53a9e",
+        "overrides/unit_009A.o": "bd7de302893c21071f2842b57de6824275e6f2934ab08ac6382289edeb5af73e",
+        "overrides/unit_0099.o": "212e99f8f8184922627b94c8a892dc474a0b7883f1369c5dd00e257fde8bf9b2"
+      },
+      "inputs_sha256": {
+        "core.elf": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+        "boot.txt": "053ed5618fdedae470237b4d05890d726e75f76cbb91e085435f1d1bf5f9cf54"
+      },
+      "build_sources_sha256": {
+        "poc/original-online/build_probe.py": "edaca82408c8cf8d8c9eb9bc128a59302ddedd7a3bf24389821f08e7ae7c954f",
+        "poc/original-online/prepare.py": "22d42ed7b973f46948c27ee1eaf184e983fd06407c3164f36a4c6ccedca830ce",
+        "poc/original-online/observer.hpp": "f2f653df33065b0bc290884ba62c2e72d13fe94fe2919b95dd7f1e7ea3fe844f",
+        "poc/original-online/prepare_runtime.py": "c964f4e22c8340a2ecc4d94e03d2066f237f9eb947e7941a95b954e17e96b998",
+        "poc/original-online/module_names.hpp": "ccc8bc33e8b6df8b7a01a08483ba30172c517397f1f54d9596c24ce5902dd045",
+        "scripts/game/build.py": "25a7712fa01c567790de9b1478956c99a937a1db3aa5b42eeb0776523e9adfe4",
+        "apps/game/shell.html": "59a89d068363f21953e20e8c75359ed9534c9210c8346d0274641752e4568bfa"
+      },
+      "sdk_sha256": {
+        ".emscripten": "001c6ae86c1ec65b8a41d0db23c239f7e2348bd5fb68c98fbc628cd86a7c3f65",
+        "upstream/emscripten/em++": "33857101ce8e022ca9c427422154a11c21f03e03439ab2baa1690cbbcc829343",
+        "upstream/emscripten/emcc.py": "5ccd3b66c9433389b0338706182197340bfdf241777cc8985821e7d150818e46",
+        "upstream/bin/clang": "83f618b85c111b3d38ab5c2110dc139bbdc39a8f09797a2cbbafe05e4cf7e440",
+        "upstream/bin/wasm-opt": "d8da7e7cc717bb4da015475a106b25987a9941e87486ec8676fd8efc698f171d"
+      },
+      "files_sha256": {
+        "remote-client.js": "27a1ec10dc36cbb765af8672757519ad74317a7b125611082b517688f30ae798",
+        "experimental-pacing.js": "461573d76adbe68ac8e340c4c89c8c51ab0a1db3afb3b10d2f122cf843a9247e",
+        "full-game-adaptive-render.js": "8958ddf3eea6bd5bca3ebddef63845c37ccfa45c612c5170729a59f75fb3e40d",
+        "netplay-game.js": "570a7ccd595cc214bdf61ccab002679cbb55f422226ebb53cb573199c01dedb9",
+        "remote-host.js": "898550068eb2344ba49c885b731b2ac1fdebc2c5b804e10c24b57a1ec8647a63",
+        "remote-common.js": "93960e41fd2163e2ed610a557d1fdee498887c7c0ab6eac3a2c08c8c75ad3afe",
+        "index.wasm": "5739c0919e57aa55e9bbd20ad03ea014f922c92211677be150d4cfda4c14aa17",
+        "index.data": "5022376bdf70c8fac649657d3b90bc88b8c5621aa751ba98bd64393e2ba2496b",
+        "index.html": "3b70a04b09cde075c5db411b8fcf2c06af988b224b355d251b3517857e6b2693",
+        "cadence-debt-pacing.js": "6ded57a73ecf4289a1a161a288c581804dd19909e20d051167555e15a594d0c1",
+        "player-view.js": "9a77789e9c5c77fb261ad18a16c41bf41d336d2ea089d89660f52046b096d2c7",
+        "remote.html": "4c94d6a46d1017f27cfaa077080253d254639bbdd440c8646ec7c969dee9e9e0",
+        "adaptive-render-policy.js": "d5ce21aaed97df5e3e73910c93c5b86ea679a658717ad7bdc8f416289bb6c12b",
+        "local-game-visibility.js": "a6bc5ccdbe91fa5cb5ec955cba7be5923039784d125dad2595670ddf7f3898d2",
+        "multiplayer.js": "66fb4c64004a2da22193be92b4c94c0e9c6c8139888ab014bcdd16501696b60b",
+        "runtime-support.js": "02e5b1a9553ff599e673074387081cf72dd24f4abd22568a1d8053bd66a13bc5",
+        "index.js": "399a045691320bd229b8587fa0b1ef337aa23f3bf63b2d42e58bd93ff29a94a9",
+        "multiplayer.css": "a1107906f91f05914c4d3cd518ff58ba83eb86897dc2a0e160a16685cae6b521",
+        "netplay-transport.js": "7ed04d8dd9979b3a0a41655fdd501d4dfb9dd31f3df9d73401e24ac11fe49d3d",
+        "scene-snapshot.js": "03fe5fdf97ae244a5b3e07ffb0c32d4e7d79e678ce12bc7cfb4fab322036c883"
+      }
+    },
+    "build_commands_sha256": "9d17c86f30b3bc16d330d93725190d7fceac276dd285feadacf97df8d6085106",
+    "failed_attempts": [
+      "First follow-up build lacked renderer unit0099; supplied the retained generated input and rebuilt in a new directory",
+      "Premature card export waited for a download before a card file existed; harness timeout retained",
+      "Fresh-card setup exhausted observer-v2 post-menu cap at elapsed71596.5335ms; trace acceptance failed and later missing-event claims are invalid",
+      "Superseded expanded-only build was deliberately stopped during owned wasm-opt after card-poll dedup was requested; it was not game-tested"
+    ],
+    "visual_observations": {
+      "confirm": "Visible original warning then missing-card prompt",
+      "default-card": "NET-file-missing prompt, Yes selected",
+      "create-net": "Original memory-card slot choice, slot1 selected",
+      "net-slot1": "Original unformatted-card prompt, format completion and broadband/dialup setup menu",
+      "fixture-replay": "Original NET file found, slot1 load confirmed, broadband menu and original connection notice; operator window ended before final confirm",
+      "native-boundary": "Original network configuration UI and editor confirmation; affirmative input halts at unsupported executable handoff"
+    },
+    "fixture": {
+      "source": "Fresh isolated browser; no imported or personal save",
+      "available": true,
+      "size": 8650752,
+      "sha256": "9431f19dc70d664e35a780d70dbcd2dc1ea33ea498c3ed75f71d961f3b425fb9",
+      "note": "Export is not proof that original NET creation succeeded; inspect UI and trace"
+    },
+    "build_v3": {
+      "profile": "original-online-observer-v3",
+      "fresh_build": false,
+      "toolchain": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.11 (a0014542110d6078c3a1a7941fa1ddb3a2281f16)",
+      "archives_sha256": {
+        "base/libps2game.a": "78eff5c002c95db5a202a0297be636375aa363eccf1d140d51c2ac01b19aafe4",
+        "base/libps2runtime.a": "b55a7fe68a220412c637f412f3a9e61250f66f71f6a2cc8abbecce251ccc155f"
+      },
+      "observer": {
+        "profile": "original-online-observer-v3",
+        "network_backend": null,
+        "guest_writes": false,
+        "lockstep": false,
+        "sources": {
+          "unit_0044.cpp": {
+            "input_sha256": "aec5b156eeb38fdea0865461b7f5448c93e1405ade3c9bc8f2ff64629f652fe3",
+            "output_sha256": "d012e5fc9243a1c49bd0dd9cedeb6aebacad5bce807a9064d1587b9a46830708"
+          },
+          "unit_0081.cpp": {
+            "input_sha256": "19468c16bd1158ced8c78616467a72bd638c66e824e28fe37402d7a87702bbc6",
+            "output_sha256": "88ef732cad00516c3baf375bbf2ed7967eb63af8a6e1ab1a3776b076cf66605f"
+          },
+          "unit_009A.cpp": {
+            "input_sha256": "60063d0b3fc5efdfceee7f612801f046cb2741e00e6b21466c88187ba1f399fa",
+            "output_sha256": "b08a37c7ad7bfdccd162b2967fbd6509ee8f0b29f4b7369d959e434959778aab"
+          },
+          "unit_0099.cpp": {
+            "input_sha256": "70ecdc15dcc1034e8f937e207f639f60808f061c5b5ab55d2dfa7d00f4572bc9",
+            "output_sha256": "7bb3bc1f44af8c21908d49e67c330f006b9409651acde68bc7c3a11518a19621"
+          },
+          "unit_0001.cpp": {
+            "input_sha256": "86841eb31be1937f7125ddd6ed5626e70e871159ddc4b0113b94c99762985992",
+            "output_sha256": "ca7cc4438de86aadfa90425dac9e6a1302e8be5d9f0aecbb5422a8a450dcb1d5"
+          }
+        },
+        "observer_sha256": "3d1143cf1633e1ccebc8ced646a24600b3975e741234fc1852a7b3dfcd5f83d8",
+        "sites": {
+          "unit_0044.cpp": {
+            "0x211180": "enter"
+          },
+          "unit_0081.cpp": {
+            "0x306720": "mode",
+            "0x307e30": "battle"
+          },
+          "unit_009A.cpp": {
+            "0x368a80": "connection",
+            "0x369ac0": "ui_produced",
+            "0x369ac8": "confirm_result",
+            "0x369b08": "cancel_result",
+            "0x369bd0": "activity_result"
+          },
+          "unit_0099.cpp": {
+            "0x364b10": "ui_render",
+            "0x364d70": "ui_queue1",
+            "0x365048": "ui_queue2"
+          },
+          "unit_0001.cpp": {
+            "0x1074d8": "bind",
+            "0x1076a8": "call",
+            "0x107040": "rpc_end",
+            "0x1075fc": "bind_return",
+            "0x10786c": "call_return"
+          }
+        }
+      },
+      "linked_objects_sha256": {
+        "overrides/system.o": "9039f7d9ecfa32555423e6f1b2a18fa9a60a6a87926f3a5e25f6e36612a895e7",
+        "overrides/web.o": "64adf15ef1bd8fb8a5b4ba786aaf1ab9e69c389005530010939ce82ce754d751",
+        "overrides/full_game_web_hooks.o": "ef77cfa71106056ebb0fa8d32213dcf911ada75ba0893b7e516e2c945ecf7214",
+        "overrides/full_game_interpolation.o": "c7ab141f62ac7603adbec1f17dcbc9ff8a309387a88a8a53d48e091a146f7678",
+        "overrides/vif.o": "ac4770d900017b98a60773d2cc3818ae228412e7c0e3ff7c32742d6f7dccd9aa",
+        "overrides/unit_0044.o": "5b05dedd29b116e16aa0ae6f6a8bc55695d4e5524585dc8171d691a3585d6401",
+        "overrides/unit_0039.o": "f4928f4539d4b12a4a22b52d9cc20a161fdf28e720f7a0d852d14c7c4d13a5a3",
+        "overrides/unit_0049.o": "405c0ff0a63cec33bf89635596b3667855573c22290b46ff3ee79a823c1a5042",
+        "overrides/unit_004D.o": "66879546b829c5abc4c07151e36968b5cb20dfe2b639a2f1fe751a1359dd56d9",
+        "overrides/unit_0047.o": "3a686bb8b56ddf1532f653070d86fd99a7ecd01a0ff1fa7fe128e16d0e4c9cb4",
+        "overrides/unit_0001.o": "e2ec8179961f3cb06ffa0c8474451e90040d7f735885e71265bba503476cadd0",
+        "overrides/unit_0081.o": "d42694726a5a397a455fda0d43c65ddcd55011326b9b4af85144baed58bd7722",
+        "overrides/unit_009A.o": "625cd3b7931d1d1ccabc8fdc60199fbdea03ab7138423c092da07c6e55cae1b5",
+        "overrides/unit_0099.o": "5bd5f1ca07e224b1473838510a3e5f24dc84f11416ec7794a9f83d1311582dd4"
+      },
+      "inputs_sha256": {
+        "core.elf": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+        "boot.txt": "053ed5618fdedae470237b4d05890d726e75f76cbb91e085435f1d1bf5f9cf54"
+      },
+      "build_sources_sha256": {
+        "poc/original-online/build_probe.py": "b62359eee5f13b832bea50802fb239c0c1145851b6c5474882b43202a626961a",
+        "poc/original-online/prepare.py": "cea66373c4ad9abbcf697c07148b696e434bbbb969747ebaf3564666d5fa50f9",
+        "poc/original-online/observer.hpp": "3d1143cf1633e1ccebc8ced646a24600b3975e741234fc1852a7b3dfcd5f83d8",
+        "poc/original-online/prepare_runtime.py": "c964f4e22c8340a2ecc4d94e03d2066f237f9eb947e7941a95b954e17e96b998",
+        "poc/original-online/module_names.hpp": "ccc8bc33e8b6df8b7a01a08483ba30172c517397f1f54d9596c24ce5902dd045",
+        "scripts/game/build.py": "25a7712fa01c567790de9b1478956c99a937a1db3aa5b42eeb0776523e9adfe4",
+        "apps/game/shell.html": "59a89d068363f21953e20e8c75359ed9534c9210c8346d0274641752e4568bfa"
+      },
+      "sdk_sha256": {
+        ".emscripten": "001c6ae86c1ec65b8a41d0db23c239f7e2348bd5fb68c98fbc628cd86a7c3f65",
+        "upstream/emscripten/em++": "33857101ce8e022ca9c427422154a11c21f03e03439ab2baa1690cbbcc829343",
+        "upstream/emscripten/emcc.py": "5ccd3b66c9433389b0338706182197340bfdf241777cc8985821e7d150818e46",
+        "upstream/bin/clang": "83f618b85c111b3d38ab5c2110dc139bbdc39a8f09797a2cbbafe05e4cf7e440",
+        "upstream/bin/wasm-opt": "d8da7e7cc717bb4da015475a106b25987a9941e87486ec8676fd8efc698f171d"
+      },
+      "files_sha256": {
+        "remote-client.js": "27a1ec10dc36cbb765af8672757519ad74317a7b125611082b517688f30ae798",
+        "experimental-pacing.js": "461573d76adbe68ac8e340c4c89c8c51ab0a1db3afb3b10d2f122cf843a9247e",
+        "full-game-adaptive-render.js": "8958ddf3eea6bd5bca3ebddef63845c37ccfa45c612c5170729a59f75fb3e40d",
+        "netplay-game.js": "570a7ccd595cc214bdf61ccab002679cbb55f422226ebb53cb573199c01dedb9",
+        "remote-host.js": "898550068eb2344ba49c885b731b2ac1fdebc2c5b804e10c24b57a1ec8647a63",
+        "remote-common.js": "93960e41fd2163e2ed610a557d1fdee498887c7c0ab6eac3a2c08c8c75ad3afe",
+        "index.wasm": "813a5bc63f087611e357b9f6664ba1425fcb8fb510ecbb6136e784d4c95185f1",
+        "index.data": "5022376bdf70c8fac649657d3b90bc88b8c5621aa751ba98bd64393e2ba2496b",
+        "index.html": "3b70a04b09cde075c5db411b8fcf2c06af988b224b355d251b3517857e6b2693",
+        "cadence-debt-pacing.js": "6ded57a73ecf4289a1a161a288c581804dd19909e20d051167555e15a594d0c1",
+        "player-view.js": "9a77789e9c5c77fb261ad18a16c41bf41d336d2ea089d89660f52046b096d2c7",
+        "remote.html": "4c94d6a46d1017f27cfaa077080253d254639bbdd440c8646ec7c969dee9e9e0",
+        "adaptive-render-policy.js": "d5ce21aaed97df5e3e73910c93c5b86ea679a658717ad7bdc8f416289bb6c12b",
+        "local-game-visibility.js": "a6bc5ccdbe91fa5cb5ec955cba7be5923039784d125dad2595670ddf7f3898d2",
+        "multiplayer.js": "c1f4151917d9d35d657947a224b0887f673b4721ef8de6c324cb4bab4906d447",
+        "runtime-support.js": "02e5b1a9553ff599e673074387081cf72dd24f4abd22568a1d8053bd66a13bc5",
+        "._multiplayer.js": "d64aaba10a365c12b8123a384b5a1923a2637ec2e43f4fa093a03ba97391fc5c",
+        "index.js": "45c59b840257977977044485c3f35af470a5b710fbaa6d0425a78a19bd2aa625",
+        "multiplayer.css": "a1107906f91f05914c4d3cd518ff58ba83eb86897dc2a0e160a16685cae6b521",
+        "netplay-transport.js": "7ed04d8dd9979b3a0a41655fdd501d4dfb9dd31f3df9d73401e24ac11fe49d3d",
+        "scene-snapshot.js": "03fe5fdf97ae244a5b3e07ffb0c32d4e7d79e678ce12bc7cfb4fab322036c883"
+      }
+    },
+    "timer4_input_failure": {
+      "classification": "Premature ordinary test input, not network failure",
+      "raw": ".local/original-online/followup/broadband/timeline.jsonl",
+      "keydown_ms": 60267.9156,
+      "input_edge32_observed_ms": 60299.3824,
+      "timer4_at_edge": 15,
+      "keyup_ms": 60533.6472,
+      "timer4_first_zero_ms": 60551.5621,
+      "fix": "Require both original timers expired before known prompt inputs; preserve full state-word and trace-loss guards"
+    },
+    "handoff": {
+      "scope": "Static original-byte verification tied to the observed halt stack; not dynamic syscall-register capture",
+      "syscall": {
+        "number": 6,
+        "name": "LoadExecPS2",
+        "address": "0x103f24"
+      },
+      "caller": "0x1184a68",
+      "target": "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+      "argc": 2,
+      "argv": [
+        "cdrom0:\\SLPS_254.19;1",
+        "1"
+      ],
+      "main_sha256": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+      "overlay_sha256": "5be579873c2ecad74307083d7449b61a70166bd55cff8c4ea83ff73b4616d2bf",
+      "target_sha256": "8109d5bb29a16fac1f417098ac551364d232df36feb1d7e9fa8134c81b8b6cec",
+      "target_bytes": 1830192,
+      "target_entry": "0x100008",
+      "target_segments": [
+        {
+          "address": "0x100000",
+          "file_offset": 128,
+          "file_bytes": 1829632,
+          "memory_bytes": 15703680,
+          "end": "0xff9e80",
+          "flags": 7
+        },
+        {
+          "address": "0xff9e80",
+          "file_offset": 1829760,
+          "file_bytes": 0,
+          "memory_bytes": 0,
+          "end": "0xff9e80",
+          "flags": 6
+        }
+      ],
+      "entry_words": {
+        "main": [
+          "70000c28",
+          "70001428",
+          "70001c28",
+          "70002428",
+          "70002c28",
+          "70003428",
+          "70003c28",
+          "70004428"
+        ],
+        "target": [
+          "70000c28",
+          "70001428",
+          "70001c28",
+          "70002428",
+          "70002c28",
+          "70003428",
+          "70003c28",
+          "70004428"
+        ]
+      },
+      "main_checks": [
+        {
+          "address": "0x36aa30",
+          "file_offset": "0x26d330",
+          "word": "0c45fd1c",
+          "meaning": "Connection state6 calls network UI at 0x117F470"
+        },
+        {
+          "address": "0x10d998",
+          "file_offset": "0x10298",
+          "word": "0c043642",
+          "meaning": "LoadExec wrapper calls shutdown preparation"
+        },
+        {
+          "address": "0x10d9c0",
+          "file_offset": "0x102c0",
+          "word": "08040fc8",
+          "meaning": "LoadExec wrapper tail-calls syscall stub 0x103F20"
+        },
+        {
+          "address": "0x103f20",
+          "file_offset": "0x6820",
+          "word": "24030006",
+          "meaning": "LoadExecPS2 syscall number 6"
+        },
+        {
+          "address": "0x103f24",
+          "file_offset": "0x6824",
+          "word": "0000000c",
+          "meaning": "Original syscall instruction"
+        }
+      ],
+      "overlay_checks": [
+        {
+          "address": "0x117f7d8",
+          "file_offset": "0x7d8",
+          "word": "0c461274",
+          "meaning": "Observed halted caller enters helper launcher 0x11849D0"
+        },
+        {
+          "address": "0x1184a58",
+          "file_offset": "0x5a58",
+          "word": "3c040119",
+          "meaning": "Target address high half"
+        },
+        {
+          "address": "0x1184a5c",
+          "file_offset": "0x5a5c",
+          "word": "3c060119",
+          "meaning": "Argument-vector address high half"
+        },
+        {
+          "address": "0x1184a60",
+          "file_offset": "0x5a60",
+          "word": "2484aae0",
+          "meaning": "Target string address 0x118AAE0"
+        },
+        {
+          "address": "0x1184a64",
+          "file_offset": "0x5a64",
+          "word": "24050002",
+          "meaning": "Two original arguments"
+        },
+        {
+          "address": "0x1184a68",
+          "file_offset": "0x5a68",
+          "word": "0c043660",
+          "meaning": "Call LoadExec wrapper 0x10D980"
+        },
+        {
+          "address": "0x1184a6c",
+          "file_offset": "0x5a6c",
+          "word": "24c69458",
+          "meaning": "Argument-vector address 0x1189458 in delay slot"
+        }
+      ],
+      "target_checks": [
+        {
+          "address": "0x1137a4",
+          "file_offset": "0x13824",
+          "word": "0080902d",
+          "meaning": "Helper main retains argc in s2"
+        },
+        {
+          "address": "0x1137ac",
+          "file_offset": "0x1382c",
+          "word": "00a0882d",
+          "meaning": "Helper main retains argv in s1"
+        },
+        {
+          "address": "0x113c4c",
+          "file_offset": "0x13ccc",
+          "word": "8e240004",
+          "meaning": "Helper return target is argv[1]"
+        },
+        {
+          "address": "0x113c50",
+          "file_offset": "0x13cd0",
+          "word": "2645fffe",
+          "meaning": "Helper return passes argc minus two"
+        },
+        {
+          "address": "0x113c54",
+          "file_offset": "0x13cd4",
+          "word": "0c042740",
+          "meaning": "Helper calls its own LoadExec wrapper"
+        },
+        {
+          "address": "0x113c58",
+          "file_offset": "0x13cd8",
+          "word": "26260008",
+          "meaning": "Helper return passes argv plus two"
+        },
+        {
+          "address": "0x109d40",
+          "file_offset": "0x9dc0",
+          "word": "080400a8",
+          "meaning": "Helper wrapper jumps to its syscall stub"
+        },
+        {
+          "address": "0x1002a0",
+          "file_offset": "0x320",
+          "word": "24030006",
+          "meaning": "Helper return uses LoadExecPS2 number6"
+        },
+        {
+          "address": "0x1002a4",
+          "file_offset": "0x324",
+          "word": "0000000c",
+          "meaning": "Helper return syscall instruction"
+        }
+      ],
+      "helper_boot_argv_inferred": [
+        "cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1",
+        "cdrom0:\\SLPS_254.19;1",
+        "1"
+      ],
+      "failures": 0,
+      "limits": [
+        "The target overlaps main-game addresses and requires its own translation/dispatch",
+        "No helper boot, process reset, network configuration or server connection is established by this check"
+      ]
+    },
+    "observed_blocker": {
+      "reason": "program asked to run another executable",
+      "at_utc": "2026-10-28T20:11:47.066Z",
+      "guest_cycles": 46699726739,
+      "game_mode": 7,
+      "connection_state": 6,
+      "connection_substate": 2,
+      "runtime_source": "vendor/ps2-web-recomp/runtime/src/kernel.cpp:478",
+      "scope": "Complete observed original setup trace; no helper execution or server connection",
+      "audio": "Output muted throughout; AudioContext remains running after halt, but ring producer and consumer stop at7597600 and audio_consumed check fails",
+      "static_target_identification": "Original overlay call chain and bytes tied to observed halt stack; no dynamic syscall-register capture"
+    },
+    "boot_coverage": {
+      "controls_without_import": "One observed custom-service boot sequence, 32 method1 calls/replies for service01270010",
+      "fixture_import_trials": "Two observed boot sequences across ordinary card-import reload, 64 aggregated method1 calls/replies; observer counters reset on reload",
+      "note": "Counters are per page/boot; aggregate event counts must not be mistaken for per-boot totals"
+    },
+    "trace_scope_note": "Enabling g_trace_modules also logs IOP DMA in this runtime. Observer event caps do not cap those independent runtime messages; no timing/performance claim.",
+    "tested_header": {
+      "archive": ".local/original-online/followup/dedup-evidence/.local/dedup-observer-build/overrides/observer.hpp",
+      "sha256": "3d1143cf1633e1ccebc8ced646a24600b3975e741234fc1852a7b3dfcd5f83d8",
+      "current_sha256": "7f152870beb385745421bd300950fbc43e80eb4a4c9a4cb52ee6c070dab321e5",
+      "difference": "Only comment corrected to acknowledge IOP DMA logging; executed code unchanged"
+    },
+    "utility_translation_feasibility": {
+      "scope": "Static translation only; not compiled or executed",
+      "instructions": 176450,
+      "functions": 1811,
+      "entries": 17760,
+      "rejected_seeds": 0,
+      "generated_files": 48,
+      "generated_bytes": 12021411,
+      "raw_manifest": ".local/original-online/followup/utility-feasibility.json",
+      "manifest_sha256": "4f0af6b86a00c710881ba780826aded40bdd970341d2bf17fe154db90708c8de"
+    }
   }
 }

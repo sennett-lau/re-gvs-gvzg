@@ -5,7 +5,7 @@
 > **At a glance**
 >
 > - **Question:** Can two independent game instances use the original 通信対戦 lifecycle?
-> - **Result:** The experimental lockstep POC synchronized local Versus through checkpoint 13,560. Original Online Mode has a separate RPC boundary, now mapped below.
+> - **Result:** The experimental lockstep POC synchronized local Versus through checkpoint 13,560. Original mode `7` now reaches its own connection setup through ordinary input. Its RPC boundary remains separate.
 > - **Still open:** A working original network connection and battle. Lockstep results do not establish Online Mode.
 
 **🟡 Partially verified · Experimental local-Versus lockstep.** The retained POC runs a copy on each device and exchanges inputs and state checks. It has no video stream. Its normal-boot results preserve useful transport evidence.
@@ -119,7 +119,7 @@ Network Battle selection → mode 7 → lobby/battle stage dispatch
                          → shared battle engine at 0x2B19F0
 ```
 
-The original executable contains UI for both automatic matching and named operations (rooms), including title/password prompts, faction selection and returning to lobby chat. Verified string references and original instructions support the interpretation that friends could deliberately choose the same lobby and room. This review did not recover a modern shareable invitation URL, nor execute the original connection flow.
+The original executable contains UI for both automatic matching and named operations (rooms), including title/password prompts, faction selection and returning to lobby chat. Verified string references and original instructions support the interpretation that friends could deliberately choose the same lobby and room. This review did not recover a modern shareable invitation URL, or establish an original server connection.
 
 The compatible [zdxsv server](https://github.com/inada-s/zdxsv/tree/35ffbdad9257eca5043bb4977d26cc07468b5045) is a useful protocol reference. The inspected revision has separate authentication, lobby and battle responsibilities. Its password permission is disabled, password lookup is unfinished, and friend handlers are stubs. A password field is not working room access control.
 
@@ -153,9 +153,23 @@ The isolated observer in `poc/original-online/` preserves every original instruc
 
 Native helper tests passed malformed-input and missing-module cases, plus the original SMAP and Ethernet-wrapper module names. Both optional runtime files compiled with Emscripten `6.0.11`. Full-game effectiveness of that slice remains unverified. The working Stream Mode and lockstep builds remain separate.
 
-**Measured · One PC browser, original mode entry only.** A normal-boot observer build selected the original menu item. Eleven of twelve sampled states were mode `7`, initializer state `0`, stage `1`; the first sample was the menu transition. No sample was local Versus mode `4`. Original cancel returned to menu mode `2`. The AudioContext remained running and audio-ring counters advanced under browser output mute.
+### Original setup reaches an unsupported executable handoff
 
-The game capture remained black, with the browser overlay visible. The combined entry/cancel trace contained six connection-state changes, but no custom-service bind or battle entry. Original state `1`, substate `1` polls input; substate `10` follows cancellation. The trace does not timestamp that boundary, so the last word is not evidence of a network stall. UI visibility and confirmation within that original state are the next experiment. No server connection, second client or online battle was demonstrated. [Selected trace and build fingerprints](../evidence/original-online-boundary.json).
+**Measured · Original mode `7`, one PC instance.** Normal boot and ordinary inputs now reach NET-file creation, card formatting, NET-file reload and the original broadband settings screen. Confirming the settings editor then stops with **“program asked to run another executable.”** This is the first observed runtime blocker on this path. No server connection, second client or online battle was demonstrated.
+
+![Original mode7 network-settings editor stops at the unsupported executable handoff](../media/original-online-network-settings.png)
+
+*The original settings confirmation reaches the runtime's deliberate halt. This single-instance capture is not an online connection.*
+
+The original call chain selects `LoadExecPS2` syscall `6` and disc utility `NTGUIDVD/NTGDVDJ.BIN`. Its arguments name the main game and return option `1`. The utility has its own executable entry and overlaps the main game's addresses. Continuing requires its own translation and machine lifecycle; returning success from the existing stub would not run the utility.
+
+Before the halt, original `NETCNF.IRX` and `NETCNFIF.IRX` loaded and started. The observed service `0x80001101`, method `101`, returned word `0`. Independent original-byte inspection identifies that method as workspace allocation, not saving network settings. The fresh private card's NET file was found and loaded on replay, but a network configuration has not been created.
+
+The decisive trace retained **5,542 observer events with no reported drops**. The game stayed in mode `7`. Output was muted; the AudioContext stayed running, while audio-ring production and consumption stopped when the runtime halted. The probe correctly failed its no-failure and continued-consumption checks. [Trace phases, original words and build fingerprints](../evidence/original-online-boundary.json).
+
+Earlier attempts exposed test limitations: a neutral-only capture had a black game area, an export preceded saving, one trace hit its cap, and an automated confirm arrived before the first native timer expired. The corrected harness waits for both timers and records input phases. The interactive desktop displayed the original UI, but the runner and observer both changed, so the black capture's cause remains unisolated. The optional module-discovery slice remains off; its static gaps were not the observed cause of this halt.
+
+The next bounded experiment is a separate original-utility bootstrap with its own dispatch, verified arguments, original disc and a copy of the fresh test card. Static analysis generated **48 files, about 12 MB**, for that utility; it has not been compiled or executed. A faithful process handoff and a working Online Mode remain separate acceptance steps.
 
 ## What Co-op Anything contributes
 
@@ -167,4 +181,4 @@ Rendering interpolation is useful observability, but positions alone are not a r
 
 Carry the next briefing into a second battle with matching checkpoints, then test cancellation and session restart. Repeat on separate devices, delayed networks and an actual phone. The current normal-boot profile already excludes personal memory cards and agrees on the initial settings. Session interruption stops safely; in-match resynchronization remains future work.
 
-Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. For Online Mode, confirm within original connection state `1` with timestamped input phases and diagnose the black UI. Then capture the first actual bind/module failure, validate module discovery, and implement one observed request and response. Preserve the original lobby and battle synchronization throughout. A successful login alone will not establish playable Online Mode.
+Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. For Online Mode, boot the original network utility independently and observe its settings/save path. Then resolve the measured executable handoff and capture the next native network boundary. Preserve the original lobby and battle synchronization throughout. A successful login alone will not establish playable Online Mode.

@@ -9,8 +9,8 @@
     dialog.setAttribute('aria-labelledby', 'mp-title');
     dialog.innerHTML = `<header><p class="mp-eyebrow">GVS / Private battle</p><h2 id="mp-title">Play together</h2><p class="mp-description">Choose where the game runs. Use the original Versus menus to choose your characters and start a round.</p></header>
       <div class="mp-body"><section id="mp-setup"><div class="mp-routes">
-        <button class="mp-route" id="mp-stream"><span>A</span><strong>Share this game</strong><small>One host · two controllers. Your friend receives video and sound.</small></button>
-        <button class="mp-route" id="mp-lockstep"><span>B</span><strong>Run on both devices</strong><small>Experimental · both devices run the game and exchange inputs.</small></button></div>
+        <button class="mp-route" id="mp-stream"><span>A</span><strong>Stream Mode</strong><small>One host · two controllers. Your friend receives video and sound.</small></button>
+        <button class="mp-route" id="mp-lockstep"><span>B</span><strong>Local Versus experiment</strong><small>Experimental lockstep · both devices run local Versus and exchange inputs.</small></button></div>
         <label><input type="checkbox" id="mp-dedicated"> This is a separate host; both players connect remotely</label>
         <label for="mp-join-link">Have an invitation?</label><input type="url" id="mp-join-link" placeholder="Paste your friend's invitation" autocomplete="off" spellcheck="false">
         <div class="mp-actions"><button id="mp-join">Join a friend</button></div></section>
