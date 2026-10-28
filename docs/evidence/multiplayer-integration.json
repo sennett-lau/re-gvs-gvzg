@@ -471,5 +471,11 @@
       "tests/browser/multiplayer-smoke.cjs": "0fd40f6618df2322e6ae5a5d065260a7deb4408b7605c308dd3a727936571194",
       "tests/multiplayer/relay-benchmark.cjs": "b8fb5dba4e281ac3abbef4122815dca5f84086efbff965c9fa482e14f35d8eee"
     }
+  },
+  "original_online_scope": {
+    "goal": "Two independent instances using original 通信対戦 mode 7",
+    "existing_poc": "Menu address 0x211180 is intercepted and returns mode 4 local Versus; lockstep does not implement original Online Mode",
+    "next_evidence": "original-online-boundary.json",
+    "network_success": false
   }
 }

@@ -53,11 +53,11 @@
           "items": [
             {
               "source": "docs/chapters/07-host-streaming.md",
-              "label": "A \u00b7 One host, two controllers"
+              "label": "Stream Mode"
             },
             {
               "source": "docs/chapters/08-independent-clients.md",
-              "label": "B \u00b7 A game on each device"
+              "label": "Online Mode & experiments"
             }
           ]
         }

@@ -1,0 +1,890 @@
+{
+  "scope": "Original-byte analysis, isolated observer reachability test, and optional runtime compile/helper checks; no network success",
+  "elf_sha256": "294c5dfd3d028d5da16cd7f71d8135cca18486ac7b8d3d23dcd0f864ca7b24e6",
+  "avewrapm_irx_sha256": "7cdd91a27472e43e055c4636ad2c55be648daaac79edbc57e172aecb64658cc7",
+  "ee_checks": [
+    {
+      "address": "0x211180",
+      "file_offset": "0x113a80",
+      "word": "24020007",
+      "meaning": "Network Battle returns mode 7"
+    },
+    {
+      "address": "0x4ae0dc",
+      "file_offset": "0x3b09dc",
+      "word": "00306720",
+      "meaning": "Top-level mode table entry 7"
+    },
+    {
+      "address": "0x306758",
+      "file_offset": "0x209058",
+      "word": "0c0c1aa4",
+      "meaning": "mode 7 calls initializer 0x306A90"
+    },
+    {
+      "address": "0x5eb7d8",
+      "file_offset": "0x4ee0d8",
+      "word": "00306ac0",
+      "meaning": "initializer stage 0"
+    },
+    {
+      "address": "0x5eb7dc",
+      "file_offset": "0x4ee0dc",
+      "word": "00306bd0",
+      "meaning": "initializer stage 1"
+    },
+    {
+      "address": "0x306b64",
+      "file_offset": "0x209464",
+      "word": "0c0da290",
+      "meaning": "reset connection state at 0x368A40"
+    },
+    {
+      "address": "0x306bec",
+      "file_offset": "0x2094ec",
+      "word": "0c0da2a0",
+      "meaning": "run connection dispatcher 0x368A80"
+    },
+    {
+      "address": "0x6080b0",
+      "file_offset": "0x50a9b0",
+      "word": "00369870",
+      "meaning": "connection dispatcher state 0"
+    },
+    {
+      "address": "0x6080b4",
+      "file_offset": "0x50a9b4",
+      "word": "003699c0",
+      "meaning": "connection dispatcher state 1"
+    },
+    {
+      "address": "0x5eb85c",
+      "file_offset": "0x4ee15c",
+      "word": "00307a20",
+      "meaning": "mode 7 battle stage dispatch"
+    },
+    {
+      "address": "0x5eb880",
+      "file_offset": "0x4ee180",
+      "word": "00307e30",
+      "meaning": "battle stage substate 4"
+    },
+    {
+      "address": "0x307e38",
+      "file_offset": "0x20a738",
+      "word": "0c0ac67c",
+      "meaning": "call common battle engine 0x2B19F0"
+    },
+    {
+      "address": "0x30e2d4",
+      "file_offset": "0x210bd4",
+      "word": "3c020127",
+      "meaning": "AVE wrapper bind service high half"
+    },
+    {
+      "address": "0x30e2e4",
+      "file_offset": "0x210be4",
+      "word": "34450030",
+      "meaning": "AVE wrapper bind service low half, delay slot"
+    },
+    {
+      "address": "0x30e2e0",
+      "file_offset": "0x210be0",
+      "word": "0c041d36",
+      "meaning": "call SifBindRpc 0x1074D8"
+    },
+    {
+      "address": "0x30e3f8",
+      "file_offset": "0x210cf8",
+      "word": "24e72c80",
+      "meaning": "RPC staging buffer 0xC22C80"
+    },
+    {
+      "address": "0x30e420",
+      "file_offset": "0x210d20",
+      "word": "84222c98",
+      "meaning": "read signed 16-bit result at buffer +24"
+    },
+    {
+      "address": "0x33734c",
+      "file_offset": "0x239c4c",
+      "word": "3c020127",
+      "meaning": "module control bind high half"
+    },
+    {
+      "address": "0x337358",
+      "file_offset": "0x239c58",
+      "word": "34450010",
+      "meaning": "module control bind low half, delay slot"
+    }
+  ],
+  "iop_checks": [
+    {
+      "address": "0x1734",
+      "file_offset": "0x17e4",
+      "word": "3c050127",
+      "meaning": "RPC registration service high half"
+    },
+    {
+      "address": "0x1738",
+      "file_offset": "0x17e8",
+      "word": "34a50030",
+      "meaning": "RPC registration service low half"
+    },
+    {
+      "address": "0x1740",
+      "file_offset": "0x17f0",
+      "word": "24c613e8",
+      "meaning": "RPC dispatcher function offset"
+    },
+    {
+      "address": "0x1748",
+      "file_offset": "0x17f8",
+      "word": "24e71c38",
+      "meaning": "RPC receive buffer offset"
+    },
+    {
+      "address": "0x1754",
+      "file_offset": "0x1804",
+      "word": "0c00065a",
+      "meaning": "call sifcmd import stub 0x1968"
+    },
+    {
+      "address": "0x1968",
+      "file_offset": "0x1a18",
+      "word": "03e00008",
+      "meaning": "sifcmd import stub return instruction"
+    },
+    {
+      "address": "0x196c",
+      "file_offset": "0x1a1c",
+      "word": "24000011",
+      "meaning": "sifcmd ordinal 17: RPC registration"
+    },
+    {
+      "address": "0x13f8",
+      "file_offset": "0x14a8",
+      "word": "2c620042",
+      "meaning": "unsigned RPC method must be below 66"
+    },
+    {
+      "address": "0x1410",
+      "file_offset": "0x14c0",
+      "word": "8c221ad0",
+      "meaning": "RPC method jump table at offset 0x1AD0"
+    },
+    {
+      "address": "0x1ad4",
+      "file_offset": "0x1b84",
+      "word": "00001430",
+      "meaning": "method 1 selects branch 0x1430"
+    },
+    {
+      "address": "0x1430",
+      "file_offset": "0x14e0",
+      "word": "0c000073",
+      "meaning": "method 1 calls handler 0x1CC"
+    },
+    {
+      "address": "0x1e4",
+      "file_offset": "0x294",
+      "word": "8e02001c",
+      "meaning": "method 1 reads payload word at +28"
+    },
+    {
+      "address": "0x1e8",
+      "file_offset": "0x298",
+      "word": "24044105",
+      "meaning": "method 1 passes opcode 0x4105 to avetcp"
+    },
+    {
+      "address": "0x204",
+      "file_offset": "0x2b4",
+      "word": "0c000639",
+      "meaning": "method 1 calls avetcp import stub 0x18E4"
+    },
+    {
+      "address": "0x18e8",
+      "file_offset": "0x1998",
+      "word": "24000004",
+      "meaning": "avetcp import ordinal 4"
+    },
+    {
+      "address": "0x214",
+      "file_offset": "0x2c4",
+      "word": "ae020018",
+      "meaning": "method 1 writes sign-extended status at +24"
+    }
+  ],
+  "avewrapm_dispatch": [
+    {
+      "method": 0,
+      "branch_offset": "0x1420",
+      "handler_offset": "0x160"
+    },
+    {
+      "method": 1,
+      "branch_offset": "0x1430",
+      "handler_offset": "0x1cc"
+    },
+    {
+      "method": 2,
+      "branch_offset": "0x1440",
+      "handler_offset": "0x228"
+    },
+    {
+      "method": 3,
+      "branch_offset": "0x1450",
+      "handler_offset": "0x268"
+    },
+    {
+      "method": 4,
+      "branch_offset": "0x1460",
+      "handler_offset": "0x2c8"
+    },
+    {
+      "method": 5,
+      "branch_offset": "0x1470",
+      "handler_offset": "0xa8"
+    },
+    {
+      "method": 6,
+      "branch_offset": "0x1480",
+      "handler_offset": "0x12c"
+    },
+    {
+      "method": 7,
+      "branch_offset": "0x1490",
+      "handler_offset": "0x328"
+    },
+    {
+      "method": 8,
+      "branch_offset": "0x14a0",
+      "handler_offset": "0x39c"
+    },
+    {
+      "method": 9,
+      "branch_offset": "0x14b0",
+      "handler_offset": "0x40c"
+    },
+    {
+      "method": 10,
+      "branch_offset": "0x14c0",
+      "handler_offset": "0x4ac"
+    },
+    {
+      "method": 11,
+      "branch_offset": "0x14d0",
+      "handler_offset": "0x528"
+    },
+    {
+      "method": 12,
+      "branch_offset": "0x14e0",
+      "handler_offset": "0x56c"
+    },
+    {
+      "method": 13,
+      "branch_offset": "0x14f0",
+      "handler_offset": "0x5b0"
+    },
+    {
+      "method": 14,
+      "branch_offset": "0x1500",
+      "handler_offset": "0x5f4"
+    },
+    {
+      "method": 15,
+      "branch_offset": "0x1510",
+      "handler_offset": "0x668"
+    },
+    {
+      "method": 16,
+      "branch_offset": "0x1520",
+      "handler_offset": "0x6e8"
+    },
+    {
+      "method": 17,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 18,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 19,
+      "branch_offset": "0x1530",
+      "handler_offset": "0x7a0"
+    },
+    {
+      "method": 20,
+      "branch_offset": "0x1540",
+      "handler_offset": "0x7f8"
+    },
+    {
+      "method": 21,
+      "branch_offset": "0x1550",
+      "handler_offset": "0x8f4"
+    },
+    {
+      "method": 22,
+      "branch_offset": "0x1560",
+      "handler_offset": "0x940"
+    },
+    {
+      "method": 23,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 24,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 25,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 26,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 27,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 28,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 29,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 30,
+      "branch_offset": "0x1570",
+      "handler_offset": "0x984"
+    },
+    {
+      "method": 31,
+      "branch_offset": "0x1580",
+      "handler_offset": "0x9d8"
+    },
+    {
+      "method": 32,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 33,
+      "branch_offset": "0x1590",
+      "handler_offset": "0xae8"
+    },
+    {
+      "method": 34,
+      "branch_offset": "0x15a0",
+      "handler_offset": "0xba0"
+    },
+    {
+      "method": 35,
+      "branch_offset": "0x15b0",
+      "handler_offset": "0xbf0"
+    },
+    {
+      "method": 36,
+      "branch_offset": "0x15c0",
+      "handler_offset": "0xd9c"
+    },
+    {
+      "method": 37,
+      "branch_offset": "0x15d0",
+      "handler_offset": "0xde4"
+    },
+    {
+      "method": 38,
+      "branch_offset": "0x15e0",
+      "handler_offset": "0xe20"
+    },
+    {
+      "method": 39,
+      "branch_offset": "0x15f0",
+      "handler_offset": "0xe68"
+    },
+    {
+      "method": 40,
+      "branch_offset": "0x1600",
+      "handler_offset": "0xebc"
+    },
+    {
+      "method": 41,
+      "branch_offset": "0x1610",
+      "handler_offset": "0xf10"
+    },
+    {
+      "method": 42,
+      "branch_offset": "0x1620",
+      "handler_offset": "0xfb0"
+    },
+    {
+      "method": 43,
+      "branch_offset": "0x1630",
+      "handler_offset": "0x1000"
+    },
+    {
+      "method": 44,
+      "branch_offset": "0x1640",
+      "handler_offset": "0x1048"
+    },
+    {
+      "method": 45,
+      "branch_offset": "0x1650",
+      "handler_offset": "0x1090"
+    },
+    {
+      "method": 46,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 47,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 48,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 49,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 50,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 51,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 52,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 53,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 54,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 55,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 56,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 57,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 58,
+      "branch_offset": "0x16d0",
+      "handler_offset": null
+    },
+    {
+      "method": 59,
+      "branch_offset": "0x1660",
+      "handler_offset": "0x10cc"
+    },
+    {
+      "method": 60,
+      "branch_offset": "0x1670",
+      "handler_offset": "0x1144"
+    },
+    {
+      "method": 61,
+      "branch_offset": "0x1680",
+      "handler_offset": "0x1180"
+    },
+    {
+      "method": 62,
+      "branch_offset": "0x16c0",
+      "handler_offset": "0x1254"
+    },
+    {
+      "method": 63,
+      "branch_offset": "0x16a0",
+      "handler_offset": "0x12d0"
+    },
+    {
+      "method": 64,
+      "branch_offset": "0x16b0",
+      "handler_offset": "0x1324"
+    },
+    {
+      "method": 65,
+      "branch_offset": "0x1690",
+      "handler_offset": "0x1380"
+    }
+  ],
+  "failures": 0,
+  "limitations": [
+    "IOP addresses are module-relative, before relocation.",
+    "AVEWRAPE and USBSRCH identities/imports and service-registration constants were also inspected; their complete method semantics remain unresolved.",
+    "The complete wire protocol, authentication, battle synchronization and service 0x01270010 remain unresolved.",
+    "Method numbers and AVE opcodes are observed; API semantic names are not inferred from numbers.",
+    "REA rejected the IRX type in its Ghidra lane; these are Python byte checks, not decompiler Evidence."
+  ],
+  "date": "2026-10-29",
+  "modules": [
+    {
+      "file": "USBSRCH.IRX",
+      "sha256": "3b8226b95b0fe552cce8016d088ee3fc4fabe85ba3f25858d78f6d77dd1d065a",
+      "bytes": 4889,
+      "internal_name": "Capcom_USB_Device_Searcher",
+      "name_file_offset": "0x8e",
+      "imports": [
+        "usbd",
+        "intrman",
+        "loadcore",
+        "sifcmd",
+        "stdio",
+        "sysclib",
+        "thbase",
+        "thsemap"
+      ]
+    },
+    {
+      "file": "DEV9.IRX",
+      "sha256": "87ce732b196612d7fa2572b21a548474b0f9fcebdd456fc4427381077f00cdb8",
+      "bytes": 13757,
+      "internal_name": "dev9",
+      "name_file_offset": "0x8e",
+      "imports": [
+        "stdio",
+        "sysclib",
+        "loadcore",
+        "thbase",
+        "thsemap",
+        "ioman",
+        "dmacman",
+        "intrman"
+      ]
+    },
+    {
+      "file": "DEVGLUE.IRX",
+      "sha256": "a3fbd8eaa84bcf61957f779fc87630286ecfb0f7460df845e2b6d6ffbed9d558",
+      "bytes": 59229,
+      "internal_name": "AVE_TCP_DEVGLUE_LIB",
+      "name_file_offset": "0x8e",
+      "imports": [
+        "avetcp",
+        "sysmem",
+        "intrman",
+        "loadcore",
+        "stdio",
+        "sysclib",
+        "thbase",
+        "thevent",
+        "thsemap"
+      ]
+    },
+    {
+      "file": "AVEWRAPE.IRX",
+      "sha256": "0d85884973dfd933407679ece4b0e66a9526d4026924f0ba868505f8033d0050",
+      "bytes": 17573,
+      "internal_name": "Capcom_AVE_TCP_Wrapper",
+      "name_file_offset": "0x8e",
+      "imports": [
+        "avetcp",
+        "devglue",
+        "intrman",
+        "loadcore",
+        "sifcmd",
+        "stdio",
+        "sysclib",
+        "thbase",
+        "thsemap"
+      ]
+    },
+    {
+      "file": "SMAP.IRX",
+      "sha256": "1590f192182002010adda649cc0d639847b69290c8a3ed79d42395401844daa6",
+      "bytes": 17105,
+      "internal_name": "INET_SMAP_driver",
+      "name_file_offset": "0x8e",
+      "imports": [
+        "netdev",
+        "dev9",
+        "intrman",
+        "stdio",
+        "sysclib",
+        "thbase",
+        "thevent",
+        "modload",
+        "loadcore"
+      ]
+    }
+  ],
+  "runtime_gaps": [
+    {
+      "source": "vendor/ps2-web-recomp/runtime/src/iop/sif.cpp",
+      "observation": "LoadFile RPC 0x80000006 method 9 unconditionally returns -202, even if the module is loaded.",
+      "sha256": "055931ff460887126e181d6646fff67ec01638192a7709c4d0b63d2729633a24"
+    },
+    {
+      "source": "vendor/ps2-web-recomp/runtime/src/iop/kernel.cpp",
+      "observation": "Module registry uses upper-case filename stems rather than internal .iopmod names, so SMAP differs from INET_SMAP_driver.",
+      "sha256": "1fbb5fc82a054a3796f0a48ea2cfd16e40dc6c1f109ccc261381b728d62eea99"
+    },
+    {
+      "source": "vendor/ps2-web-recomp/runtime/src/iop/sif.cpp",
+      "observation": "Unregistered RPC bind times out after four guest seconds with server_data=0; original 0x30E2D0 and 0x3371C8 callers retry. Unknown call acknowledges without producing a response.",
+      "sha256": "055931ff460887126e181d6646fff67ec01638192a7709c4d0b63d2729633a24"
+    },
+    {
+      "source": "vendor/ps2-web-recomp/runtime/src/iop/hw.cpp",
+      "observation": "No DEV9/SMAP device branch in read/write; unmatched register reads default to zero and unmatched writes use a register map. Unsupported DMA channels log and immediately complete.",
+      "sha256": "5db82742646f1592c500c12f7470dc540deec73443ddf96559dfa1334a9683db"
+    }
+  ],
+  "experimental_slice": {
+    "profile": "original-online-module-discovery-v1",
+    "state": "implemented; native helper and Emscripten compilation passed; full-game effectiveness not established",
+    "changes": [
+      "Read original .iopmod name for guest-loaded modules",
+      "Resolve LoadFile09 only against real loaded modules; unknown remains -202",
+      "Reject invalid request/reply spans",
+      "Remove module registry entries when the runtime frees nonresident module memory"
+    ],
+    "network_backend": false,
+    "original_online_success": false,
+    "limitations": [
+      "Name lookup proves module identity only, not startup completion, residency or RPC registration",
+      "Optional runtime overrides were compiled but not linked or executed in this browser trial",
+      "Only guest-loaded IRX identities change; HLE names retain filename stems",
+      "Real SIF lookup lifecycle and duplicate-name reload tests remain outstanding"
+    ],
+    "source_sha256": {
+      "poc/original-online/module_names.hpp": "ccc8bc33e8b6df8b7a01a08483ba30172c517397f1f54d9596c24ce5902dd045",
+      "poc/original-online/prepare_runtime.py": "c964f4e22c8340a2ecc4d94e03d2066f237f9eb947e7941a95b954e17e96b998",
+      "tests/original-online/module_names_test.cpp": "ed0e8de5379efbffac7e650fdb14c4845ddc9eb61848e1340a34a1025de28d60"
+    }
+  },
+  "browser_probe": {
+    "scope": "Original menu/lifecycle observation only",
+    "passed": true,
+    "network_success": false,
+    "browser": "156.0.8078.48",
+    "entry": "Normal boot; ordinary menu inputs; original result 7 unchanged",
+    "settings": {
+      "fps_requested": 60,
+      "no_personal_card": true,
+      "output_muted": "Chrome --mute-audio",
+      "external_app_transport": "blocked"
+    },
+    "samples": 12,
+    "modes": {
+      "2": 1,
+      "7": 11
+    },
+    "mode7_state_stage": [
+      [
+        0,
+        1
+      ]
+    ],
+    "lifecycle_events": [
+      {
+        "event": "menu",
+        "mode": 7
+      },
+      {
+        "event": "mode",
+        "state_word": 7
+      },
+      {
+        "event": "mode",
+        "state_word": 16777223
+      },
+      {
+        "event": "mode",
+        "state_word": 65543
+      },
+      {
+        "event": "connection",
+        "state_word": 0
+      },
+      {
+        "event": "connection",
+        "state_word": 256
+      },
+      {
+        "event": "connection",
+        "state_word": 512
+      },
+      {
+        "event": "connection",
+        "state_word": 1
+      },
+      {
+        "event": "connection",
+        "state_word": 257
+      },
+      {
+        "event": "connection",
+        "state_word": 2561
+      }
+    ],
+    "event_counts": {
+      "menu": 1,
+      "call": 273,
+      "mode": 3,
+      "connection": 6
+    },
+    "after_cancel_mode": 2,
+    "audio_contexts_running": true,
+    "audio_ring_first": [
+      1078336,
+      1078336,
+      16384,
+      1
+    ],
+    "audio_ring_last": [
+      1903168,
+      1903168,
+      16384,
+      1
+    ],
+    "page_errors": [],
+    "blocked_requests": [],
+    "visual_observation": "Game capture black at entry and during mode7; overlay visible. Cause unresolved.",
+    "limitations": [
+      "One independent instance only; no original network service bind or battle entry observed",
+      "Neutral observation followed by KeyZ cancel; event trace lacks a phase timestamp, so final substate10 cannot be called a neutral stall",
+      "Source state1/substate1 polls input helpers; source substate10 follows cancel",
+      "No performance result: trace logging can perturb execution time",
+      "First attempt failed before guest execution because server was still preparing the disc; successful retry used ready server"
+    ],
+    "raw_archive": ".local/original-online/browser-final",
+    "raw_sha256": {
+      "entry-8.png": "a569cf286d45172db087d922ea171e98ac2097c24c5db0c38d0d5188d75491f7",
+      "result.json": "d731b8880643e0e2b7a8890f0375e844d7809da2ce68469395be6aa2f5c79980",
+      "samples.json": "c174cfd9ce41d554d67e2e2bf34386f07d7476862f8d6ab0d0a22cf5cd1b0215",
+      "console.log": "231eb054016e6e1401672c089dc15dd590cf85cce087afac1b0ff6ee7b036854",
+      "entry-0.png": "0b90c09a2996da930b8a0d46b1576fbfe44c4c01c440f7dbd9314c3607d71805",
+      "entry-4.png": "910c6ee0508d5b226691b6fd30c75012b7e1ec1b9348e494926c9d336ed47cec",
+      "original-mode7.png": "789edfae29b585cffb782fd46bd44f2a917ec5de94ec8eed957998f5026268fd"
+    },
+    "build": {
+      "profile": "original-online-observer-v1",
+      "fresh_build": false,
+      "toolchain": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.11 (a0014542110d6078c3a1a7941fa1ddb3a2281f16)",
+      "archives_sha256": {
+        "base/libps2game.a": "78eff5c002c95db5a202a0297be636375aa363eccf1d140d51c2ac01b19aafe4",
+        "base/libps2runtime.a": "b55a7fe68a220412c637f412f3a9e61250f66f71f6a2cc8abbecce251ccc155f"
+      },
+      "executable_sha256": {
+        "index.wasm": "93cc12a3f18bc3312b96bb4770404f0c81a203a8f39d1debcfd6bc7250bc92b4",
+        "index.html": "3b70a04b09cde075c5db411b8fcf2c06af988b224b355d251b3517857e6b2693",
+        "index.js": "ea4829cca4317b282601edf4b141aed78d8c8b7373213994e82eaa42f7dd4246"
+      }
+    },
+    "harness_sha256": "d43a2c45123c3516f0f29d6f9f1ebe20f1f112e226bea7edfd3b6b57407b06c1",
+    "harness_archive": ".local/original-online/browser-probe-tested.cjs"
+  },
+  "validation": {
+    "original_words": {
+      "ee": 19,
+      "iop": 16,
+      "dispatch_slots": 66,
+      "failures": 0
+    },
+    "python_profile_tests": 3,
+    "native_module_tests": {
+      "passed": true,
+      "host": "Allocated PC, WSL",
+      "original_irx": [
+        "SMAP.IRX",
+        "AVEWRAPE.IRX"
+      ]
+    },
+    "optional_runtime_compile": {
+      "passed": true,
+      "toolchain": "Emscripten 6.0.11",
+      "files": [
+        "kernel.cpp",
+        "sif.cpp"
+      ],
+      "final_log_sha256": "4602150c496d681d819f67fe2aeb7fb8912a8ddf0e3c536d8440847f4c794fea",
+      "input_sha256": {
+        "kernel.cpp": "86bbe17faa6148cb5891d0693cc8bf74a59e69fc129f2fa480b96e8564ed55ca",
+        "sif.cpp": "055931ff460887126e181d6646fff67ec01638192a7709c4d0b63d2729633a24"
+      }
+    },
+    "portable_game_checks": {
+      "passed": true,
+      "javascript_tests": 81,
+      "multiplayer_python_tests": 28,
+      "server_tests": 1,
+      "matched_package": "1186 generated files and 16 prebuilt files verified unchanged"
+    },
+    "reader": {
+      "wiki_build": true,
+      "report_check": true,
+      "layout_checks": 12,
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "page_errors": 0
+    }
+  },
+  "next_experiment": "Use timestamped input phases and confirm in original connection state1; diagnose the black UI, then observe the first actual LoadFile09/custom service bind before evaluating the optional module-discovery slice",
+  "next_harness": {
+    "state": "syntax checked; not executed in-game",
+    "changes": [
+      "Monotonic timestamps for observer events and inputs",
+      "Explicit phases and pre-cancel snapshot",
+      "Optional ordinary confirm input and fresh default/no-card comparison",
+      "New output directory and HTTP readiness precondition",
+      "Require cancel return, running audio/ring consumption and no engine/page failure"
+    ]
+  },
+  "review": {
+    "source": ".local/original-online/consultation.md",
+    "sha256": "ea87149ec3927c08841b98e0faaa229b40eb0989f9bc87a8d16b65b738522a09",
+    "scope": "Read-only fallback AI review; no new game execution",
+    "applied": [
+      "Nonresident registry cleanup and identity/readiness distinction",
+      "Cancel-phase attribution and confirm-first next experiment",
+      "Stronger future harness acceptance"
+    ],
+    "remaining": [
+      "Actual SIF/lifecycle regression and optional linked-game test",
+      "Completion/status instrumentation once the original network boundary is reached"
+    ]
+  }
+}

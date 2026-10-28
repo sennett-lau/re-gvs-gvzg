@@ -25,10 +25,10 @@ The checkout now includes pinned runtime sources, complete adaptive hooks, gener
 
 ### 2 · Complete multiplayer acceptance
 
-- **Route A · Streaming:** Compare selectable direct/relay ICE and supported media hints, then complete a host-plus-two-client match. Measure latency and recovery. See [the proposed settings](07-host-streaming.md#reduce-streaming-latency-the-proposed-experiment).
-- **Route B · Independent clients:** Measure hash cost and tune the measured startup delay using the new input-wait counters. Normal boot and selection now work; prove battle-to-rematch checkpoints across separate devices. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
+- **Stream Mode:** Compare selectable direct/relay ICE and supported media hints, then complete a host-plus-two-client match. Measure latency and recovery. See [the proposed settings](07-host-streaming.md#reduce-streaming-latency-the-proposed-experiment).
+- **Online Mode:** Continue through original connection state `1`, diagnose its black UI, then capture the first native module/service boundary. See [the original-mode experiment](08-independent-clients.md#the-native-boundary-and-first-bounded-implementation).
 
-Investigate the original Network Battle bridge separately before committing to restoration. It is an integration option within route B, not a completed third mode.
+Keep the existing local-Versus lockstep experiment available independently. Its next acceptance work is battle-to-rematch checkpoints across separate devices and input-wait measurements. It does not implement original Online Mode. See [checkpoint and wait instrumentation](08-independent-clients.md#measure-checkpoint-cost-and-input-waiting).
 
 ### 3 · Validate the current phone build
 

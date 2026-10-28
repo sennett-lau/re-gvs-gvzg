@@ -86,7 +86,9 @@ The numbered records below are in [rendering-findings.json](rendering-findings.j
 
 Read [04 · The frame-rate goal](../chapters/04-frame-rate.md) for the metric definitions, [05 · Game hooks](../chapters/05-rendering-boundary.md) for the mechanism, and [06 · Results and limits](../chapters/06-adaptive-rendering.md) for the device and mode boundaries.
 
-## Multiplayer: two different routes
+## Stream Mode, Online Mode and the lockstep experiment
+
+**Stream Mode** runs one game host. **Online Mode** means two independent instances using the original 通信対戦 flow. The existing local-Versus lockstep experiment does not implement Online Mode. See the [native boundary record](original-online-boundary.json) for original-byte checks, runtime gaps and the isolated module-discovery implementation.
 
 The [2026-10-26 implementation review](implementation-review.json) checks suggestions against actual source: GPU/CLUT batching, relay-only streaming, configurable lockstep delay and the live FNV-1a hash/wait path. It records source inspection, not a new performance result.
 
@@ -97,7 +99,7 @@ The [2026-10-26 implementation review](implementation-review.json) checks sugges
 | Why did browser state diverge? | [Network findings](network-findings.json): `disc_readiness_causality`, `checkpoint240_complete_ram_comparison`, `browser_release_stress` | Controlled disc-readiness failure and agreement after the timing correction | Rollback, mid-match resynchronization and long internet sessions |
 | Can the original Network Battle flow be restored? | [Network findings](network-findings.json): `original_online`, `coop_anything` | Inspected dispatch/UI/server behavior and the assessment of an external approach | A working original lobby connection and complete browser integration |
 
-The later [multiplayer integration record](multiplayer-integration.json) adds original-menu handoff, normal boot, active two-human battles, own-player cropping and a dedicated streaming host with two clients. Its optimized-build checks used separate browser contexts on one PC. The [setup guide](../GAME_FILES.md#multiplayer-integration) includes the repeatable GPU harness.
+The later [multiplayer integration record](multiplayer-integration.json) adds a menu handoff into local Versus, normal boot, active two-human battles, own-player cropping and a dedicated streaming host with two clients. Its optimized-build checks used separate browser contexts on one PC; they do not establish original Online Mode. The [setup guide](../GAME_FILES.md#multiplayer-integration) includes the repeatable GPU harness.
 
 ## Finding the original record
 

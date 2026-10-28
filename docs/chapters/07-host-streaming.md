@@ -1,4 +1,4 @@
-# 07 · Multiplayer route A: one host, two controllers
+# 07 · Stream Mode: one host, remote controllers
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/07-host-streaming.html).
 
@@ -8,7 +8,7 @@
 > - **Result:** The original Network Battle menu now opens a private room. Both host-as-P1 and a separate host with two streamed players entered Versus and started a battle. Rejoining preserved controller ownership.
 > - **Still open:** Full matches on separate physical devices, phone tests and latency measurements remain.
 
-**🟡 Partially verified · Native menu entry, active battle and same-port rejoin tested.** Route A puts game computation on one host. The host can play as P1 with a remote P2, or reserve both controller ports for remote players. The new source profile is separate from the published adaptive package.
+**🟡 Partially verified · Native menu entry, active battle and same-port rejoin tested.** Stream Mode puts game computation on one host. The host can play as P1 with a remote P2, or reserve both controller ports for remote players. It can carry local Versus or other game modes. The new source profile is separate from the published adaptive package.
 
 ## Move game computation to a host
 

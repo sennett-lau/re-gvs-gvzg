@@ -83,13 +83,13 @@ Draw smoother motion while preserving gameplay speed.
 
 Compare two ways to play together on separate devices.
 
-- [07 · Route A: One host, two controllers](docs/chapters/07-host-streaming.md)
+- [07 · Stream Mode: One host, remote controllers](docs/chapters/07-host-streaming.md)
 
   Run one game on a host and stream it to remote controllers.
 
-- [08 · Route B: A game on each device](docs/chapters/08-independent-clients.md)
+- [08 · Online Mode and independent-client experiments](docs/chapters/08-independent-clients.md)
 
-  Run the game on each device and keep the copies synchronized.
+  Research original 通信対戦 between independent instances. The existing local-Versus lockstep POC remains a separate experiment.
 
 ### Findings and further work
 

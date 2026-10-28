@@ -1,14 +1,16 @@
-# 08 · Multiplayer route B: a game on each device
+# 08 · Online Mode and the independent-client experiments
 
 > Prefer the illustrated reader? [Read this chapter in the Wiki](https://sennett-lau.github.io/re-gvs-gvzg/08-independent-clients.html).
 
 > **At a glance**
 >
-> - **Question:** Can each player run the game locally while both copies agree on the match?
-> - **Result:** Two browsers now start from a normal boot, use the original menus and enter a two-human Versus battle. The longer trial agreed through checkpoint 13,560 at round end.
-> - **Still open:** Second-battle checkpoint acceptance, separate-device Internet play and mobile checkpoint cost remain to be tested. The original online service has not been restored.
+> - **Question:** Can two independent game instances use the original 通信対戦 lifecycle?
+> - **Result:** The experimental lockstep POC synchronized local Versus through checkpoint 13,560. Original Online Mode has a separate RPC boundary, now mapped below.
+> - **Still open:** A working original network connection and battle. Lockstep results do not establish Online Mode.
 
-**🟡 Partially verified · Normal boot, native selection and active two-player battle tested.** Route B runs a copy of the game on each device. A relay exchanges inputs and state checks, with no video stream. The original Arcade challenge fixture established the transport; the new source profile also works without that private fixture.
+**🟡 Partially verified · Experimental local-Versus lockstep.** The retained POC runs a copy on each device and exchanges inputs and state checks. It has no video stream. Its normal-boot results preserve useful transport evidence.
+
+**Online Mode** means two independent instances using original **通信対戦**, mode `7`. **Stream Mode** runs one host with remote controllers, in local Versus or another mode. The existing lockstep POC returns mode `4` and does not meet the Online Mode goal.
 
 ## Start with two independently controlled players
 
@@ -74,7 +76,7 @@ First measure snapshot size, save/restore time and a replay checksum in the exis
 
 ## Move from the fixture into the full game
 
-The new profile intercepts the original **通信対戦 / Network Battle** selection at `0x211180`. A short browser connection desk creates or joins an invitation-only room. It closes when play resumes; character selection, team assignment, readiness and combat remain original game screens.
+The experimental lockstep profile intercepts **通信対戦 / Network Battle** at `0x211180`. Its browser connection desk creates or joins an invitation-only room. It then enters original **local Versus** screens. This is the historical POC, not original Online Mode integration.
 
 ```text
 Original Network Battle selection
@@ -123,14 +125,37 @@ The compatible [zdxsv server](https://github.com/inada-s/zdxsv/tree/35ffbdad9257
 
 Changing a hostname is therefore insufficient. The original connection calls still need mapping to a browser-compatible runtime bridge. Server-supplied R5900 patches also need review: writing guest machine code does not prove the static translation will execute the new behavior.
 
-There are two ways to integrate the game's online menu within route B:
+These are separate implementations with different acceptance criteria:
 
 | Integration option | Work needed | Current status |
 | --- | --- | --- |
-| Browser-owned lobby | Intercept the menu handoff, agree on settings, then launch the existing input-sync route | Implemented in the normal-boot source profile; native selection and battle tested. |
-| Restore the original lobby | Bridge the original network/session calls to a compatible backend | Original behavior has been inspected. No working connection has been demonstrated. |
+| Experimental lockstep POC | Agree on settings, then synchronize local Versus | Normal boot, selection and battle tested. Does not implement Online Mode. |
+| Original Online Mode | Preserve mode `7` and bridge its native network/session requests | Native RPC boundary mapped. No working connection or online battle demonstrated. |
 
-Both belong to the independent-client route. An invitation should identify the chosen server and room, while a short code would only make sense within that server.
+An Online Mode invitation should identify its server and room. Browser invitation handling alone cannot replace the native session lifecycle.
+
+### The native boundary and first bounded implementation
+
+**Verified statically · Original ELF and IRX bytes.** Mode `7` reaches connection dispatcher `0x368A80` through initializer `0x306A90`. Its state record starts at `0xCD1360`. The battle path remains `0x307E30 → 0x2B19F0`.
+
+The EE binds RPC service `0x01270030` at `0x30E2E0`. Both disc wrappers, `AVEWRAPM.IRX` and `AVEWRAPE.IRX`, register that service. `USBSRCH.IRX` registers the separate device-search service `0x01270010`.
+
+The modem wrapper dispatches 66 method slots. Method `1` forwards three words from request offset `28` to `avetcp` import `4`, opcode `0x4105`. The EE stages requests at `0xC22C80` and reads a signed result at offset `24`. These are local RPC fields, not a recovered Internet packet format. [Original-word checks and selected module identities](../evidence/original-online-boundary.json).
+
+The runtime has concrete gaps before a compatible server can help:
+
+- LoadFile method `9` always returns `-202`, even for a loaded module.
+- The module registry stores filename stems. The game queries internal names such as `INET_SMAP_driver`, rather than `SMAP`.
+- Missing RPC services time out. Original bind callers retry, so returning mode `7` alone can leave initialization waiting indefinitely.
+- DEV9/SMAP device handling is absent. Unmatched registers use a generic register map, and unsupported DMA channels complete without device emulation.
+
+The isolated observer in `poc/original-online/` preserves every original instruction and records mode, connection state and SIF call metadata. An optional module-discovery slice reads real IRX names and answers LoadFile method `9` from the loaded-module registry. Unknown modules still return `-202`, and freed nonresident modules are removed from the registry. A matching name does not establish successful startup or RPC registration. Neither component supplies network success or bypasses battle synchronization.
+
+Native helper tests passed malformed-input and missing-module cases, plus the original SMAP and Ethernet-wrapper module names. Both optional runtime files compiled with Emscripten `6.0.11`. Full-game effectiveness of that slice remains unverified. The working Stream Mode and lockstep builds remain separate.
+
+**Measured · One PC browser, original mode entry only.** A normal-boot observer build selected the original menu item. Eleven of twelve sampled states were mode `7`, initializer state `0`, stage `1`; the first sample was the menu transition. No sample was local Versus mode `4`. Original cancel returned to menu mode `2`. The AudioContext remained running and audio-ring counters advanced under browser output mute.
+
+The game capture remained black, with the browser overlay visible. The combined entry/cancel trace contained six connection-state changes, but no custom-service bind or battle entry. Original state `1`, substate `1` polls input; substate `10` follows cancellation. The trace does not timestamp that boundary, so the last word is not evidence of a network stall. UI visibility and confirmation within that original state are the next experiment. No server connection, second client or online battle was demonstrated. [Selected trace and build fingerprints](../evidence/original-online-boundary.json).
 
 ## What Co-op Anything contributes
 
@@ -142,4 +167,4 @@ Rendering interpolation is useful observability, but positions alone are not a r
 
 Carry the next briefing into a second battle with matching checkpoints, then test cancellation and session restart. Repeat on separate devices, delayed networks and an actual phone. The current normal-boot profile already excludes personal memory cards and agrees on the initial settings. Session interruption stops safely; in-match resynchronization remains future work.
 
-Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. In parallel, trace the original online requests and prove an isolated lobby connection before choosing restoration as the long-term route. A successful login alone will not establish a playable online mode.
+Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. For Online Mode, confirm within original connection state `1` with timestamped input phases and diagnose the black UI. Then capture the first actual bind/module failure, validate module discovery, and implement one observed request and response. Preserve the original lobby and battle synchronization throughout. A successful login alone will not establish playable Online Mode.
