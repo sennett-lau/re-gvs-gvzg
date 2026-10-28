@@ -1,0 +1,3 @@
+# Observed native targets; no fabricated code or state. See chapter08.
+001B2DA0
+001B4960

@@ -72,4 +72,28 @@ The first observed runtime stop is the original network-settings editor calling 
 python3 poc/original-online/verify_handoff.py --elf /private/SLPS_254.19 --overlay /private/0117F000_MWO_2664CCF5.bin --target /private/NTGDVDJ.BIN --output .local/original-online/static-handoff.json
 ```
 
-The target is a separate program; the current observer never converts that unsupported handoff into success. The fresh-card replay, exact halt, failed acceptance checks and next utility-only experiment are recorded in chapter 08.
+The target is a separate program; the current observer never converts that unsupported handoff into success. The fresh-card replay, exact halt, failed acceptance checks and separate utility result are recorded in chapter 08.
+
+
+### Standalone original utility probe
+
+This diagnostic boots `NTGUIDVD/NTGDVDJ.BIN` as a separate machine. It does not implement `LoadExecPS2`, configure a server, or enable Online Mode. It uses the generic pinned upstream runtime and web host, with its own translated dispatch and interpreted/JIT VU programs. Generated utility sources, the original ELF, disc, card, binaries and captures remain private under `.local/`.
+
+The first run stopped at indirect callback `0x1B2DA0`. Adding that observed entry reached the original thread entry `0x1B4960`, also missing from the automatic translation. `utility-entries.txt` records these two observed targets; it does not bypass either function. `verify_utility.py` checks the original caller/prologue words and their generated dispatch coverage.
+
+With an existing compiler built by the repository's retained compiler procedure and a local checkout of the pinned upstream source:
+
+```sh
+mkdir -p .local/original-utility
+"$COMPILER" "$UTILITY_ELF" --entries poc/original-online/utility-entries.txt --out .local/original-utility/generated
+python3 poc/original-online/verify_utility.py --elf "$UTILITY_ELF" --generated .local/original-utility/generated
+git -C "$UPSTREAM_CHECKOUT" show 6526f4803d98e10de50bea3af104a4d26e9df033:web/shell.html > .local/original-utility/shell.html
+python3 poc/original-online/build_utility.py --sdk "$EMSDK" --elf "$UTILITY_ELF" --generated .local/original-utility/generated --shell .local/original-utility/shell.html --work .local/original-utility/build
+python3 scripts/game/serve.py --disc "$DISC" --build .local/original-utility/build/web --port 8645
+```
+
+The build requires the verified original utility and shell hashes, a fresh output directory, and Emscripten `6.0.11`. It writes source, generated-input, SDK, command and output fingerprints to `build-info.json`. No game address hooks, game archives or runtime patches are linked. The only diagnostic translation unit registers no precompiled VU programs and exports a bounded read-only guest-word accessor. Producer tracing is off by default; the explicit environment switches `PS2_UTILITY_TRACE_MODULES`, `PS2_UTILITY_TRACE_SYSCALLS` and `PS2_UTILITY_TRACE_IO` opt in through the upstream shell query parameters. Module tracing also prints every IOP DMA, so it is unsuitable for a long UI capture.
+
+`tests/original-online/utility-browser.cjs` imports the fingerprinted fresh test-card copy through the original host UI, then supplies all three guest arguments: the helper disc pathname, game disc pathname and `1`. It launches fresh Chrome with output muted, samples active audio consumption, and blocks external application connections. Set `PLAYWRIGHT_MODULE`, `CHROME_PATH`, `PROBE_CARD_FIXTURE` and `PROBE_CONTROL_FILE`, then run it with a loopback URL and new capture directory. The bounded control file accepts increasing IDs with ordinary key presses, for example `{"id":1,"action":"press","code":"KeyX"}`, or `{"id":2,"action":"finish"}`. Inspect the preceding screenshot before submitting a key; it does not infer a menu action or write guest state.
+
+The harness captures engine halt lines independently of the generic host's status text, which can still say Running after a native halt. Suppressed browser-log counts are explicit. The private test card is not distributed; a changed card fingerprint must be established from a new controlled capture before adapting this probe. Configuration acceptance requires an original save and fresh-process readback, and remains separate from the helper's unsupported return handoff.
