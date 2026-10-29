@@ -33,6 +33,8 @@ class ProfileTest(unittest.TestCase):
                 info['commands'].append(['em++', '-c', '/recorded/build/' + name, '-o', '/recorded/build/objects/' + obj.name])
             objects = build.utility_objects(base, info)
             self.assertEqual([path.name for path in objects], ['1-kernel.o', '3-table.o'])
+            objects = build.utility_objects(base, info, build.REPLACED | {'upstream/runtime/src/iop/kernel.cpp'})
+            self.assertEqual([path.name for path in objects], ['3-table.o'])
             (base / names[1]).write_text('changed')
             with self.assertRaisesRegex(ValueError, 'source changed'): build.utility_objects(base, info)
 
@@ -43,6 +45,21 @@ class ProfileTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Ambiguous'): build.utility_objects(Path(temp), info)
             info['commands'] = []
             with self.assertRaisesRegex(ValueError, 'coverage'): build.utility_objects(Path(temp), info)
+
+    def test_overlapping_device_and_network_changes_compile_once(self):
+        with tempfile.TemporaryDirectory() as temp:
+            tree = Path(temp)
+            for name in ['kernel.cpp', 'libs.cpp', 'dev9.cpp', 'cpu.cpp']:
+                path = tree / 'runtime/src/iop' / name
+                path.parent.mkdir(parents=True, exist_ok=True); path.write_text('synthetic source')
+            device = {'replaced_sources': ['runtime/src/iop/kernel.cpp', 'runtime/src/iop/libs.cpp'],
+                      'compiled_sources': ['runtime/src/iop/dev9.cpp']}
+            network = {'replaces_sources': ['runtime/src/iop/kernel.cpp'],
+                       'compiled_sources': ['runtime/src/iop/cpu.cpp', 'runtime/src/iop/kernel.cpp']}
+            self.assertEqual(build.manifest_sources(tree, device, network),
+                ['runtime/src/iop/kernel.cpp', 'runtime/src/iop/libs.cpp', 'runtime/src/iop/dev9.cpp', 'runtime/src/iop/cpu.cpp'])
+            for invalid in ['../kernel.cpp', '/kernel.cpp', 'C:/kernel.cpp', 'runtime\\kernel.cpp', 'missing.cpp']:
+                with self.assertRaises(ValueError): build.manifest_sources(tree, {'compiled_sources': [invalid]})
 
 
 if __name__ == '__main__': unittest.main()

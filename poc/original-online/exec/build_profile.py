@@ -54,7 +54,7 @@ def base_metadata(image, base):
     return None, None, {'method': 'exact retained archive pair', 'web_build_metadata': 'absent', 'archives_sha256': actual}
 
 
-def utility_objects(base, info):
+def utility_objects(base, info, replaced=None):
     """Use source-to-object records, never ambiguous stems (EE/IOP kernel)."""
     known = info['sources_sha256']
     mappings = {}
@@ -71,10 +71,28 @@ def utility_objects(base, info):
     for name, expected in known.items():
         if digest(base / name) != expected: raise ValueError('Utility source changed: ' + name)
         if not mappings[name].is_file(): raise ValueError('Missing retained utility object: ' + str(mappings[name]))
-    return [obj for name, obj in mappings.items() if name not in REPLACED]
+    replaced = REPLACED if replaced is None else replaced
+    return [obj for name, obj in mappings.items() if name not in replaced]
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT):
+def manifest_sources(tree, *manifests):
+    """Compile each final composed source once, including every replacement."""
+    names = []
+    for manifest in manifests:
+        if not manifest: continue
+        for key in ['replaced_sources', 'replaces_sources', 'compiled_sources']:
+            for name in manifest.get(key, []):
+                path = Path(name)
+                if path.is_absolute() or '..' in path.parts or '\\' in name or ':' in name:
+                    raise ValueError('Invalid composed source path: ' + name)
+                actual = (tree / path).resolve()
+                if not actual.is_relative_to(tree.resolve()) or not actual.is_file():
+                    raise ValueError('Missing or escaped composed source: ' + name)
+                if name not in names: names.append(name)
+    return names
+
+
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None):
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
     info_path = base / 'web/build-info.json'
@@ -95,7 +113,6 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         generated = base / 'generated'
         # Original entry bytes + both observed translation targets are required.
         subprocess.run([sys.executable, str(source_root / 'poc/original-online/verify_utility.py'), '--elf', str(elf), '--generated', str(generated)], check=True)
-    retained_hashes = {str(path): digest(path) for path in retained}
     storage_hash = digest(storage_path)
     storage = module('exec_storage_preparation', storage_path)
     work.mkdir(parents=True)
@@ -103,6 +120,12 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     shutil.copytree(base / 'upstream', source, ignore=shutil.ignore_patterns('._*', '__pycache__'))
     storage_manifest = storage.prepare(source)
     if digest(storage_path) != storage_hash: raise ValueError('Storage preparer changed during composition')
+    device_manifest = None
+    if device_path:
+        device_hash = digest(device_path)
+        device = module('exec_device_preparation', device_path)
+        device_manifest = device.prepare(source)
+        if digest(device_path) != device_hash: raise ValueError('Device preparer changed during composition')
     network_manifest = None
     if network_path:
         network_hash = digest(network_path)
@@ -121,11 +144,13 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     sources = [prepared / 'kernel.cpp', prepared / 'web.cpp', HERE / 'runtime.cpp', HERE / 'web_notify.cpp']
     sources += [source / 'runtime/src/iop' / name for name in ['io.cpp', 'sif.cpp', 'sio2.cpp', 'native_storage.cpp']]
     if image == 'utility': sources.append(HERE / 'utility_diagnostic.cpp')
-    if network_manifest:
-        for name in network_manifest['compiled_sources']:
-            path = source / name
-            if path in sources: raise ValueError('Duplicate composed runtime source: ' + name)
-            sources.append(path)
+    composed_names = manifest_sources(source, device_manifest, network_manifest)
+    for name in composed_names:
+        path = source / name
+        if path not in sources: sources.append(path)
+    if image == 'utility' and composed_names:
+        retained = utility_objects(base, info, REPLACED | {'upstream/' + name for name in composed_names})
+    retained_hashes = {str(path): digest(path) for path in retained}
     observer = None
     if image == 'game':
         online = module('exec_online_observation', source_root / 'poc/original-online/prepare.py')
@@ -176,6 +201,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
              source_root / 'poc/original-online/verify_utility.py']},
         'exec_inputs_sha256': {str(path): digest(path) for path in HERE.iterdir() if path.is_file()},
         'storage_preparation_sha256': storage_hash, 'storage': storage_manifest, 'observer': observer,
+        'device_preparation_sha256': device_hash if device_path else None, 'device': device_manifest,
         'network_preparation_sha256': network_hash if network_path else None,
         'network': network_manifest, 'network_js_sha256': network_js_hashes,
         'commands': commands, 'shell_sha256': digest(prepared / 'frame.html'),
@@ -192,12 +218,13 @@ def main():
     parser.add_argument('--storage-prepare', type=Path, default=HERE.parent / 'native-storage/prepare.py')
     parser.add_argument('--prepare-only', action='store_true', help='Prepare sources and exact command plan; never run compiler or game')
     parser.add_argument('--network-prepare', type=Path, help='Explicitly compose the network-owned game runtime adapter; off by default')
+    parser.add_argument('--device-prepare', type=Path, help='Explicitly compose the device-owned DEV9/SMAP slice after storage; off by default')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
     args = parser.parse_args()
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve())
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
