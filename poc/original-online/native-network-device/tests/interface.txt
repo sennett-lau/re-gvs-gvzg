@@ -1,0 +1,2 @@
+# Original INETCTL brings the configured interface up (or keeps waiting) for thirty seconds.
+frames 1800

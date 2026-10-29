@@ -36,33 +36,69 @@ def load(name, path):
     return module
 
 
-def build(work, device, cxx):
+def build(work, device, cxx, segment=False):
     tree = work / 'upstream'
     shutil.copytree(ROOT / 'vendor/ps2-web-recomp', tree, ignore=shutil.ignore_patterns('.git'))
     manifests = [load('storage', ROOT / 'poc/original-online/native-storage/prepare.py').prepare(tree)]
     if device:
-        manifests.append(load('device', HERE.parent / 'prepare.py').prepare(tree))
+        manifests.append(load('device', HERE.parent / 'prepare.py').prepare(tree, segment=segment))
     src = tree / 'runtime/src'
     flags = ['-std=c++20', '-O2', '-Wall', '-Wextra', '-Werror', '-Wno-unused-parameter', '-I', str(tree / 'runtime/include'), '-I', str(src)]
     objects = []
-    for name in IOP + (['dev9'] if device else []):
+    for name in IOP + (['dev9'] if device else []) + (['segment'] if segment else []):
         obj = work / f'{name}.o'
         subprocess.run([cxx, *flags, '-c', str(src / 'iop' / f'{name}.cpp'), '-o', str(obj)], check=True)
         objects.append(str(obj))
     subprocess.run([cxx, *flags, str(HARNESS), *objects, '-o', str(work / 'harness')], check=True)
-    if device:
+    if device and not segment:
         subprocess.run([cxx, *flags, str(HERE / 'dev9_test.cpp'), *objects, '-o', str(work / 'dev9-test')], check=True)
+    if segment:
+        subprocess.run([cxx, *flags, str(HERE / 'segment_test.cpp'), str(work / 'segment.o'), '-o', str(work / 'segment-test')], check=True)
+        subprocess.run([cxx, *flags, str(HERE / 'segment_frames.cpp'), str(work / 'segment.o'), '-o', str(work / 'segment-frames')], check=True)
     return manifests
 
 
-def run(work, modules, trace):
+def run(work, modules, trace, card='none', script='idle.txt'):
     env = {**os.environ, **({'PS2_DEV9_TRACE': '1'} if trace else {})}
-    done = subprocess.run([str(work / 'harness'), 'none', str(HERE / 'idle.txt'), *map(str, modules)], cwd=work,
+    done = subprocess.run([str(work / 'harness'), str(card), str(HERE / script), *map(str, modules)], cwd=work,
                           capture_output=True, text=True, timeout=600, env=env)
     (work / 'stdout.jsonl').write_text(done.stdout)
     (work / 'stderr.log').write_text(done.stderr)
-    loaded = {Path(r['path']).name: r for r in map(json.loads, done.stdout.splitlines()) if r['event'] == 'module'}
+    loaded = {Path(r['path'].split('::')[0]).name: r for r in map(json.loads, done.stdout.splitlines()) if r['event'] == 'module'}
     return done.returncode, loaded, done.stderr
+
+
+# The utility loads NETCNF with these icon paths; INETCTL is given the saved combination file.
+CONFIG_MODULES = ['SIO2MAN.IRX', 'MCMAN.IRX', 'INET.IRX',
+                  'NETCNF.IRX::icon=cdrom0:\\NTGUIDVD\\CONF\\JAPANESE\\SYS_NET.ICO;1::iconsys=cdrom0:\\NTGUIDVD\\CONF\\JAPANESE\\ICON.SYS;1',
+                  'INETCTL.IRX::-verbose::mc0:/BWNETCNF/net000.cnf', 'DEV9.IRX', 'SMAP.IRX']
+
+
+def interface(args, work, report):
+    checks = report['checks']
+    for name, segment in [('interface_disconnected', False), ('interface_segment', True)]:
+        folder = work / name
+        folder.mkdir(parents=True)
+        report[name + '_runtime'] = build(folder, True, args.cxx, segment)
+        card = folder / 'card.ps2'
+        shutil.copyfile(args.config_card, card)
+        before = sha(card)
+        modules = [str(args.modules.resolve() / spec.split('::')[0]) + spec[len(spec.split('::')[0]):] for spec in CONFIG_MODULES]
+        code, loaded, log = run(folder, modules, True, card, 'interface.txt')
+        report[name] = {'exit': code, 'results': {k: v['result'] for k, v in loaded.items()}, 'card_sha256': before,
+                        'inetctl': [l for l in log.splitlines() if 'inetctl:' in l], 'segment': [l for l in log.splitlines() if '[dev9-segment]' in l]}
+        checks[f'{name}: configuration loaded'] = 'inetctl: (ID=1) display_name=ifc000.dat + dev000.dat' in log and 'decoding error' not in log
+        checks[f'{name}: card unchanged'] = sha(card) == before
+        started = 'inetctl: (ID=1) STARTING --Start-> STARTED' in log
+        if segment:
+            unit = subprocess.run([str(folder / 'segment-test')], capture_output=True, text=True, timeout=120)
+            (folder / 'segment-test.log').write_text(unit.stdout + unit.stderr)
+            checks['segment frame checks'] = unit.returncode == 0
+            checks[f'{name}: interface started with the lease'] = started and 'inetctl: (ID=1) [ 192.168.208.10 ]' in log
+            checks[f'{name}: one DHCP offer and acknowledgement'] = sum('DHCP reply 2:' in l for l in log.splitlines()) == 1 and sum('DHCP reply 5:' in l for l in log.splitlines()) == 1
+            checks[f'{name}: no invalid or dropped frames'] = 'invalid' not in ''.join(report[name]['segment']) and 'dropped' not in ''.join(report[name]['segment'])
+        else:
+            checks[f'{name}: interface never started without a link'] = 'DETACHED --Attach-> STARTING' in log and not started
 
 
 def main():
@@ -70,6 +106,7 @@ def main():
     parser.add_argument('--modules', type=Path, required=True, help='folder with the original INET.IRX, DEV9.IRX and SMAP.IRX')
     parser.add_argument('--work', type=Path, required=True, help='new output folder')
     parser.add_argument('--game-dev9', type=Path, required=True, help="the game's NETMOD_E/DEV9.IRX")
+    parser.add_argument('--config-card', type=Path, help='card holding a configuration saved by the original utility; enables the interface checks')
     parser.add_argument('--cxx', default='clang++')
     args = parser.parse_args()
     work = args.work.resolve()
@@ -116,7 +153,9 @@ def main():
         checks[f'{name}: self-test frame looped back in full'] = '[dev9] loopback of a 1514-byte frame' in log
         checks[f'{name}: no unmodelled access'] = not d['unmodelled']
         checks[f'{name}: no transmit outside loopback'] = 'transmit without an external link' not in log
-    report['passed'] = all(checks.values()) and not any(report[n]['exit'] for n in variants)
+    if args.config_card:
+        interface(args, work, report)
+    report['passed'] = all(checks.values()) and not any(report[n]['exit'] for n in report if isinstance(report[n], dict) and 'exit' in report[n])
     (work / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps({'passed': report['passed'], 'failed': [k for k, v in checks.items() if not v], 'report': str(work / 'report.json')}))
     return 0 if report['passed'] else 1

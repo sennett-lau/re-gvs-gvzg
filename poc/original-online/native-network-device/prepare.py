@@ -36,14 +36,18 @@ HW_PATCHES = [
 ]
 
 SOURCES = ['dev9.hpp', 'dev9.cpp']
+SEGMENT_SOURCES = ['segment.hpp', 'segment.cpp']
 
 
 def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def prepare(tree):
-    """Patch runtime/src/iop/hw.cpp in a copied tree prepared by native-storage and return a manifest."""
+def prepare(tree, segment=False):
+    """Patch runtime/src/iop/hw.cpp in a copied tree prepared by native-storage and return a manifest.
+
+    segment=True adds the optional virtual Ethernet segment (carrier, ARP and DHCP for one local lease).
+    """
     iop = Path(tree) / 'runtime/src/iop'
     if not (iop / 'native_storage.cpp').exists():
         raise ValueError('Prepare the native card-file slice first: DEV9.IRX registers dev9x with AddDrv')
@@ -66,17 +70,20 @@ def prepare(tree):
         texts[name] = text
     for name, text in texts.items():
         (iop / name).write_text(text)
-    for name in SOURCES:
+    for name in SOURCES + (SEGMENT_SOURCES if segment else []):
         shutil.copy2(HERE / name, iop / name)
+    (iop / 'dev9_config.hpp').write_text(f'#pragma once\n\n#define PS2_DEV9_SEGMENT {int(bool(segment))}\n')
     manifest = {
-        'profile': PROFILE,
+        'profile': PROFILE + ('-segment' if segment else ''),
         'external_link': False,
+        'segment': {'carrier': True, 'router_mac': '02:50:53:32:00:fe', 'router': '192.168.208.1', 'lease': '192.168.208.10/24',
+                    'lease_seconds': 86400, 'answers': ['ARP for the router', 'DHCP DISCOVER/REQUEST'], 'upstream': None} if segment else None,
         'identity': {'dev9_revision': '0x30 (CXD9611)', 'speed_revision': '0x11', 'speed_caps': '0x01 (SMAP)',
                      'phy': 'DP83846A id 0x2000/0x5C20', 'mac': '02:50:53:32:00:01 (locally administered)'},
         'upstream_sha256': before,
-        'files_sha256': {name: sha(iop / name) for name in [*files, *SOURCES]},
+        'files_sha256': {name: sha(iop / name) for name in [*files, *SOURCES, *(SEGMENT_SOURCES if segment else []), 'dev9_config.hpp']},
         'replaced_sources': ['runtime/src/iop/hw.cpp', *(status or {}).get('replaced_sources', [])],
-        'compiled_sources': ['runtime/src/iop/dev9.cpp'],
+        'compiled_sources': ['runtime/src/iop/dev9.cpp'] + (['runtime/src/iop/segment.cpp'] if segment else []),
         'module_status': status,
     }
     (Path(tree) / 'native-network-device-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')

@@ -46,5 +46,20 @@ class NativeNetworkDevicePreparation(unittest.TestCase):
             self.assertEqual((VENDOR / name).read_bytes(), data)
 
 
+    def test_segment_is_opt_in(self):
+        for segment in (False, True):
+            with tempfile.TemporaryDirectory() as temporary:
+                tree = Path(temporary)
+                shutil.copytree(VENDOR, tree / 'runtime/src/iop')
+                storage.prepare(tree)
+                manifest = device.prepare(tree, segment=segment)
+                iop = tree / 'runtime/src/iop'
+                self.assertIn(f'#define PS2_DEV9_SEGMENT {int(segment)}', (iop / 'dev9_config.hpp').read_text())
+                self.assertEqual((iop / 'segment.cpp').exists(), segment)
+                self.assertEqual('runtime/src/iop/segment.cpp' in manifest['compiled_sources'], segment)
+                self.assertEqual(manifest['segment'] is not None, segment)
+                self.assertFalse(manifest['external_link'])
+
+
 if __name__ == '__main__':
     unittest.main()

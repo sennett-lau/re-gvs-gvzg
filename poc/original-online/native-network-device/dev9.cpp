@@ -1,9 +1,14 @@
 #include "dev9.hpp"
+#include "dev9_config.hpp"
 
 #include "hw.hpp"
 #include "iop.hpp"
 
 #include "ps2/state.hpp"
+
+#if PS2_DEV9_SEGMENT
+#include "segment.hpp"
+#endif
 
 #include <cstdio>
 #include <cstdlib>
@@ -70,6 +75,10 @@ void reset_phy() {
     g.phy[2] = 0x2000; // PHYID1 and PHYID2 as SMAP.IRX requires for DP83846A
     g.phy[3] = 0x5C20;
     g.phy[4] = 0x01E1;
+#if PS2_DEV9_SEGMENT
+    g.phy[1] |= 0x0024; // the virtual segment has a carrier and completes negotiation
+    g.phy[5] = 0x41E1;  // partner: 10/100 Mb/s, half and full duplex
+#endif
 }
 
 void write_phy(unsigned reg, std::uint16_t v) {
@@ -126,9 +135,13 @@ void transmit() {
             if (g_trace) std::fprintf(stderr, "[dev9] loopback of a %u-byte frame\n", length);
             receive(frame, length);
         } else {
+#if PS2_DEV9_SEGMENT
+            segment::transmit(frame, length, receive);
+#else
             ++g.dropped;
             std::fprintf(stderr, "[dev9] transmit without an external link: %u-byte frame dropped (%llu so far)\n", length,
                          static_cast<unsigned long long>(g.dropped));
+#endif
         }
         g.intr_stat |= kTxEnd;
         g.tx_index = (g.tx_index + 1) % kDescriptors;
@@ -356,11 +369,17 @@ void reset() {
     for (unsigned i = 0; i < 3; ++i) g.eeprom[i] = static_cast<std::uint16_t>(kMac[2 * i] | kMac[2 * i + 1] << 8);
     g.eeprom[3] = static_cast<std::uint16_t>(g.eeprom[0] + g.eeprom[1] + g.eeprom[2]);
     reset_phy();
+#if PS2_DEV9_SEGMENT
+    segment::reset();
+#endif
 }
 
 void state(ps2::state::Stream &s) {
     s.tag("dev9");
     s.pod(g);
+#if PS2_DEV9_SEGMENT
+    segment::state(s);
+#endif
 }
 
 }

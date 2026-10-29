@@ -6,8 +6,10 @@ for name in ['sdk','elf','generated','shell','work']:
     parser.add_argument('--'+name,type=pathlib.Path,required=True)
 parser.add_argument('--native-storage',action='store_true',help='Add the opt-in native card-file slice from native-storage/')
 parser.add_argument('--native-network-device',action='store_true',help='Also add the virtual DEV9/SMAP adaptor from native-network-device/ (needs --native-storage)')
+parser.add_argument('--network-segment',action='store_true',help='Give the virtual adaptor its optional local segment (needs --native-network-device)')
 args=parser.parse_args()
 if args.native_network_device and not args.native_storage: parser.error('--native-network-device needs --native-storage')
+if args.network_segment and not args.native_network_device: parser.error('--network-segment needs --native-network-device')
 root=pathlib.Path(__file__).resolve().parents[2]
 work=args.work.resolve()
 if work.exists(): parser.error('Use a new work directory')
@@ -17,11 +19,11 @@ if sha(args.shell)!='76e8af7c6c529d6a8587b3048320b40e849ba1852c72462e81596505bba
 work.mkdir(parents=True)
 source=work/'upstream'; generated=work/'generated'; output=work/'web'; objects=work/'objects'
 shutil.copytree(root/'vendor/ps2-web-recomp',source)
-def slice_prepare(folder):
+def slice_prepare(folder,**options):
     spec=importlib.util.spec_from_file_location(folder.replace('-','_')+'_prepare',pathlib.Path(__file__).with_name(folder)/'prepare.py'); module=importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
-    return module.prepare(source)
+    return module.prepare(source,**options)
 storage=slice_prepare('native-storage') if args.native_storage else None
-device=slice_prepare('native-network-device') if args.native_network_device else None
+device=slice_prepare('native-network-device',**({'segment':True} if args.network_segment else {})) if args.native_network_device else None
 shutil.copytree(args.generated,generated)
 shutil.copy2(args.elf,work/'NTGDVDJ.BIN');shutil.copy2(args.shell,work/'shell.html')
 output.mkdir();objects.mkdir()
@@ -54,5 +56,5 @@ def compile_one(item):
 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool: objs=list(pool.map(compile_one,enumerate(sources)))
 cmd=[str(em/'em++'),*flags,'--profiling-funcs','-sJSPI','-sALLOW_MEMORY_GROWTH=1','-sINITIAL_MEMORY=268435456','-sPTHREAD_POOL_SIZE=2','-sALLOW_TABLE_GROWTH=1','-lidbfs.js','-sSTACK_SIZE=16777216','-sENVIRONMENT=web','-sMINIFY_HTML=0','-sEXPORTED_FUNCTIONS=_main,_ps2web_pad,_ps2web_pad_connected,_ps2web_resize,_ps2web_gpu_ms,_ps2web_frames,_ps2web_primitives,_ps2web_audio_ring,_ps2web_audio_queued_ms,_ps2web_idle_ms,_ps2web_vu_interpreted','-sEXPORTED_RUNTIME_METHODS=callMain,addRunDependency,removeRunDependency,HEAPU8,ENV','--shell-file',str(work/'shell.html'),'--preload-file',str(work/'NTGDVDJ.BIN')+'@/game/core.elf',*[str(p) for p in objs],'-o',str(output/'index.html')]
 commands.append(cmd); subprocess.run(cmd,env=env,check=True)
-info={'profile':'isolated-original-network-utility'+('-native-storage' if storage else '')+('-network-device' if device else ''),'started_utc':start,'ended_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'target_sha256':sha(work/'NTGDVDJ.BIN'),'toolchain':version,'argv':['cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1','cdrom0:\\SLPS_254.19;1','1'],'guest_hooks':False,'runtime_patches':[m for m in (storage,device) if m] or False,'diagnostic_options':{'default':'producer quiet','opt_in_environment':['PS2_UTILITY_TRACE_SYSCALLS','PS2_UTILITY_TRACE_MODULES','PS2_UTILITY_TRACE_IO']},'vu':'upstream interpreter/JIT; no registered static VU programs','commands':commands,'sources_sha256':{str(p.relative_to(work)):sha(p) for p in sources},'generated_inputs_sha256':{p.name:sha(p) for p in generated.iterdir() if p.is_file()},'headers_sha256':{str(p.relative_to(work)):sha(p) for p in source.rglob('*.hpp')},'shell_sha256':sha(work/'shell.html'),'sdk_sha256':{str(p.relative_to(sdk)):sha(p) for p in [sdk/'.emscripten',em/'em++',em/'emcc.py',sdk/'upstream/bin/clang',sdk/'upstream/bin/wasm-opt']},'build_script_sha256':sha(pathlib.Path(__file__)),'files_sha256':{p.name:sha(p) for p in output.iterdir() if p.is_file()}}
+info={'profile':'isolated-original-network-utility'+('-native-storage' if storage else '')+('-network-device' if device else '')+('-segment' if args.network_segment else ''),'started_utc':start,'ended_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'target_sha256':sha(work/'NTGDVDJ.BIN'),'toolchain':version,'argv':['cdrom0:\\NTGUIDVD\\NTGDVDJ.BIN;1','cdrom0:\\SLPS_254.19;1','1'],'guest_hooks':False,'runtime_patches':[m for m in (storage,device) if m] or False,'diagnostic_options':{'default':'producer quiet','opt_in_environment':['PS2_UTILITY_TRACE_SYSCALLS','PS2_UTILITY_TRACE_MODULES','PS2_UTILITY_TRACE_IO']},'vu':'upstream interpreter/JIT; no registered static VU programs','commands':commands,'sources_sha256':{str(p.relative_to(work)):sha(p) for p in sources},'generated_inputs_sha256':{p.name:sha(p) for p in generated.iterdir() if p.is_file()},'headers_sha256':{str(p.relative_to(work)):sha(p) for p in source.rglob('*.hpp')},'shell_sha256':sha(work/'shell.html'),'sdk_sha256':{str(p.relative_to(sdk)):sha(p) for p in [sdk/'.emscripten',em/'em++',em/'emcc.py',sdk/'upstream/bin/clang',sdk/'upstream/bin/wasm-opt']},'build_script_sha256':sha(pathlib.Path(__file__)),'files_sha256':{p.name:sha(p) for p in output.iterdir() if p.is_file()}}
 (output/'build-info.json').write_text(json.dumps(info,indent=2)+'\n'); print('utility ready',flush=True)
