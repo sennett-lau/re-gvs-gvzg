@@ -43,6 +43,30 @@ def verify_hashes(inputs):
         if digest(filename) != expected: raise ValueError('Build input changed during build: ' + filename)
 
 
+def observer_budget(image, directory, manifest, limit):
+    """Change only the copied observer's bounded log budget, when requested."""
+    if limit is None: return None
+    if image != 'game': raise ValueError('Observer budget is game-only')
+    if type(limit) is not int or not 16384 <= limit <= 131072:
+        raise ValueError('Observer budget must be an integer from 16384 through 131072')
+    header = directory / 'observer.hpp'
+    original = header.read_bytes()
+    expected = manifest.get('observer_sha256')
+    if hashlib.sha256(original).hexdigest() != expected:
+        raise ValueError('Prepared observer fingerprint mismatch')
+    anchor = b'inline constexpr unsigned limit = 16384;'
+    if original.count(anchor) != 1: raise ValueError('Observer budget anchor changed')
+    updated = original.replace(anchor, f'inline constexpr unsigned limit = {limit};'.encode())
+    header.write_bytes(updated)
+    setting = {'requested': limit, 'default': 16384, 'maximum': 131072,
+               'input_sha256': expected, 'output_sha256': digest(header),
+               'scope': 'copied observer log budget only; trace_cap and dropped signaling retained'}
+    manifest['observer_sha256'] = setting['output_sha256']
+    manifest['trace_budget_override'] = setting
+    (directory / 'observer-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    return setting
+
+
 def module(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     result = importlib.util.module_from_spec(spec)
@@ -143,7 +167,8 @@ def compose_disc_model(image, source, path):
     return manifest, inputs
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None):
+    if image != 'game' and trace_budget is not None: raise ValueError('Observer budget is game-only')
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
     if device_segment and not device_path: raise ValueError('Device segment requires an explicit device preparer')
@@ -282,10 +307,13 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         retained = utility_objects(base, info, REPLACED | {'upstream/' + name for name in composed_names})
     retained_hashes = {str(path): digest(path) for path in retained}
     observer = None
+    observer_headers = {}
     if image == 'game':
         online = module('exec_online_observation', source_root / 'poc/original-online/prepare.py')
         observation = work / 'observation'
         observer = online.prepare(base / 'overrides', observation)
+        observer_budget(image, observation, observer, trace_budget)
+        observer_headers = {str(observation / 'observer.hpp'): digest(observation / 'observer.hpp')}
         sources += [observation / name for name in online.POINTS]
     includes = [HERE, source / 'runtime/include', source / 'runtime/src', source / 'runtime/src/iop', generated,
                 source_root / 'src/hooks', source_root / 'research/source/render-hooks', work / 'observation']
@@ -331,6 +359,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
              source_root / 'poc/original-online/verify_utility.py', source_root / 'poc/original-online/module_names.hpp']},
         'exec_inputs_sha256': {str(path): digest(path) for path in HERE.iterdir() if path.is_file()},
         'storage_preparation_sha256': storage_hash, 'storage': storage_manifest, 'observer': observer,
+        'observer_headers_sha256': observer_headers,
         'device_preparation_sha256': device_hash if device_path else None, 'device': device_manifest,
         'resident_module_lookup': discovery_manifest,
         'cdvd_identity': cdvd_identity_manifest, 'cdvd_identity_inputs_sha256': cdvd_identity_inputs,
@@ -352,6 +381,7 @@ def main():
     for name in ['base', 'sdk', 'work']: parser.add_argument('--' + name, type=Path, required=True)
     parser.add_argument('--storage-prepare', type=Path, default=HERE.parent / 'native-storage/prepare.py')
     parser.add_argument('--prepare-only', action='store_true', help='Prepare sources and exact command plan; never run compiler or game')
+    parser.add_argument('--observer-trace-budget', type=int, help='Explicit game diagnostic log limit, 16384..131072; default observer stays unchanged')
     parser.add_argument('--network-prepare', type=Path, help='Explicitly compose the network-owned game runtime adapter; off by default')
     parser.add_argument('--device-prepare', type=Path, help='Explicitly compose the device-owned DEV9/SMAP slice after storage; off by default')
     parser.add_argument('--device-segment', action='store_true', help='Explicitly enable the device owner\'s local ARP/DHCP segment; requires --device-prepare')
@@ -363,7 +393,7 @@ def main():
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -383,7 +413,7 @@ def main():
         for command in manifest['commands']:
             manifest['active_command'] = command
             subprocess.run(command, env=env, check=True)
-        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256', 'cdvd_identity_inputs_sha256', 'disc_model_inputs_sha256']:
+        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'observer_headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256', 'cdvd_identity_inputs_sha256', 'disc_model_inputs_sha256']:
             verify_hashes(manifest[category])
         manifest['status'] = 'built-not-runtime-tested'
         manifest['outputs_sha256'] = {path.relative_to(work / 'web').as_posix(): digest(path) for path in (work / 'web').rglob('*') if path.is_file()}
