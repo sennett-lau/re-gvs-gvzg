@@ -12,6 +12,27 @@ spec.loader.exec_module(build)
 
 
 class ProfileTest(unittest.TestCase):
+    def test_cdvd_identity_is_opt_in_and_rejects_utility_before_mutation(self):
+        self.assertEqual(build.compose_cdvd_identity('game', None, None), (None, {}))
+        with self.assertRaisesRegex(ValueError, 'game-only'):
+            build.compose_cdvd_identity('utility', None, Path('/nonexistent/cdvd_identity.py'))
+
+    def test_cdvd_identity_scope_and_input_fingerprints(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); script = root / 'cdvd_identity.py'; header = root / 'cdvd_identity.hpp'
+            header.write_text('synthetic helper')
+            script.write_text("def prepare(source):\n return {'profile':'original-online-cdvd-identity-v1','replaced_sources':['runtime/src/iop/cdvd.cpp'],'compiled_sources':[]}\n")
+            manifest, inputs = build.compose_cdvd_identity('game', root, script)
+            self.assertEqual(set(inputs), {str(script), str(header)})
+            self.assertEqual(inputs[str(header)], build.digest(header))
+            for bad in ["{'profile':'unknown'}", "{'profile':'original-online-cdvd-identity-v1','replaced_sources':['runtime/src/kernel.cpp'],'compiled_sources':[]}"]:
+                script.write_text('def prepare(source):\n return '+bad+'\n')
+                with self.assertRaisesRegex(ValueError, 'profile|source scope'):
+                    build.compose_cdvd_identity('game', root, script)
+            script.write_text("from pathlib import Path\ndef prepare(source):\n Path(__file__).with_name('cdvd_identity.hpp').write_text('changed during preparation')\n return {'profile':'original-online-cdvd-identity-v1','replaced_sources':['runtime/src/iop/cdvd.cpp'],'compiled_sources':[]}\n")
+            with self.assertRaisesRegex(ValueError, 'changed during composition'):
+                build.compose_cdvd_identity('game', root, script)
+
     def test_analysis_only_or_unaudited_variants_cannot_be_built(self):
         build.require_overlay_coverage({'variants': False})
         for coverage in [{}, {'original_text_complete': False, 'missing_original_targets': [0x1180000]},
