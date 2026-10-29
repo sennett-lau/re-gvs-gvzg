@@ -1,0 +1,2 @@
+# Original drivers after load: let the SMAP and INET threads run for ten seconds.
+frames 600

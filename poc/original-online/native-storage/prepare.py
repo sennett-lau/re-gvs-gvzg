@@ -123,6 +123,7 @@ def prepare(tree):
         'fabricated_results': False,
         'upstream_sha256': before,
         'files_sha256': {name: sha(iop / name) for name in ['io.cpp', 'sif.cpp', 'sio2.cpp', *SOURCES]},
+        'replaced_sources': ['runtime/src/iop/io.cpp', 'runtime/src/iop/sif.cpp', 'runtime/src/iop/sio2.cpp'],
         'compiled_sources': ['runtime/src/iop/native_storage.cpp'],
     }
     (Path(tree) / 'native-storage-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
