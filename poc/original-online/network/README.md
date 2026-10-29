@@ -172,6 +172,7 @@ failure, timestamps, and relevant fingerprints. Keep failed attempts too.
 
 ```sh
 node poc/original-online/network/wasm_open_probe.mjs /private/wasm-open-evidence
+node --unhandled-rejections=strict poc/original-online/network/cancellation_probe.mjs /private/cancellation-evidence
 node poc/original-online/network/protocol_probe.mjs /private/backend-run /private/protocol-evidence
 node poc/original-online/network/transport_probe.mjs /private/backend-build/gateway /private/transport-evidence
 node poc/original-online/network/adapter_probe.mjs /private/backend-run /private/adapter-evidence
@@ -192,6 +193,14 @@ The offline host-open probe uses shared WASM memory, records adapter submissions
 and requires decoder input to be nonshared. It checks byte preservation, bounds,
 fatal UTF-8 errors and updated memory views without opening a socket. Node's own
 decoder accepts shared views, so the Chromium reproduction is separate evidence.
+
+The offline cancellation probe uses fake sockets to check pending TCP and DNS
+handshakes, cancel/discard/reset, abort races, explicit timeout errors, listener
+cleanup and normal byte transfers. Cancellation closes a connection attempt
+before its gateway handshake completes, including when no host timeout is set.
+Canceling an issued read or write preserves the established stream; bytes already
+submitted cannot be recalled. These checks make no backend or original-client
+connection.
 
 `run_native_contract.py` verifies and relocates the private original IRX, then
 executes selected original instructions with the real IOP interpreter. Its host

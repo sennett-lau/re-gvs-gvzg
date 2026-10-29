@@ -53,7 +53,7 @@ export class OriginalOnlineAdapter {
     try {
       if (request.op === 'dns') {
         operation = (async () => {
-          const socket=await NativeDatagramSocket.connect(new URL('udp/dns',this.gatewayURL).href,this.token,{timeoutMs:0});
+          const socket=await NativeDatagramSocket.connect(new URL('udp/dns',this.gatewayURL).href,this.token,{timeoutMs:0,signal:entry.controller.signal});
           const stop=()=>socket.close();entry.controller.signal.addEventListener('abort',stop,{once:true});
           try {
             if(entry.controller.signal.aborted)throw new TransportError('ECANCELED');
@@ -64,7 +64,7 @@ export class OriginalOnlineAdapter {
       } else if (request.op === 'open') {
         const endpoint = this.endpoint(request.host, request.port);
         operation = NativeByteStream.connect(new URL(`tcp/${endpoint}`, this.gatewayURL).href,
-          this.token, { timeoutMs: request.timeoutMs ?? 6000 }).then(stream => ({ stream }));
+          this.token, { timeoutMs: request.timeoutMs ?? 6000, signal: entry.controller.signal }).then(stream => ({ stream }));
       } else {
         const stream = this.streams.get(request.handle);
         if (!stream) throw new TransportError('EBADF');

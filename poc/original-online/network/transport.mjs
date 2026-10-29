@@ -4,10 +4,21 @@ export class TransportError extends Error {
 }
 
 export class NativeByteStream {
-  static async connect(url, token, { timeoutMs = 6000, WebSocketClass = globalThis.WebSocket } = {}) {
+  static async connect(url, token, { timeoutMs = 6000, signal, WebSocketClass = globalThis.WebSocket } = {}) {
+    if (signal?.aborted) throw new TransportError('ECANCELED');
     const stream = new this(new WebSocketClass(url, token));
+    const abort = () => stream.close();
+    signal?.addEventListener('abort', abort, { once: true });
+    if (signal?.aborted) abort();
     const timer = timeoutMs > 0 ? setTimeout(() => stream.fail(new TransportError('ETIMEDOUT')), timeoutMs) : null;
-    try { await stream.opened; return stream; } finally { clearTimeout(timer); }
+    try {
+      await stream.opened;
+      if (signal?.aborted) { stream.close(); throw new TransportError('ECANCELED'); }
+      return stream;
+    } finally {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', abort);
+    }
   }
   constructor(ws) {
     this.ws = ws; ws.binaryType = 'arraybuffer';
