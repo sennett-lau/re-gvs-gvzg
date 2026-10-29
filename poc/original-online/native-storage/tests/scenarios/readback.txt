@@ -1,0 +1,9 @@
+# Fresh process after the write scenario.
+open s:mc0:/NSPROBE/KEPT.BIN 1
+read $0 b:4096 4096
+close $0
+open s:mc0:/BISLPM-65286NET/BISLPM-65286NET 1
+read $3 b:8192 8192
+close $3
+open s:mc0:/NSPROBE/GONE.BIN 1
+open s:mc0:/BWNETCNF/BWNETCNF 1

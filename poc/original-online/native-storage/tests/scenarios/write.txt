@@ -1,0 +1,38 @@
+# Disposable clone only: create, write, reopen, rename, remove, mode checks, then a checked checkpoint.
+mkdir s:mc0:/NSPROBE 0x1ff
+open s:mc0:/NSPROBE/DATA.BIN 0x602
+write $1 p:3000:7 3000
+close $1
+open s:mc0:/NSPROBE/DATA.BIN 1
+read $4 b:3000 3000
+lseek $4 0 2
+close $4
+rename s:mc0:/NSPROBE/DATA.BIN s:mc0:/NSPROBE/KEPT.BIN
+open s:mc0:/NSPROBE/DATA.BIN 1
+dopen s:mc0:/NSPROBE
+dread $10 b:324
+dread $10 b:324
+dread $10 b:324
+dread $10 b:324
+close $10
+open s:mc0:/NSPROBE/GONE.BIN 0x602
+write $16 p:100:9 100
+close $16
+remove s:mc0:/NSPROBE/GONE.BIN
+open s:mc0:/NSPROBE/GONE.BIN 1
+open s:mc0:/NSPROBE/KEPT.BIN 2
+read $21 b:16 16
+close $21
+open s:mc0:/NSPROBE/KEPT.BIN 1
+write $24 p:16:1 16
+close $24
+lseek $24 0 0
+open s:mc0:/NSPROBE/OPEN.BIN 0x602
+write $28 p:64:3 64
+checkpoint
+open s:mc0:/NSPROBE/KEPT.BIN 1
+close $28
+checkpoint
+close $31
+frames 80
+checkpoint

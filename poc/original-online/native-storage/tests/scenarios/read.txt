@@ -1,0 +1,16 @@
+# Read-only controls on the mounted test card: absent configuration, listings, existing save and unit 1.
+getstat s:mc0:/BWNETCNF/BWNETCNF b:64
+open s:mc0:/BWNETCNF/BWNETCNF 1
+dopen s:mc0:/
+dread $2 b:324
+dread $2 b:324
+dread $2 b:324
+dread $2 b:324
+close $2
+getstat s:mc0:/BISLPM-65286NET b:64
+open s:mc0:/BISLPM-65286NET/BISLPM-65286NET 1
+read $9 b:8192 8192
+close $9
+dopen s:mc0:/NOPE
+open s:mc1:/BWNETCNF/BWNETCNF 1
+open s:zz0:/x 1

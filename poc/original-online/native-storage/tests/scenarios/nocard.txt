@@ -1,0 +1,8 @@
+# No mounted card, or a blank image: the driver's own errors, and read-only ROM descriptors reject writes.
+open s:mc0:/BWNETCNF/BWNETCNF 1
+dopen s:mc0:/
+mkdir s:mc0:/NSPROBE 0x1ff
+open s:rom0:ROMVER 1
+write $3 p:4:1 4
+close $3
+write 1 s:tty-check 9
