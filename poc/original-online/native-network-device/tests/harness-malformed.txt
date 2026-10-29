@@ -1,0 +1,44 @@
+# Malformed harness input on the game stack. After the two setup lines, every line up to the last two must be
+# refused without stopping the harness: numbers that wrap or carry trailing characters, missing or extra
+# tokens, out-of-range sizes and offsets, and pointers outside their buffer. The last two lines must complete.
+frames 120
+keep a 16
+callat AVEWRAPE 0x100002098 70
+callat AVEWRAPE 0x2098junk 70
+callat AVEWRAPE
+callat
+peek AVEWRAPE 0x2098
+peek AVEWRAPE 0x2098 4 extra
+peek AVEWRAPE 0x100002098 4
+peek AVEWRAPE 0x2098 0
+peek AVEWRAPE 0x2098 0x1001
+keep big 0x10001
+keep zero 0
+keep b 16 extra
+keep a 16
+dump nosuch
+call devglue 6 b:0
+call devglue 6 b:0x10001
+call devglue 6 b:4junk
+call devglue 6 p:4
+call devglue 6 w:8:1,2,3
+call devglue 6 w:8:@8
+call devglue 6 w:8:^nosuch
+call devglue 6 w:8:^a+16
+call devglue 6 w:8:0x100000000
+call devglue 6 w:8:1,,2
+call devglue 6 0x100000000
+call devglue 6 -0x80000001
+call devglue 6 12abc
+call devglue 6 $99
+frames
+frames 1 2
+bogus 1
+repeat 0 frames 1
+repeat 100001 frames 1
+repeat 3x frames 1
+repeat 2
+release nosuch
+free 1
+call devglue 6 w:12:-1,@8,^a+4
+callat AVEWRAPE 0x2098 70 w:48:^a+12 48

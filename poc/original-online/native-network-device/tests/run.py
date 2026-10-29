@@ -58,12 +58,12 @@ def build(work, device, cxx, segment=False):
     return manifests
 
 
-def run(work, modules, trace, card='none', script='idle.txt'):
+def run(work, modules, trace, card='none', script='idle.txt', prefix=''):
     env = {**os.environ, **({'PS2_DEV9_TRACE': '1'} if trace else {})}
     done = subprocess.run([str(work / 'harness'), str(card), str(HERE / script), *map(str, modules)], cwd=work,
                           capture_output=True, text=True, timeout=600, env=env)
-    (work / 'stdout.jsonl').write_text(done.stdout)
-    (work / 'stderr.log').write_text(done.stderr)
+    (work / f'{prefix}stdout.jsonl').write_text(done.stdout)
+    (work / f'{prefix}stderr.log').write_text(done.stderr)
     loaded = {Path(r['path'].split('::')[0]).name: r for r in map(json.loads, done.stdout.splitlines()) if r['event'] == 'module'}
     return done.returncode, loaded, done.stderr
 
@@ -121,6 +121,39 @@ def game_stack(args, work, report, smap):
     checks['game stack: SMAP registered with DEVGLUE'] = all(x in log for x in ['Register NetDev [0]', 'module_name smap', 'vendor_name SCE', 'device_name Ethernet (Network Adaptor)'])
     checks['game stack: DEVGLUE counts one device'] = len(calls) > 1 and calls[1]['completed'] and calls[1]['result'] == 1 and calls[1].get('buffer') == '01000000'
     checks['game stack: malformed calls refused'] = len(calls) == 7 and all(not c['completed'] and c.get('rejected') for c in calls[2:])
+
+    code, _, log = run(folder, order, False, 'none', 'harness-limits.txt', 'limits-')
+    calls = [json.loads(l) for l in (folder / 'limits-stdout.jsonl').read_text().splitlines() if '"event":"call"' in l]
+    report['harness_limits'] = {'exit': code, 'calls': len(calls), 'refusals': [c for c in calls if not c['completed'] and 'fill' not in c['command']],
+                                'out_of_memory': [l for l in log.splitlines() if 'out of memory' in l]}
+    word = lambda c, at: int.from_bytes(bytes.fromhex(c['buffer'])[at:at + 4], 'little')
+    no_stack = "IOP memory has no room for the caller module's start thread"
+    complete = len(calls) == 727
+    checks['harness: callat reaches code inside a module'] = complete and calls[1]['completed'] and word(calls[1], 0) == 1 and word(calls[1], 24) == 1
+    checks['harness: peek reads the module image'] = complete and calls[2].get('buffer') == 'e8ffbd27'
+    checks['harness: callat outside a loaded module refused'] = complete and all(not c['completed'] and c.get('rejected') for c in calls[3:6])
+    checks['harness: caller start stacks are freed'] = complete and all(c['completed'] and c['result'] == 1 for c in calls[6:306])
+    checks['harness: call refused when no start stack fits'] = complete and calls[323]['command'] == 'call devglue 6 b:4' and calls[323].get('rejected') == no_stack
+    # Before the call, the largest block is at least 0x4200 bytes: after its 0x100-byte b:4 buffer a free_max test
+    # against 0x4100 would pass, yet buffer, table, image and arguments (0x500 bytes) leave less than 0x4000.
+    free = calls[725] if complete else {}
+    checks['harness: near-threshold call refused'] = (complete and calls[724]['command'] == 'release big' and 0x4200 <= free.get('free_max', 0) < 0x4500
+                                                      and calls[726].get('rejected') == no_stack)
+    checks['harness: only the two refused calls ran out of memory'] = report['harness_limits']['out_of_memory'] == ['[iop] out of memory allocating 0x4000'] * 2
+
+    code, _, log = run(folder, order, False, 'none', 'harness-malformed.txt', 'malformed-')
+    calls = [json.loads(l) for l in (folder / 'malformed-stdout.jsonl').read_text().splitlines() if '"event":"call"' in l]
+    script = [l for l in (HERE / 'harness-malformed.txt').read_text().splitlines() if l and not l.startswith('#')]
+    report['harness_malformed'] = {'exit': code, 'calls': len(calls), 'accepted': [c['command'] for c in calls[2:-2] if c['completed']]}
+    checks['harness: malformed input refused without stopping'] = (len(calls) == len(script) and all(c['completed'] for c in calls[:2] + calls[-2:])
+                                                                   and all(not c['completed'] and c.get('rejected') for c in calls[2:-2]))
+    if len(calls) == len(script):
+        kept_a, control = calls[1], calls[-2]
+        own = control.get('addresses', [0])[0]
+        checks['harness: word buffers hold relative pointers and kept-buffer pointers'] = (
+            control['result'] == 1 and word(control, 0) == 1 and word(control, 4) == own + 8 and word(control, 8) == kept_a['address'] + 4)
+    else:
+        checks['harness: word buffers hold relative pointers and kept-buffer pointers'] = False
 
 
 def main():

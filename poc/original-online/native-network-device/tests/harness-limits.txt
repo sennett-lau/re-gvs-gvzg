@@ -1,0 +1,20 @@
+# Harness limits on the game stack. A function inside a module is called as its own code calls it
+# (AVEWRAPE's RPC dispatcher, function 70: device count); calls outside a loaded module are refused.
+# Then 300 library calls must all complete, which needs each caller's start-thread stack to be freed.
+# Then IOP memory is exhausted on purpose, twice, and a call must be refused instead of starting without
+# a stack: first with only 0x3000-byte blocks left, then with one block just above 0x4000 bytes after all
+# others are used, where the call's buffers, table, image and arguments leave less than the stack needs.
+frames 120
+callat AVEWRAPE 0x2098 70 w:48 48
+peek AVEWRAPE 0x2098 4
+callat NOSUCH 0x0 70
+callat AVEWRAPE 0x2099 70
+callat AVEWRAPE 0x100000 70
+repeat 300 call devglue 6 b:4
+keep big 0x4200
+repeat 16 keep hog# leave:0x3000
+call devglue 6 b:4
+repeat 400 keep fill# leave:0
+release big
+free
+call devglue 6 b:4
