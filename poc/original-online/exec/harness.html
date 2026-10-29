@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Original LoadExecPS2 experiment</title>
+<style>body{margin:16px;background:#141414;color:#eee;font:14px monospace}label{display:block;margin:12px 0}input{width:min(90%,600px)}button{margin-right:8px}#host{width:min(100%,960px);height:700px}#status{white-space:pre-wrap}</style>
+<h1>Original LoadExecPS2 experiment</h1>
+<p>Fresh isolated card copy. This host does not establish a working Online Mode connection.</p>
+<label>Disposable test card <input id="card" type="file" accept=".ps2"></label>
+<label>Expected SHA-256 <input id="sha" pattern="[a-f0-9]{64}" autocomplete="off"></label>
+<button id="start">Start experiment</button><button id="stop" disabled>Stop experiment</button><button id="export">Export lifecycle log</button>
+<pre id="status">Build both isolated modules before starting. Browser tests must use --mute-audio.</pre><div id="host"></div>
+<script type="module">
+import {ExecSession,sha256,cardCopy} from './session.mjs';
+import {withCardLock} from './card-store.mjs';
+import {documentFactory} from './browser.mjs';
+const events=[], status=document.querySelector('#status');
+const emit=event=>{events.push(event);console.log('[exec-host]',JSON.stringify(event));};
+const clientId='client-'+crypto.randomUUID();
+let session,finish;
+window.originalExec={events,clientId,get session(){return session;}};
+document.querySelector('#start').onclick=async()=>{
+  const start=document.querySelector('#start');start.disabled=true;
+  try{
+    const file=document.querySelector('#card').files[0],expected=document.querySelector('#sha').value.trim();
+    if(!file||!/^[a-f0-9]{64}$/.test(expected))throw Error('Select a disposable card and its exact SHA-256');
+    const card=cardCopy(new Uint8Array(await file.arrayBuffer()));
+    if(await sha256(card)!==expected)throw Error('Input card SHA-256 mismatch');
+    const discUrl=new URL('/disc.iso',location.href).href,response=await fetch(discUrl,{method:'HEAD'});
+    const discSize=Number(response.headers.get('content-length'));
+    if(!response.ok||!Number.isSafeInteger(discSize)||discSize<=0)throw Error('Mounted disc HEAD failed');
+    emit({utc:new Date().toISOString(),kind:'experiment',clientId,initialCardSha256:expected,discUrl,discSize,
+      lifecycle:'fresh EE/IOP per executable; hardware equivalence unproven',networkSuccess:false});
+    await withCardLock(clientId,async store=>{
+      await store.commit(card);
+      const create=documentFactory({container:document.querySelector('#host'),urls:{game:'./game/index.html',utility:'./utility/index.html'},
+        discUrl,discSize,emit,onExec:(...args)=>session.transition(...args),onFailure:error=>session?.reportFailure(error)});
+      session=new ExecSession({store,create,emit:event=>{emit(event);status.textContent=event.state+' — '+(event.image||session.image||'')+(event.error?'\n'+event.error:'');}});
+      try{
+        await session.start();document.querySelector('#stop').disabled=false;
+        await new Promise(resolve=>finish=resolve);
+      }finally{await session.close();}
+    });
+  }catch(error){emit({utc:new Date().toISOString(),kind:'harness-failure',error:String(error.stack||error)});status.textContent=String(error);}
+};
+document.querySelector('#stop').onclick=()=>{
+  if(session?.busy){status.textContent='Transition in progress; wait for it to settle before stopping.';return;}
+  document.querySelector('#stop').disabled=true;finish?.();
+};
+document.querySelector('#export').onclick=()=>{
+  const url=URL.createObjectURL(new Blob([JSON.stringify({schema:1,clientId,networkSuccess:false,events},null,2)],{type:'application/json'}));
+  const anchor=document.createElement('a');anchor.href=url;anchor.download='original-exec-lifecycle.json';anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+</script></html>

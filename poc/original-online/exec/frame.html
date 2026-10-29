@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Original executable experiment</title>
+<style>html,body{margin:0;background:#111;color:#eee;font:14px monospace}canvas{display:block;width:100%;height:auto}#status{padding:8px}</style>
+<canvas id="canvas" width="640" height="448"></canvas><div id="status">Loading isolated executable…</div>
+<script>
+var Module = {
+  noInitialRun: true, canvas: document.getElementById('canvas'), noCard: false, stateUrl: null,
+  execImage: '__ORIGINAL_EXEC_IMAGE__', execImageSha256: '__ORIGINAL_EXEC_SHA256__',
+  print: text => console.log(text), printErr: text => console.error(text),
+  setStatus: text => { if(text) document.getElementById('status').textContent = text; },
+  onRuntimeInitialized: () => execBridge.then(bridge => bridge.ready()).catch(error => console.error(error)),
+  onAbort: reason => execBridge.then(bridge => bridge.failure(String(reason))),
+};
+var execBridge = import('./frame.mjs').then(module => module.installFrame(Module));
+</script>
+{{{ SCRIPT }}}
+</html>
