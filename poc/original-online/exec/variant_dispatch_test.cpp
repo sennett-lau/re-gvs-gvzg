@@ -43,8 +43,16 @@ const ps2::UnitInfo sibling_units[] = {{begin - base, 16, sibling, original_entr
 const ps2::ModuleInfo modules[] = {
     {"0117F000_MWO_E775154D", base, 0xA1000, identity, 1, original_units, 2},
     {"0117F000_MWO_D4AF0758", base, 0xA1000, other_identity, 1, sibling_units, 1}};
-const original_exec::ProtectedRange ranges[] = {{begin, end, marker, encrypted, decoded, variant_units},
-    {begin + 0x100, begin + 0x100, begin + 0xEC, {}, {}, {}}}; // Original marker-only range.
+const std::array<original_exec::ProtectedRange, 66> ranges = [] {
+    std::array<original_exec::ProtectedRange, 66> result{};
+    for (unsigned i = 0; i < 64; ++i) {
+        const auto at = base + 0x200 + i * 0x20;
+        result[i] = {at, at, at - 0x14, {}, {}, {}};
+    }
+    result[64] = {begin, end, marker, encrypted, decoded, variant_units}; // Exercise observation indexes above 63.
+    result[65] = {begin + 0x100, begin + 0x100, begin + 0xEC, {}, {}, {}};
+    return result;
+}();
 void put(std::uint32_t address, std::uint32_t word) { std::memcpy(ps2::g_ram + address, &word, 4); }
 ps2::Cpu fresh(bool encoded = false) {
     std::memset(ps2::g_ram + base, 0, 0x4000);

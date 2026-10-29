@@ -1,6 +1,7 @@
 #pragma once
 #include "code_guard.hpp"
 #include <algorithm>
+#include <array>
 #include <utility>
 
 namespace original_exec {
@@ -149,11 +150,13 @@ inline bool dispatch_variant(ps2::Cpu& cpu, std::uint32_t pc, std::uint32_t dept
     if (!entry) {
         ps2::halt("No verified entry in original decoded block"); cpu.pc = pc | ps2::kUnwind; return true;
     }
-    static std::uint64_t recorded = 0;
+    static std::array<std::uint64_t, 2> recorded{};
     const auto index = static_cast<unsigned>(range - protected_ranges().data());
-    if (index >= 64) { ps2::halt("Protected range registry exceeds observation bound"); cpu.pc = pc | ps2::kUnwind; return true; }
-    if (!(recorded & (1ull << index))) {
-        recorded |= 1ull << index;
+    if (index >= 128) { ps2::halt("Protected range registry exceeds observation bound"); cpu.pc = pc | ps2::kUnwind; return true; }
+    auto& word = recorded[index / 64];
+    const auto bit = 1ull << (index % 64);
+    if (!(word & bit)) {
+        word |= bit;
         std::fprintf(stderr, "[original-exec-variant] first_match pc=%08X range=%08X..%08X entry=%u marker=%08X matched_sha256=%s prior=%s words=",
                      pc, range->begin, range->end, entry, range->marker,
                      range->decoded_sha256 ? range->decoded_sha256 : "unrecorded", range->prior_evidence ? range->prior_evidence : "unrecorded");

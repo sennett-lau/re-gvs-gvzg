@@ -32,6 +32,7 @@ struct CodeObservation {
     bool active = false;
     std::uint32_t words = 16;
     std::uint32_t input[4]{};
+    std::uint32_t helper = 0;
 };
 
 inline void observe_words(const ps2::Cpu& cpu, CodeObservation observation, const char* phase) {
@@ -46,28 +47,30 @@ inline void observe_words(const ps2::Cpu& cpu, CodeObservation observation, cons
         std::uint32_t word; std::memcpy(&word, ps2::g_ram + observation.address + 4 * i, 4);
         std::fprintf(stderr, "%s%08X", i ? "," : "", word);
     }
-    std::fprintf(stderr, " marker_valid=%u marker_address=%08X marker=%08X input_args=%08X,%08X,%08X,%08X\n", has_marker,
+    std::fprintf(stderr, " marker_valid=%u marker_address=%08X marker=%08X input_args=%08X,%08X,%08X,%08X helper=%08X\n", has_marker,
                  has_marker ? observation.address - 0x14 : 0, marker,
-                 observation.input[0], observation.input[1], observation.input[2], observation.input[3]);
+                 observation.input[0], observation.input[1], observation.input[2], observation.input[3], observation.helper);
 }
 
 inline CodeObservation observe_before(const ps2::Cpu& cpu, std::uint32_t site, std::uint32_t helper = 0x011AAA68) {
-    static unsigned count = 0;
+    static unsigned counts[3]{};
+    auto& count = counts[helper == 0x011AAA68 ? 0 : helper == 0x011E47C8 ? 1 : 2];
     if (count++ >= 64) {
-        if (count == 65) std::fputs("[original-exec-transform] observation_cap=64\n", stderr);
+        if (count == 65) std::fprintf(stderr, "[original-exec-transform] observation_cap=64 helper=%08X\n", helper);
         return {};
     }
     auto address = cpu.r[4].w[0];
     std::uint32_t bytes = 64;
     const auto length = cpu.r[5].w[0] ^ cpu.r[6].w[0];
     bool valid = true;
-    if (helper == 0x011AAA68) {
+    if (helper == 0x011AAA68 || helper == 0x011E47C8) {
         valid = !(length & 3u) && length <= 0x800;
         if (cpu.r[7].w[0] & 1u) { valid = valid && address >= length; address -= length; }
         if (length > bytes) bytes = length;
     }
     CodeObservation result{address, site, valid && !(address & 3u) && bytes <= ps2::kRamSize && address <= ps2::kRamSize - bytes, bytes / 4};
     for (unsigned i = 0; i < 4; ++i) result.input[i] = cpu.r[4 + i].w[0];
+    result.helper = helper;
     if (!result.active) std::fprintf(stderr, "[original-exec-transform] invalid_span=%08X site=%08X\n", address, site);
     observe_words(cpu, result, "before");
     return result;

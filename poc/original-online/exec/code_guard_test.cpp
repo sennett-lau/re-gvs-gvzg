@@ -21,6 +21,12 @@ int main() {
     cpu.r[4].w[0] = 0x120; cpu.r[5].w[0] = 0x1234; cpu.r[6].w[0] = 0x1214; cpu.r[7].w[0] = 1;
     const auto inverse = original_exec::observe_before(cpu, 0x1181CDC);
     assert(inverse.active && inverse.address == 0x100 && inverse.input[0] == 0x120 && inverse.words == 16);
+    cpu.r[4].w[0] = 0x158; cpu.r[5].w[0] = 0x1258; cpu.r[6].w[0] = 0x1200;
+    const auto second_inverse = original_exec::observe_before(cpu, 0x11E5B04, 0x11E47C8);
+    assert(second_inverse.active && second_inverse.address == 0x100 && second_inverse.words == 22 && second_inverse.helper == 0x11E47C8);
+    cpu.r[4].w[0] = ps2::kRamSize - 64; cpu.r[7].w[0] = 0;
+    assert(!original_exec::observe_before(cpu, 0x11E5A28, 0x11E47C8).active);
+    cpu.r[5].w[0] = 0x1234; cpu.r[6].w[0] = 0x1214; cpu.r[7].w[0] = 1;
     cpu.r[4].w[0] = 0x10;
     assert(!original_exec::observe_before(cpu, 0x1181CDC).active);
     cpu.r[4].w[0] = 0x100; cpu.r[5].w[0] = cpu.r[6].w[0] = cpu.r[7].w[0] = 0;
@@ -33,4 +39,8 @@ int main() {
     assert(!original_exec::guard_block(cpu, 0x100, {}));
     cpu.r[4].w[0] = ps2::kRamSize - 32;
     assert(!original_exec::observe_before(cpu, 0x1181D50).active);
+    for (unsigned i = 0; i < 64; ++i) original_exec::observe_before(cpu, 0x1181D50);
+    cpu.r[4].w[0] = 0x100;
+    assert(!original_exec::observe_before(cpu, 0x1181D50).active);
+    assert(original_exec::observe_before(cpu, 0x11E5A28, 0x11E47C8).active);
 }

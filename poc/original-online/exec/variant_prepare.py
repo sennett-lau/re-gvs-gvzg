@@ -13,6 +13,8 @@ import subprocess
 from overlay_prepare import ARTIFACT_SHA, NAME, PREFIX, one, sha
 
 BASE = 0x0117F000
+FIRST_HELPER = 0x011AAA68
+SECOND_HELPER = 0x011E47C8
 
 
 def text_bounds(data):
@@ -34,14 +36,23 @@ def immutable_code_checks(data, pairs, ranges):
             and not any(start <= offset + BASE < stop for start, stop in ranges)]
 
 
-def inventory(data):
+def validate_ranges(ranges):
+    if any(a[1] > b[0] for a, b in zip(ranges, ranges[1:])): raise ValueError('Overlapping protected ranges unsupported')
+    if any(a <= start - 0x14 < b for start, _ in ranges for a, b in ranges):
+        raise ValueError('Protected marker overlaps executable range')
+
+
+def inventory(data, helper=FIRST_HELPER):
     if hashlib.sha256(data).hexdigest() != ARTIFACT_SHA:
         raise ValueError('Original artifact fingerprint mismatch')
+    contracts = {FIRST_HELPER: (110, 64), SECOND_HELPER: (106, 53)}
+    if helper not in contracts: raise ValueError('Unknown original transform helper')
+    call_count, range_count = contracts[helper]
     def word(address):
         if address % 4 or not BASE <= address <= BASE + len(data) - 4:
             raise ValueError('Inline transform metadata outside original artifact')
         return struct.unpack_from('<I', data, address - BASE)[0]
-    sites = [BASE + at for at in range(0, len(data), 4) if word(BASE + at) == 0x0C46AA9A]
+    sites = [BASE + at for at in range(0, len(data), 4) if word(BASE + at) == 0x0C000000 | (helper >> 2)]
     rows = []
     for site in sites:
         constants, loads = {}, {}
@@ -61,13 +72,11 @@ def inventory(data):
         end = begin + length
         if length % 4 or length > 0x800 or begin < BASE + 0x14 or end > BASE + len(data):
             raise ValueError('Invalid original protected range')
-        rows.append({'site': site, 'args': args, 'begin': begin, 'end': end, 'marker': begin - 0x14})
+        rows.append({'helper': helper, 'site': site, 'args': args, 'begin': begin, 'end': end, 'marker': begin - 0x14})
     ranges = sorted({(row['begin'], row['end']) for row in rows})
-    if len(rows) != 110 or len(ranges) != 64 or sum(not (row['args'][3] & 1) for row in rows) != 64:
+    if len(rows) != call_count or len(ranges) != range_count or sum(not (row['args'][3] & 1) for row in rows) != range_count:
         raise ValueError('Original visible transform inventory changed')
-    if any(a[1] > b[0] for a, b in zip(ranges, ranges[1:])): raise ValueError('Overlapping protected ranges unsupported')
-    if any(a <= start - 0x14 < b for start, _ in ranges for a, b in ranges):
-        raise ValueError('Protected marker overlaps executable range')
+    validate_ranges(ranges)
     return rows, ranges
 
 
@@ -122,13 +131,13 @@ def live_variant(data, rows, begin, captures):
         if record[1]['marker_valid'] != '1' or int(record[1]['marker_address'], 16) != site['marker'] or int(record[1]['marker'], 16) != expected:
             raise ValueError('Live original marker transition differs')
     if before[2][:length] == after[2][:length]: raise ValueError('No actual original transformation observed')
-    return after[2][:length], {'begin': begin, 'end': site['end'], 'site': site['site'], 'args': site['args'], 'runtime_status': 'two-fresh-live-transforms-not-executed',
+    return after[2][:length], {'helper': site['helper'], 'begin': begin, 'end': site['end'], 'site': site['site'], 'args': site['args'], 'runtime_status': 'two-fresh-live-transforms-not-executed',
         'decoded_sha256': hashlib.sha256(after[2][:length]).hexdigest(),
         'captures': [{'path': str(path), 'console_sha256': sha(Path(path) / 'A-console.jsonl'), 'run_sha256': sha(Path(path) / 'run.json'),
                       'client_id': proof[1]['clientId'], 'consistent_pairs': proof[3], 'records': [r[0] for r in proof[2]]} for path, proof in zip(captures, proofs)]}
 
 
-def static_candidates(data, rows, catalog_path, expected_sha):
+def static_candidates(data, rows, catalog_path, expected_sha, helper=FIRST_HELPER):
     catalog_path = Path(catalog_path)
     if sha(catalog_path) != expected_sha: raise ValueError('Reviewed static catalog fingerprint mismatch')
     catalog = json.loads(catalog_path.read_text())
@@ -137,7 +146,7 @@ def static_candidates(data, rows, catalog_path, expected_sha):
     result = {}
     for item in catalog['ranges']:
         begin, length = int(item['start'], 16), item['length']
-        sites = [row for row in rows if row['begin'] == begin and not row['args'][3] & 1]
+        sites = [row for row in rows if row['helper'] == helper and row['begin'] == begin and not row['args'][3] & 1]
         if len(sites) != 1 or sites[0]['end'] - begin != length: raise ValueError('Static catalog range differs from original metadata')
         site = sites[0]
         if int(item['even']['site'], 16) != site['site'] or item['even']['seed'] != site['args'][2] or item['even']['mode'] != site['args'][3]:
@@ -153,14 +162,16 @@ def static_candidates(data, rows, catalog_path, expected_sha):
                 raise ValueError('Original excluded instruction word changed')
         if not length: continue # Original marker-only helper still executes; no empty code is installed.
         if begin in result: raise ValueError('Duplicate static candidate')
-        result[begin] = (decoded, {'begin': begin, 'end': begin + length, 'site': site['site'], 'args': site['args'],
+        result[begin] = (decoded, {'helper': helper, 'begin': begin, 'end': begin + length, 'site': site['site'], 'args': site['args'],
             'runtime_status': 'unverified-static-candidate', 'decoded_sha256': item['derived_sha256'],
             'catalog_sha256': expected_sha, 'catalog_metadata': item})
-    if len(result) != 63: raise ValueError('Reviewed static catalog must cover all nonempty visible ranges')
+    expected = {FIRST_HELPER: 63, SECOND_HELPER: 53}.get(helper)
+    if expected is None or len(result) != expected: raise ValueError('Reviewed static catalog must cover all nonempty visible ranges')
     return result
 
 
-def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None, candidate_catalog_sha=None):
+def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None, candidate_catalog_sha=None,
+            second_family_catalog=None, second_family_catalog_sha=None):
     bundle, artifact, compiler, output = map(Path, [bundle, artifact, compiler, output])
     if output.exists(): raise ValueError('Use a new variant output directory')
     manifest = json.loads((bundle / 'manifest.json').read_text())
@@ -169,6 +180,11 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
     for name, expected in manifest['files_sha256'].items():
         if Path(name).name != name or sha(bundle / name) != expected: raise ValueError('Guarded overlay bundle changed')
     data = artifact.read_bytes(); rows, ranges = inventory(data)
+    if bool(second_family_catalog) != bool(second_family_catalog_sha):
+        raise ValueError('Second helper catalog requires its reviewed fingerprint')
+    if second_family_catalog:
+        more_rows, more_ranges = inventory(data, SECOND_HELPER)
+        rows += more_rows; ranges = sorted(set(ranges + more_ranges)); validate_ranges(ranges)
     text_begin, text_end = text_bounds(data)
     if any(not BASE + text_begin <= begin - 0x14 <= begin <= end <= BASE + text_end for begin, end in ranges):
         raise ValueError('Protected code/marker outside original text')
@@ -182,6 +198,11 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
         for begin, candidate in static_candidates(data, rows, candidate_catalog, candidate_catalog_sha).items():
             if begin in verified:
                 if candidate[0] != verified[begin][0]: raise ValueError('Static candidate differs from actual two-run observation')
+            else: verified[begin] = candidate
+    if second_family_catalog:
+        for begin, candidate in static_candidates(data, rows, second_family_catalog, second_family_catalog_sha, SECOND_HELPER).items():
+            if begin in verified:
+                if candidate[0] != verified[begin][0]: raise ValueError('Second helper candidate differs from live observation')
             else: verified[begin] = candidate
     output.mkdir()
     for name in manifest['files_sha256']: shutil.copy2(bundle / name, output / name)
@@ -267,6 +288,7 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
     (output / 'protected_ranges.cpp').write_text(range_code)
     manifest.update(status='prepared-not-built', created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         variants=True, protected_ranges=len(ranges), transform_sites=len(rows), immutable_check_count=len(immutable),
+        transform_helpers=sorted({row['helper'] for row in rows}),
         immutable_text_offsets=[text_begin, text_end], excluded_nontext_checks=mutable_data_checks,
         moved_identity_checks=len(pairs)-len(immutable), live_variants=[p[1] for p in verified.values() if p[1]['runtime_status'].startswith('two-fresh')],
         inline_identity_anchors=[hex(offset + BASE) for offset, value in anchors],
@@ -284,8 +306,11 @@ def main():
     parser.add_argument('--variant', nargs=3, action='append', required=True, metavar=('HEX_BEGIN', 'FIRST_CAPTURE', 'SECOND_CAPTURE'))
     parser.add_argument('--candidate-catalog', type=Path)
     parser.add_argument('--candidate-catalog-sha256')
+    parser.add_argument('--second-family-catalog', type=Path)
+    parser.add_argument('--second-family-catalog-sha256')
     args = parser.parse_args()
-    print(json.dumps(prepare(args.bundle, args.artifact, args.compiler, args.variant, args.output, args.candidate_catalog, args.candidate_catalog_sha256), indent=2))
+    print(json.dumps(prepare(args.bundle, args.artifact, args.compiler, args.variant, args.output, args.candidate_catalog, args.candidate_catalog_sha256,
+                             args.second_family_catalog, args.second_family_catalog_sha256), indent=2))
 
 
 if __name__ == '__main__': main()

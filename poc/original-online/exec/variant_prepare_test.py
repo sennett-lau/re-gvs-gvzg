@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import struct
 import unittest
-from variant_prepare import BASE, immutable_code_checks, observations, text_bounds
+from variant_prepare import BASE, immutable_code_checks, observations, text_bounds, validate_ranges
 
 
 class SectionIdentityTest(unittest.TestCase):
@@ -27,6 +27,13 @@ class SectionIdentityTest(unittest.TestCase):
         for offset, value in [(8, BASE + 4), (12, 0), (12, 0x81), (16, 0x84)]:
             data = self.image(); struct.pack_into('<I', data, offset, value)
             with self.assertRaises(ValueError): text_bounds(data)
+
+    def test_combined_helpers_cannot_overlap_code_or_markers(self):
+        validate_ranges([(0x100, 0x110), (0x140, 0x150)])
+        with self.assertRaisesRegex(ValueError, 'Overlapping'):
+            validate_ranges([(0x100, 0x120), (0x110, 0x130)])
+        with self.assertRaisesRegex(ValueError, 'marker overlaps'):
+            validate_ranges([(0x100, 0x110), (0x120, 0x130)])
 
 
 class ObservationTest(unittest.TestCase):
