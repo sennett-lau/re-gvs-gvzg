@@ -11,6 +11,7 @@ import struct
 import subprocess
 
 from overlay_prepare import ARTIFACT_SHA, NAME, PREFIX, one, sha
+from entry_prepare import classify_edges, dispatch_entries
 
 BASE = 0x0117F000
 FIRST_HELPER = 0x011AAA68
@@ -72,12 +73,43 @@ def inventory(data, helper=FIRST_HELPER):
         end = begin + length
         if length % 4 or length > 0x800 or begin < BASE + 0x14 or end > BASE + len(data):
             raise ValueError('Invalid original protected range')
-        rows.append({'helper': helper, 'site': site, 'args': args, 'begin': begin, 'end': end, 'marker': begin - 0x14})
+        rows.append({'helper': helper, 'site': site, 'table': table,
+                     'argument_addresses': [table + loads[r][1] for r in (5, 6, 7)],
+                     'args': args, 'begin': begin, 'end': end, 'marker': begin - 0x14})
     ranges = sorted({(row['begin'], row['end']) for row in rows})
     if len(rows) != call_count or len(ranges) != range_count or sum(not (row['args'][3] & 1) for row in rows) != range_count:
         raise ValueError('Original visible transform inventory changed')
     validate_ranges(ranges)
     return rows, ranges
+
+
+def inline_data_spans(data, rows, ranges):
+    text_begin, text_end = text_bounds(data)
+    def word(pc):
+        if not BASE + text_begin <= pc <= BASE + text_end - 4: raise ValueError('Inline data proof outside text')
+        return struct.unpack_from('<I', data, pc - BASE)[0]
+    proofs = []
+    for row in rows:
+        table = row['table']; found = None
+        for branch in range(table - 4, table - 0x80, -4):
+            value = word(branch)
+            if value >> 16 != 0x1000: continue # Original unconditional BEQ zero,zero.
+            immediate = value & 0xFFFF
+            target = branch + 4 + 4 * (immediate - 0x10000 if immediate & 0x8000 else immediate)
+            begin = branch + 8
+            if begin <= table and table + 0x10 <= target <= BASE + text_end and word(branch + 4) == 0:
+                if all(begin <= at <= target - 4 for at in row['argument_addresses']):
+                    found = {'begin': begin, 'end': target, 'branch': branch, 'branch_word': value,
+                             'delay_word': 0, 'table': table, 'site': row['site']}
+            break
+        if not found: raise ValueError('Original transform table lacks exact branch/argument exclusion proof')
+        if found['begin'] <= row['site'] < found['end'] or any(a < found['end'] and found['begin'] < b for a, b in ranges):
+            raise ValueError('Inline data exclusion overlaps original call or protected code')
+        proofs.append(found)
+    spans = sorted({(row['begin'], row['end']) for row in proofs})
+    if len(spans) != len(rows) or any(a[1] > b[0] for a, b in zip(spans, spans[1:])):
+        raise ValueError('Original inline data spans are duplicated or overlap')
+    return proofs, spans
 
 
 def observations(capture, begin, length):
@@ -171,7 +203,7 @@ def static_candidates(data, rows, catalog_path, expected_sha, helper=FIRST_HELPE
 
 
 def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None, candidate_catalog_sha=None,
-            second_family_catalog=None, second_family_catalog_sha=None):
+            second_family_catalog=None, second_family_catalog_sha=None, allow_missing_original_entries=False):
     bundle, artifact, compiler, output = map(Path, [bundle, artifact, compiler, output])
     if output.exists(): raise ValueError('Use a new variant output directory')
     manifest = json.loads((bundle / 'manifest.json').read_text())
@@ -188,6 +220,7 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
     text_begin, text_end = text_bounds(data)
     if any(not BASE + text_begin <= begin - 0x14 <= begin <= end <= BASE + text_end for begin, end in ranges):
         raise ValueError('Protected code/marker outside original text')
+    inline_proofs, inline_spans = inline_data_spans(data, rows, ranges)
     verified = {}
     for address, first, second in variants:
         begin = int(address, 16)
@@ -208,7 +241,7 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
     for name in manifest['files_sha256']: shutil.copy2(bundle / name, output / name)
     header = (output / 'units.hpp').read_text()
     declarations, descriptors, added_sources, rejected = [], [], [], []
-    all_labels = set()
+    all_labels, original_entries = set(), dispatch_entries(bundle)
     for name in manifest['compiled_sources']:
         if not name.startswith(PREFIX + '_unit_'): continue
         path = output / name; text = path.read_text()
@@ -283,9 +316,14 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
     range_code += '\nstatic const ProtectedRange ranges[] = {' + ',\n'.join(descriptors) + '};\nstd::span<const ProtectedRange> protected_ranges() { return ranges; }\n}\n'
     range_code += '\nnamespace original_exec {\nstatic const std::uint32_t identity_checks[] = {' + ','.join('0x%08Xu,0x%08Xu' % (offset + BASE, value) for offset, value in anchors) + '};\nstd::span<const std::uint32_t> protected_identity_checks() { return identity_checks; }\n}\n'
     range_code += '\nnamespace original_exec { std::pair<std::uint32_t, std::uint32_t> protected_text_bounds() { return {0x%08Xu,0x%08Xu}; } }\n' % (BASE + text_begin, BASE + text_end)
+    range_code += '\nnamespace original_exec {\nstatic const InlineDataRange inline_data[] = {' + ','.join('{0x%08Xu,0x%08Xu}' % span for span in inline_spans) + '};\nstd::span<const InlineDataRange> protected_inline_data() { return inline_data; }\n}\n'
     nontext = [(offset + BASE, value) for offset, value in pairs if not text_begin <= offset < text_end]
     range_code += '\nnamespace original_exec {\nstatic const std::uint32_t nontext_checks[] = {' + ','.join('0x%08Xu,0x%08Xu' % pair for pair in nontext) + '};\nstd::span<const std::uint32_t> excluded_nontext_checks() { return nontext_checks; }\n}\n'
     (output / 'protected_ranges.cpp').write_text(range_code)
+    coverage = classify_edges([proof for _, proof in verified.values()], original_entries,
+                              BASE + text_begin, BASE + text_end, BASE + len(data), inline_spans)
+    if coverage['missing_original_targets'] and not allow_missing_original_entries:
+        raise ValueError('Decoded direct targets lack original entries; use an explicit analysis-only bundle to prepare seeds')
     manifest.update(status='prepared-not-built', created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         variants=True, protected_ranges=len(ranges), transform_sites=len(rows), immutable_check_count=len(immutable),
         transform_helpers=sorted({row['helper'] for row in rows}),
@@ -294,6 +332,8 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
         inline_identity_anchors=[hex(offset + BASE) for offset, value in anchors],
         static_candidates=[p[1] for p in verified.values() if p[1]['runtime_status']=='unverified-static-candidate'], rejected_candidates=rejected,
         compiled_sources=manifest['compiled_sources'] + added_sources + ['protected_ranges.cpp'],
+        direct_entry_coverage=coverage,
+        inline_data_proofs=inline_proofs, inline_data_spans=inline_spans,
         source_bundle_manifest_sha256=sha(bundle / 'manifest.json'), preparer_sha256=sha(__file__))
     manifest['files_sha256'] = {path.name: sha(path) for path in output.iterdir() if path.is_file()}
     (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
@@ -308,9 +348,10 @@ def main():
     parser.add_argument('--candidate-catalog-sha256')
     parser.add_argument('--second-family-catalog', type=Path)
     parser.add_argument('--second-family-catalog-sha256')
+    parser.add_argument('--allow-missing-original-entries', action='store_true', help='Analysis-only output; the build profile rejects missing direct entries')
     args = parser.parse_args()
     print(json.dumps(prepare(args.bundle, args.artifact, args.compiler, args.variant, args.output, args.candidate_catalog, args.candidate_catalog_sha256,
-                             args.second_family_catalog, args.second_family_catalog_sha256), indent=2))
+                             args.second_family_catalog, args.second_family_catalog_sha256, args.allow_missing_original_entries), indent=2))
 
 
 if __name__ == '__main__': main()

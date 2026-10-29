@@ -92,6 +92,15 @@ def manifest_sources(tree, *manifests):
     return names
 
 
+def require_overlay_coverage(manifest):
+    if not manifest.get('variants'): return
+    coverage = manifest.get('direct_entry_coverage', {})
+    if coverage.get('original_text_complete') is not True or coverage.get('missing_original_targets') != []:
+        raise ValueError('Decoded profile lacks complete original direct-entry coverage')
+    if not manifest.get('inline_data_spans') or len(manifest['inline_data_spans']) != manifest.get('transform_sites'):
+        raise ValueError('Decoded profile lacks original inline-data exclusion proofs')
+
+
 def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None):
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
@@ -143,6 +152,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
             raise ValueError('Unsupported original overlay profile')
         if overlay_manifest.get('artifact_sha256') != module('exec_overlay_preparer', HERE / 'overlay_prepare.py').ARTIFACT_SHA:
             raise ValueError('Unsupported original overlay fingerprint')
+        require_overlay_coverage(overlay_manifest)
         for name, expected in overlay_manifest['files_sha256'].items():
             if Path(name).name != name or digest(overlay_path / name) != expected:
                 raise ValueError('Original overlay bundle changed: ' + name)
@@ -178,7 +188,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
                          static_cast<unsigned long long>(checks), i.module->check_count);
     }''')
             dispatch = prep.replace_once(dispatch, '    const Instance *m = instance_for(pc);\n    const UnitInfo *mu',
-                '    const Instance *m = instance_for(pc);\n    if (m && original_exec::dnas_module(m->module) && !original_exec::original_text_address(pc)) return false;\n    if (m && original_exec::dnas_module(m->module) && original_exec::protected_range(pc)) return original_exec::has_variant_code(pc, m->module);\n    const UnitInfo *mu')
+                '    const Instance *m = instance_for(pc);\n    if (m && original_exec::dnas_module(m->module) && !original_exec::original_entry_address(pc)) return false;\n    if (m && original_exec::dnas_module(m->module) && original_exec::protected_range(pc)) return original_exec::has_variant_code(pc, m->module);\n    const UnitInfo *mu')
             dispatch = prep.replace_once(dispatch, '            const std::uint32_t base = m->base;',
                 '            if (original_exec::dispatch_variant(c, pc, depth, m->module)) return;\n            const std::uint32_t base = m->base;')
             flush = '''void original_exec_flush_cache() {

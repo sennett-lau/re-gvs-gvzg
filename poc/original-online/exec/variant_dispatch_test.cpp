@@ -18,6 +18,7 @@ const std::uint32_t decoded[] = {0xAAAAAAAA, 0xBBBBBBBB, 0xCCCCCCCC, 0xDDDDDDDD}
 const std::uint32_t identity[] = {0x100, 0xF00DFACE}, other_identity[] = {0x100, 0xF00DFACF};
 const std::uint32_t inline_identity[] = {base + 0x100, 0xF00DFACE};
 const std::uint16_t variant_entries[] = {1, 2, 0, 0}, original_entries[] = {1, 2, 3, 4}, end_entries[] = {1};
+const std::uint16_t marker_entries[] = {1, 2, 3}; // Adjacent code, marker and other inline-data slots.
 unsigned originals = 0, variants = 0, continuations = 0;
 bool request_yield = false;
 void original_label(ps2::Cpu& c, std::uint32_t, std::uint32_t depth) {
@@ -37,11 +38,16 @@ void decoded_unit(ps2::Cpu& c, std::uint32_t entry, std::uint32_t depth) {
     c.pc = end; ps2::dispatch(c, 0, depth);
 }
 void sibling(ps2::Cpu& c, std::uint32_t, std::uint32_t) { c.r[2].w[0] = 24; c.pc = c.r[31].w[0]; }
+void adjacent_label(ps2::Cpu& c, std::uint32_t, std::uint32_t) {
+    if (original_exec::guard_protected(c, c.pc) == original_exec::CodeState::invalid) return;
+    assert(c.pc == marker - 4); c.r[2].w[0] = 84; c.pc = c.r[31].w[0];
+}
 const ps2::UnitInfo variant_units[] = {{begin, 16, decoded_unit, variant_entries}};
-const ps2::UnitInfo original_units[] = {{begin - base, 16, original_label, original_entries}, {end - base, 4, continuation, end_entries}};
+const ps2::UnitInfo original_units[] = {{begin - base, 16, original_label, original_entries}, {end - base, 4, continuation, end_entries},
+                                      {marker - base - 4, 12, adjacent_label, marker_entries}};
 const ps2::UnitInfo sibling_units[] = {{begin - base, 16, sibling, original_entries}};
 const ps2::ModuleInfo modules[] = {
-    {"0117F000_MWO_E775154D", base, 0xA1000, identity, 1, original_units, 2},
+    {"0117F000_MWO_E775154D", base, 0xA1000, identity, 1, original_units, 3},
     {"0117F000_MWO_D4AF0758", base, 0xA1000, other_identity, 1, sibling_units, 1}};
 const std::array<original_exec::ProtectedRange, 66> ranges = [] {
     std::array<original_exec::ProtectedRange, 66> result{};
@@ -70,6 +76,9 @@ void run(ps2::Cpu& c) {
 }
 namespace original_exec {
 std::span<const ProtectedRange> protected_ranges() { return ranges; }
+std::span<const InlineDataRange> protected_inline_data() {
+    static const InlineDataRange data[] = {{marker, begin}}; return data;
+}
 std::span<const std::uint32_t> protected_identity_checks() { return inline_identity; }
 std::span<const std::uint32_t> excluded_nontext_checks() { return {}; }
 std::pair<std::uint32_t, std::uint32_t> protected_text_bounds() { return {base + 0x40, base + 0x70F80}; }
@@ -103,6 +112,33 @@ int main() {
     c = fresh(); const std::uint32_t crossing[] = {base + 0x70F7C, 0, base + 0x70F80, 0};
     assert(!original_exec::guard_original_block(c, base + 0x70F7C, crossing));
     assert(ps2::reason == "Original translated block crosses declared text");
+    for (const auto value : {0u, marker}) {
+        c = fresh(); put(marker, value); c.pc = marker;
+        assert(!ps2::has_code(marker)); run(c);
+        assert(ps2::reason == "Original overlay marker is data, not an execution entry" && !variants && !originals);
+        c = fresh(); put(marker, value); c.pc = marker; original_label(c, 1, 0);
+        assert(ps2::reason == "Original overlay marker is data, not an execution entry" && !variants);
+        c = fresh(); put(marker, value); c.pc = marker - 4;
+        assert(ps2::has_code(c.pc)); run(c);
+        assert(ps2::reason.empty() && c.r[2].w[0] == 84 && c.pc == c.r[31].w[0]);
+        c = fresh(); put(marker, value); c.pc = marker + 4;
+        assert(!ps2::has_code(c.pc)); run(c);
+        assert(ps2::reason == "Original inline transform data at execution entry" && !variants && !originals);
+        c = fresh(); c.pc = marker + 4; adjacent_label(c, 3, 0);
+        assert(ps2::reason == "Original inline transform data at execution entry");
+    }
+    c = fresh();
+    assert(original_exec::original_entry_address(marker - 8)); // Skipping branch.
+    assert(original_exec::original_entry_address(marker - 4)); // Real delay slot.
+    assert(original_exec::inline_data_address(marker) && original_exec::inline_data_address(begin - 4));
+    assert(!original_exec::inline_data_address(begin) && original_exec::original_entry_address(begin));
+    c.pc = begin - 4; adjacent_label(c, 3, 0);
+    assert(ps2::reason == "Original inline transform data at execution entry");
+    c = fresh(); c.pc = marker - 8;
+    const std::uint32_t branch_and_data[] = {marker - 8, 0, marker + 4, 0, marker + 8, 0};
+    assert(original_exec::guard_protected(c, c.pc) == original_exec::CodeState::outside);
+    assert(original_exec::guard_original_block(c, c.pc, branch_and_data)); // Guarded/read data does not become execution.
+    assert(ps2::ld32(marker + 4) == 0 && ps2::reason.empty());
     c = fresh(); put(begin + 0xEC, begin + 0xEC); assert(original_exec::protected_markers_valid());
     put(begin + 0xEC, 1); assert(!original_exec::protected_markers_valid());
     c = fresh(); run(c); ps2::original_exec_flush_cache(); c.pc = begin; run(c);

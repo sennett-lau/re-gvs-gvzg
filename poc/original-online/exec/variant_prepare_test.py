@@ -3,7 +3,7 @@ from pathlib import Path
 import tempfile
 import struct
 import unittest
-from variant_prepare import BASE, immutable_code_checks, observations, text_bounds, validate_ranges
+from variant_prepare import BASE, immutable_code_checks, inline_data_spans, observations, text_bounds, validate_ranges
 
 
 class SectionIdentityTest(unittest.TestCase):
@@ -34,6 +34,22 @@ class SectionIdentityTest(unittest.TestCase):
             validate_ranges([(0x100, 0x120), (0x110, 0x130)])
         with self.assertRaisesRegex(ValueError, 'marker overlaps'):
             validate_ranges([(0x100, 0x110), (0x120, 0x130)])
+
+    def test_inline_data_requires_original_unconditional_skip_and_all_arguments(self):
+        data = self.image()
+        # B at +40 skips [48,80), including table60 and its three arguments.
+        struct.pack_into('<II', data, 0x40, 0x1000000F, 0)
+        row = {'table': BASE + 0x60, 'site': BASE + 0x84,
+               'argument_addresses': [BASE + 0x64, BASE + 0x68, BASE + 0x6C]}
+        proof, spans = inline_data_spans(data, [row], [(BASE + 0x80, BASE + 0x88)])
+        self.assertEqual(spans, [(BASE + 0x48, BASE + 0x80)])
+        self.assertEqual(proof[0]['branch'], BASE + 0x40)
+        self.assertNotIn(BASE + 0x44, range(*spans[0])) # The real delay slot remains executable.
+        for offset, value in [(0x40, 0x1400000F), (0x44, 1), (0x40, 0x10000005)]:
+            changed = bytearray(data); struct.pack_into('<I', changed, offset, value)
+            with self.assertRaises(ValueError): inline_data_spans(changed, [row], [])
+        with self.assertRaises(ValueError): inline_data_spans(data, [dict(row, argument_addresses=[BASE + 0x90])], [])
+        with self.assertRaises(ValueError): inline_data_spans(data, [row], [(BASE + 0x70, BASE + 0x84)])
 
 
 class ObservationTest(unittest.TestCase):

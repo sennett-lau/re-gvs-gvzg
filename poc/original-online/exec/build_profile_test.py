@@ -12,6 +12,17 @@ spec.loader.exec_module(build)
 
 
 class ProfileTest(unittest.TestCase):
+    def test_analysis_only_or_unaudited_variants_cannot_be_built(self):
+        build.require_overlay_coverage({'variants': False})
+        for coverage in [{}, {'original_text_complete': False, 'missing_original_targets': [0x1180000]},
+                         {'original_text_complete': True, 'missing_original_targets': [0x1180000]}]:
+            with self.assertRaisesRegex(ValueError, 'direct-entry coverage'):
+                build.require_overlay_coverage({'variants': True, 'direct_entry_coverage': coverage})
+        complete = {'variants': True, 'direct_entry_coverage': {
+            'original_text_complete': True, 'missing_original_targets': []}}
+        with self.assertRaisesRegex(ValueError, 'inline-data exclusion'): build.require_overlay_coverage(complete)
+        build.require_overlay_coverage(dict(complete, transform_sites=1, inline_data_spans=[[0x1000, 0x1010]]))
+
     def test_missing_metadata_never_labels_an_unknown_archive_pair_as_a_game(self):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp); (base / 'base').mkdir()

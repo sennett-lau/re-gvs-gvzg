@@ -3,6 +3,7 @@
 #include "analysis.hpp"
 #include "codegen.hpp"
 #include "elf.hpp"
+#include "block_flow.hpp"
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
@@ -44,7 +45,27 @@ int main(int argc, char** argv) {
         std::ofstream analysis(std::filesystem::path(argv[3]) / "analysis.json");
         analysis << "{\"base\":" << base << ",\"bytes\":" << size << ",\"sparse_allowed\":" << (sparse ? "true" : "false") << ",\"untranslated_addresses\":[";
         for (std::size_t i = 0; i < gaps.size(); ++i) analysis << (i ? "," : "") << gaps[i];
-        analysis << "]}\n";
+        analysis << "],\"flow_audit\":{";
+        const auto audit = original_exec_audit::audit_flow(image, program, base, base + size);
+        auto addresses = [&](const char* key, const auto& values) {
+            analysis << '\"' << key << "\":[";
+            bool first = true;
+            for (auto pc : values) { analysis << (first ? "" : ",") << pc; first = false; }
+            analysis << "]";
+        };
+        addresses("instructions", audit.instructions); analysis << ',';
+        addresses("delay_slots", audit.delay_slots); analysis << ',';
+        addresses("untranslated_reachable", audit.gaps); analysis << ',';
+        addresses("unsupported_delay_slots", audit.unsupported_delay_slots); analysis << ',';
+        addresses("indirect_transfers", audit.indirect_transfers);
+        analysis << ",\"external_edges\":[";
+        bool first = true;
+        for (const auto& edge : audit.external_edges) {
+            analysis << (first ? "" : ",") << "{\"pc\":" << edge.pc << ",\"word\":" << edge.word
+                     << ",\"target\":" << edge.target << ",\"op\":\"" << recomp::name(edge.op) << "\"}";
+            first = false;
+        }
+        analysis << "]}}\n";
         std::printf("Translated actual input block %08X size %u; execution remains unverified\n", base, size);
     } catch (const std::exception& error) {
         std::fprintf(stderr, "%s\n", error.what()); return 1;

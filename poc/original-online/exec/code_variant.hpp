@@ -13,6 +13,8 @@ struct ProtectedRange {
     const char* prior_evidence = nullptr;
 };
 std::span<const ProtectedRange> protected_ranges(); // Private, verified exporter output.
+struct InlineDataRange { std::uint32_t begin, end; };
+std::span<const InlineDataRange> protected_inline_data();
 std::span<const std::uint32_t> protected_identity_checks();
 std::span<const std::uint32_t> excluded_nontext_checks();
 std::pair<std::uint32_t, std::uint32_t> protected_text_bounds();
@@ -23,10 +25,29 @@ inline bool original_text_address(std::uint32_t address) {
     return !(address & 3u) && begin < end && end <= ps2::kRamSize &&
            address >= begin && address < end;
 }
+inline bool protected_marker_address(std::uint32_t address) {
+    if (address > ps2::kRamSize - 0x14) return false;
+    const auto ranges = protected_ranges();
+    const auto at = std::lower_bound(ranges.begin(), ranges.end(), address + 0x14,
+        [](const ProtectedRange& range, std::uint32_t begin) { return range.begin < begin; });
+    return at != ranges.end() && at->marker == address;
+}
+inline bool inline_data_address(std::uint32_t address) {
+    const auto ranges = protected_inline_data();
+    const auto after = std::upper_bound(ranges.begin(), ranges.end(), address,
+        [](std::uint32_t pc, const InlineDataRange& range) { return pc < range.begin; });
+    return after != ranges.begin() && address < std::prev(after)->end;
+}
+inline bool original_entry_address(std::uint32_t address) {
+    return original_text_address(address) && !protected_marker_address(address) && !inline_data_address(address);
+}
 inline bool guard_text(ps2::Cpu& cpu, std::uint32_t pc) {
-    if (original_text_address(pc)) return true;
-    std::fprintf(stderr, "[original-exec-identity] nontext_execution pc=%08X ra=%08X\n", pc, cpu.r[31].w[0]);
-    ps2::halt("Original overlay execution outside declared text");
+    if (original_entry_address(pc)) return true;
+    const bool marker = protected_marker_address(pc), data = inline_data_address(pc);
+    std::fprintf(stderr, "[original-exec-identity] %s_execution pc=%08X ra=%08X\n", marker ? "marker" : data ? "inline-data" : "nontext", pc, cpu.r[31].w[0]);
+    ps2::halt(marker ? "Original overlay marker is data, not an execution entry" :
+              data ? "Original inline transform data at execution entry" :
+              "Original overlay execution outside declared text");
     cpu.pc = pc | ps2::kUnwind;
     return false;
 }
