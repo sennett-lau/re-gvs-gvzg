@@ -8,6 +8,7 @@ export function installFrame(Module) {
   const send = (type, data = {}) => parent.postMessage({originalExec: 1, token, type, ...data}, origin);
   const failure = error => { document.querySelector('#status').textContent = 'Stopped: ' + error; send('failure', {error: String(error)}); };
   Module.onHalt = failure;
+  Module.onExit = status => failure('native host exited with status ' + status);
   Module.onOriginalExecStartup = record => send('startup', {record});
   Module.onOriginalExec = record => {
     clearInterval(inputTimer); clearInterval(sampleTimer);
@@ -54,6 +55,11 @@ export function installFrame(Module) {
     const imported = await sha256(Module.FS.readFile('/memcard/Mcd001.ps2'));
     if (imported !== data.cardSha256) throw new Error('MEMFS card readback mismatch');
     if (typeof Module.PThread?.terminateAllThreads !== 'function') throw new Error('PThread termination export missing');
+    if (Module.execNetwork) {
+      if (Module.execImage !== 'game' || !data.networkConfig) throw new Error('network-enabled game requires explicit private bridge config');
+      const {installOriginalOnlineBridge} = await import('./network/wasm_host.mjs');
+      installOriginalOnlineBridge(Module, data.networkConfig);
+    } else if (data.networkConfig) throw new Error('private network config supplied to a build without the adapter');
     audio = new AudioContext({sampleRate: 48000, latencyHint: 'interactive'});
     await audio.resume();
     if (audio.state !== 'running') throw new Error('audio user activation required before boot');
@@ -64,11 +70,17 @@ export function installFrame(Module) {
     node.onprocessorerror = () => failure('audio processor failed');
     node.connect(audio.destination);
     started = true;
+    // This lifecycle experiment uses the original 60-Hz presentation setting.
+    // These are host renderer options, not guest network settings or state.
+    Module.ENV.PS2_EXPERIMENT_FPS = '60';
+    Module.ENV.PS2_RENDER_AUTO = '0';
     // host/web.cpp loops over native argv beginning at index 2. callMain adds
     // program argv[0]; /game/core.elf occupies index 1; every guest arg follows.
     const hostArgs = ['/game/core.elf', ...argv.flatMap(arg => ['--arg', arg])];
     Module.arguments = hostArgs;
-    Promise.resolve(Module.callMain(hostArgs)).catch(failure);
+    Promise.resolve(Module.callMain(hostArgs)).then(code => {
+      if (Number.isInteger(code) && code !== 0) failure('native main returned ' + code);
+    }).catch(failure);
     inputTimer = setInterval(() => {
       const mask = [...keys].reduce((value, key) => value | keyMap[key], 0);
       Module._ps2web_pad(0, mask, 128, 128, 128, 128);
@@ -88,6 +100,7 @@ export function installFrame(Module) {
       if (data.type === 'start') await start(data);
       else if (data.type === 'stop') {
         stopped = true; clearInterval(inputTimer); clearInterval(sampleTimer); keys.clear();
+        Module.originalOnlineBridge?.reset();
         Module.PThread.terminateAllThreads();
         node?.disconnect(); if (audio) await audio.close();
         send('stopped');

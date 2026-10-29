@@ -18,6 +18,7 @@ let card,argv,worker;
 addEventListener('message',async event=>{
  const d=event.data;if(event.source!==parent||event.origin!==location.origin||d.token!==token)return;
  if(d.type==='start'){
+  window.receivedNetwork=!!d.networkConfig;
   card=d.card.slice();argv=d.argv.slice();
   worker=new Worker(URL.createObjectURL(new Blob(['setInterval(()=>postMessage(1),10)'],{type:'application/javascript'})));
   worker.onmessage=()=>send('sample',{sample:{fixture:true,image}});
@@ -63,6 +64,18 @@ const server = http.createServer((req, res) => {
       const {CardStore,withCardLock}=await import('/card-store.mjs');
       const {documentFactory}=await import('/browser.mjs');
       const check=(condition,message)=>{if(!condition)throw Error(message)};
+      // Exercise the actual worklet with a synthetic shared ring. Browser
+      // output is muted, but AudioContext and ring consumption stay running.
+      const audio=new AudioContext({sampleRate:48000});await audio.resume();
+      await audio.audioWorklet.addModule('/audio-worklet.js');
+      const shared=new SharedArrayBuffer(16+16384*4),ring=new Uint32Array(shared,0,4);ring[2]=16384;
+      const output=new AudioWorkletNode(audio,'original-exec-output',{outputChannelCount:[2],processorOptions:{buffer:shared,base:0}});
+      output.connect(audio.destination);Atomics.store(ring,0,1024);
+      const audioDeadline=Date.now()+3000;
+      while(Atomics.load(ring,1)!==1024&&Date.now()<audioDeadline)await new Promise(resolve=>setTimeout(resolve,10));
+      const audioReceipt={synthetic:true,state:audio.state,read:Atomics.load(ring,1),write:Atomics.load(ring,0),active:Atomics.load(ring,3)};
+      check(audioReceipt.state==='running'&&audioReceipt.read===1024&&audioReceipt.active===1,'active audio ring consumer');
+      output.disconnect();await audio.close();
       const events=[],failures=[];let session,release;
       const done=new Promise(resolve=>release=resolve);
       const lockTask=withCardLock('synthetic-client-a',async store=>{
@@ -70,12 +83,14 @@ const server = http.createServer((req, res) => {
         await store.commit(bytes);check((await store.load())[100]===45,'durable initial readback');
         const create=documentFactory({container:document.querySelector('#host'),urls:{game:'/game.html',utility:'/utility.html'},
           discUrl:'/disc.iso',discSize:2048,timeoutMs:5000,emit:e=>events.push(e),
+          networkConfig:{gatewayURL:'ws://127.0.0.1:1/',token:'synthetic-private-token',endpoints:{}},
           onExec:(...args)=>session.transition(...args),onFailure:e=>failures.push(String(e))});
         session=new ExecSession({store,create,emit:e=>events.push(e)});window.testSession=session;
         await session.start();await done;await session.close();
       });
       const until=async fn=>{const start=Date.now();while(!fn()){if(Date.now()-start>10000)throw Error('fixture timeout');await new Promise(r=>setTimeout(r,10));}};
       await until(()=>session?.state==='running');
+      check(document.querySelector('iframe').contentWindow.receivedNetwork,'explicit config reaches initial game');
       let lockRejected=false;
       await withCardLock('synthetic-client-a',()=>{}).catch(e=>lockRejected=/active writer/.test(e.message));
       check(lockRejected,'second card writer rejected');
@@ -85,9 +100,12 @@ const server = http.createServer((req, res) => {
       document.querySelector('iframe').contentWindow.fire();
       await until(()=>session.generation===2&&session.state==='running');
       check(session.image==='utility','utility active');
+      check(!document.querySelector('iframe').contentWindow.receivedNetwork,'utility receives no network config');
       document.querySelector('iframe').contentWindow.fire();
       await until(()=>session.generation===3&&session.state==='running');
       check(session.image==='game','game return active');
+      check(document.querySelector('iframe').contentWindow.receivedNetwork,'explicit config reaches return game');
+      check(!JSON.stringify(events).includes('synthetic-private-token'),'no network credential in lifecycle log');
       check(document.querySelectorAll('iframe').length===1,'one active document');
       const boots=events.filter(e=>e.kind==='document-started');
       check(JSON.stringify(boots.map(e=>e.argv))===JSON.stringify([[IMAGES.game.path],[IMAGES.utility.path,IMAGES.game.path,'1'],[IMAGES.game.path,'1']]),'exact round-trip args');
@@ -106,7 +124,7 @@ const server = http.createServer((req, res) => {
       let rejected=false;try{await doc.start({image:'game',imageSha256:IMAGES.game.sha256,argv:[IMAGES.game.path],card:bytes,cardSha256:await sha256(bytes)});}
       catch(e){rejected=/preloaded executable fingerprint mismatch/.test(e.message)}
       await doc.dispose();check(rejected,'actual frame rejects synthetic ELF');
-      return {synthetic:true,gameExecuted:false,roundTrip:true,lockRejected,reopened,finalHash,events,negativeFailures};
+      return {synthetic:true,gameExecuted:false,roundTrip:true,lockRejected,reopened,finalHash,events,negativeFailures,audioReceipt};
     });
     assert.deepEqual(errors,[]);
     fs.writeFileSync(path.join(out,'result.json'),JSON.stringify({passed:true,started,ended:new Date().toISOString(),browser:browser.version(),errors,...result},null,2)+'\n');

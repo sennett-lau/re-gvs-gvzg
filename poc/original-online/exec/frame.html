@@ -6,6 +6,7 @@
 var Module = {
   noInitialRun: true, canvas: document.getElementById('canvas'), noCard: false, stateUrl: null,
   execImage: '__ORIGINAL_EXEC_IMAGE__', execImageSha256: '__ORIGINAL_EXEC_SHA256__',
+  execNetwork: __ORIGINAL_EXEC_NETWORK__,
   print: text => console.log(text), printErr: text => console.error(text),
   setStatus: text => { if(text) document.getElementById('status').textContent = text; },
   onRuntimeInitialized: () => execBridge.then(bridge => bridge.ready()).catch(error => console.error(error)),

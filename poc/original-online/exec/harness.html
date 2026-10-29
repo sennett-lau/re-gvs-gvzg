@@ -31,7 +31,7 @@ document.querySelector('#start').onclick=async()=>{
     await withCardLock(clientId,async store=>{
       await store.commit(card);
       const create=documentFactory({container:document.querySelector('#host'),urls:{game:'./game/index.html',utility:'./utility/index.html'},
-        discUrl,discSize,emit,onExec:(...args)=>session.transition(...args),onFailure:error=>session?.reportFailure(error)});
+        discUrl,discSize,networkConfig:window.originalExecNetworkConfig,emit,onExec:(...args)=>session.transition(...args),onFailure:error=>session?.reportFailure(error)});
       session=new ExecSession({store,create,emit:event=>{emit(event);status.textContent=event.state+' — '+(event.image||session.image||'')+(event.error?'\n'+event.error:'');}});
       try{
         await session.start();document.querySelector('#stop').disabled=false;

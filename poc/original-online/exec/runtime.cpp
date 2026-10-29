@@ -27,7 +27,7 @@ void observe_startup(std::uint32_t args, std::uint32_t pc, int thread) {
             argv.push_back(read_string(ps2::g_ram, ps2::kRamSize, ps2::load<std::uint32_t>(ps2::g_ram + at + 4 + i * 4)));
     } catch (const std::exception& e) { error = e.what(); }
     std::string record = "{\"schema\":1,\"kind\":\"setup-thread\",\"image\":" + quote(ORIGINAL_EXEC_IMAGE) +
-        ",\"pc\":" + std::to_string(pc) + ",\"thread\":" + std::to_string(thread) +
+        ",\"pc\":" + std::to_string(pc) + ",\"argumentBlock\":" + std::to_string(args) + ",\"thread\":" + std::to_string(thread) +
         ",\"cycles\":" + quote(std::to_string(ps2::now())) + ",\"argc\":" + std::to_string(count) + ",\"argv\":[";
     for (std::size_t i = 0; i < argv.size(); ++i) record += (i ? "," : "") + quote(argv[i]);
     record += "],\"error\":" + quote(error) + "}";

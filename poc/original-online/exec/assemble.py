@@ -21,19 +21,26 @@ def main():
     modules = {}
     for image, directory in [('game', args.game), ('utility', args.utility)]:
         info = json.loads((directory / 'build-info.json').read_text())
-        if info.get('status') != 'built-not-runtime-tested' or info.get('image') != image:
+        if (info.get('profile') != 'experimental-original-exec-with-native-storage-v1' or
+                info.get('status') != 'built-not-runtime-tested' or info.get('image') != image):
             parser.error('Expected a completed separate exec build for ' + image)
         if not {'index.html', 'index.js', 'index.wasm', 'index.data'}.issubset(info['outputs_sha256']):
             parser.error('Missing compiled module artifacts for ' + image)
         for filename, expected in info['outputs_sha256'].items():
-            if Path(filename).name != filename or digest(directory / filename) != expected:
+            relative = Path(filename)
+            if relative.is_absolute() or '..' in relative.parts or '\\' in filename or ':' in filename:
+                parser.error('Invalid module output pathname: ' + filename)
+            target = (directory / filename).resolve()
+            if not target.is_relative_to(directory.resolve()) or digest(target) != expected:
                 parser.error('Module output fingerprint mismatch: ' + filename)
         modules[image] = {'build_info_sha256': digest(directory / 'build-info.json'), 'elf_sha256': info['elf_sha256'],
-                          'files': list(info['outputs_sha256'])}
+                          'files': list(info['outputs_sha256']), 'network_enabled': bool(info.get('network'))}
     args.output.mkdir(parents=True)
     for image, directory in [('game', args.game), ('utility', args.utility)]:
         destination = args.output / image; destination.mkdir()
-        for filename in [*modules[image]['files'], 'build-info.json']: shutil.copy2(directory / filename, destination / filename)
+        for filename in [*modules[image]['files'], 'build-info.json']:
+            target = destination / filename; target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(directory / filename, target)
     shutil.copy2(HERE / 'harness.html', args.output / 'index.html')
     for filename in ['session.mjs', 'browser.mjs', 'card-store.mjs']: shutil.copy2(HERE / filename, args.output / filename)
     info = {'profile': 'experimental-original-exec-documents-v1', 'modules': modules, 'runtime_tested': False,

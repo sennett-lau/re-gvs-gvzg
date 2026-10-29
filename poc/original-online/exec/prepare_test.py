@@ -18,7 +18,9 @@ class PreparationTest(unittest.TestCase):
             self.assertIn('case 0x07: halt("program asked to run another executable"); break;', actual_kernel)
             self.assertIn('catch (original_exec::Transition& transition)', actual_host)
             self.assertEqual(actual_host.count('ps2::run();'), 1)
-            self.assertEqual(actual_host.count('Module.onHalt('), host.count('Module.onHalt('))
+            self.assertIn("Module.onHalt('cannot load the game executable')", actual_host)
+            self.assertEqual(actual_host.count('Module.onHalt(UTF8ToString($0))'), host.count('Module.onHalt(UTF8ToString($0))'))
+            self.assertIn('    MAIN_THREAD_ASYNC_EM_ASM({\n        if (typeof Module.onHalt', actual_host)
             self.assertNotIn('case 0x06: case 0x07:', actual_kernel)
 
     def test_drift_and_double_application_fail_closed(self):

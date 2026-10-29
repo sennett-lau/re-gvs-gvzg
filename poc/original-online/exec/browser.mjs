@@ -1,6 +1,6 @@
 import {IMAGES} from './session.mjs';
 
-export function documentFactory({container, urls, discUrl, discSize, onExec, onFailure, emit = () => {}, timeoutMs = 120000}) {
+export function documentFactory({container, urls, discUrl, discSize, networkConfig, onExec, onFailure, emit = () => {}, timeoutMs = 120000}) {
   return async (image, generation) => {
     const url = new URL(urls[image], location.href);
     if (url.origin !== location.origin) throw new Error('exec documents must use the same isolated origin');
@@ -40,7 +40,11 @@ export function documentFactory({container, urls, discUrl, discSize, onExec, onF
       if (ready.image !== image || ready.imageSha256 !== IMAGES[image].sha256) throw new Error('prepared document identity mismatch');
     } catch (error) { closed = true; iframe.remove(); removeEventListener('message', receive); throw error; }
     return {
-      async start(data) { const receipt = wait('started'); send('start', {...data, discUrl, discSize}); return (await receipt).receipt; },
+      async start(data) {
+        const receipt = wait('started');
+        send('start', {...data, discUrl, discSize, ...(image === 'game' && networkConfig ? {networkConfig} : {})});
+        return (await receipt).receipt;
+      },
       async stop() {
         // A prior failure must not prevent best-effort worker termination.
         failure = null; const receipt = wait('stopped'); send('stop'); await receipt;

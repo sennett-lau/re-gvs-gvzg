@@ -33,6 +33,23 @@ def prepare(kernel, host):
         '        original_exec::after_unwind(transition);\n'
         '        return nullptr;\n'
         '    }')
+    old_halt = '''    EM_ASM({
+        if (typeof Module.onHalt === 'function')
+            Module.onHalt(UTF8ToString($0));
+    }, ps2::halt_reason().c_str());'''
+    new_halt = '''    MAIN_THREAD_ASYNC_EM_ASM({
+        if (typeof Module.onHalt === 'function')
+            Module.onHalt(UTF8ToString($0));
+    }, ps2::halt_reason().c_str());'''
+    if host.count(old_halt) + host.count(new_halt) != 1:
+        raise ValueError('Original halt callback absent or ambiguous')
+    host = host.replace(old_halt, new_halt)
+    host = replace_once(host, '''        std::fprintf(stderr, "cannot load the game executable\\n");
+        return nullptr;''', '''        std::fprintf(stderr, "cannot load the game executable\\n");
+        MAIN_THREAD_ASYNC_EM_ASM({
+            if (typeof Module.onHalt === 'function') Module.onHalt('cannot load the game executable');
+        });
+        return nullptr;''')
     return kernel, host
 
 
@@ -57,6 +74,7 @@ def main():
         (args.output / name).write_text(text)
     shell = (HERE / 'frame.html').read_text().replace('__ORIGINAL_EXEC_IMAGE__', args.image)
     shell = shell.replace('__ORIGINAL_EXEC_SHA256__', HASHES[args.image])
+    shell = shell.replace('__ORIGINAL_EXEC_NETWORK__', 'false')
     (args.output / 'frame.html').write_text(shell)
     manifest = {
         'profile': 'experimental-original-loadexec-documents-v1',
