@@ -92,9 +92,10 @@ def manifest_sources(tree, *manifests):
     return names
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False):
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
+    if device_segment and not device_path: raise ValueError('Device segment requires an explicit device preparer')
     info_path = base / 'web/build-info.json'
     info, info_sha, retained_provenance = base_metadata(image, base)
     prep = module('exec_preparation', HERE / 'prepare.py')
@@ -124,7 +125,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     if device_path:
         device_hash = digest(device_path)
         device = module('exec_device_preparation', device_path)
-        device_manifest = device.prepare(source)
+        device_manifest = device.prepare(source, segment=True) if device_segment else device.prepare(source)
         if digest(device_path) != device_hash: raise ValueError('Device preparer changed during composition')
     network_manifest = None
     if network_path:
@@ -132,6 +133,8 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         network = module('exec_network_preparation', network_path)
         network_manifest = network.prepare(source)
         if digest(network_path) != network_hash: raise ValueError('Network preparer changed during composition')
+    discovery = module('exec_module_discovery', HERE / 'discovery_prepare.py')
+    discovery_manifest = discovery.prepare(source, source_root / 'poc/original-online/module_names.hpp')
     prepared = work / 'exec'; prepared.mkdir()
     host = source_root / 'apps/game/src/web.cpp' if image == 'game' else source / 'host/web.cpp'
     kernel_text, host_text = prep.prepare((source / 'runtime/src/kernel.cpp').read_text(), host.read_text())
@@ -144,7 +147,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     sources = [prepared / 'kernel.cpp', prepared / 'web.cpp', HERE / 'runtime.cpp', HERE / 'web_notify.cpp']
     sources += [source / 'runtime/src/iop' / name for name in ['io.cpp', 'sif.cpp', 'sio2.cpp', 'native_storage.cpp']]
     if image == 'utility': sources.append(HERE / 'utility_diagnostic.cpp')
-    composed_names = manifest_sources(source, device_manifest, network_manifest)
+    composed_names = manifest_sources(source, device_manifest, network_manifest, discovery_manifest)
     for name in composed_names:
         path = source / name
         if path not in sources: sources.append(path)
@@ -198,10 +201,11 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
             [host, *generated.glob('*.hpp'), *(source_root / 'src/hooks').glob('*.hpp'),
              *(source_root / 'research/source/render-hooks').glob('*.hpp'),
              source_root / 'poc/original-online/prepare.py', source_root / 'poc/original-online/observer.hpp',
-             source_root / 'poc/original-online/verify_utility.py']},
+             source_root / 'poc/original-online/verify_utility.py', source_root / 'poc/original-online/module_names.hpp']},
         'exec_inputs_sha256': {str(path): digest(path) for path in HERE.iterdir() if path.is_file()},
         'storage_preparation_sha256': storage_hash, 'storage': storage_manifest, 'observer': observer,
         'device_preparation_sha256': device_hash if device_path else None, 'device': device_manifest,
+        'resident_module_lookup': discovery_manifest,
         'network_preparation_sha256': network_hash if network_path else None,
         'network': network_manifest, 'network_js_sha256': network_js_hashes,
         'commands': commands, 'shell_sha256': digest(prepared / 'frame.html'),
@@ -219,12 +223,13 @@ def main():
     parser.add_argument('--prepare-only', action='store_true', help='Prepare sources and exact command plan; never run compiler or game')
     parser.add_argument('--network-prepare', type=Path, help='Explicitly compose the network-owned game runtime adapter; off by default')
     parser.add_argument('--device-prepare', type=Path, help='Explicitly compose the device-owned DEV9/SMAP slice after storage; off by default')
+    parser.add_argument('--device-segment', action='store_true', help='Explicitly enable the device owner\'s local ARP/DHCP segment; requires --device-prepare')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
     args = parser.parse_args()
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
