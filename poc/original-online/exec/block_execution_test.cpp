@@ -1,4 +1,4 @@
-// Link only the unchanged recompiler's private output for the live-observed
+// Link only the retained compiler's private output for the live-observed
 // first block. Synthetic RAM tests do not establish game/network progression.
 #include "units.hpp"
 #include <array>

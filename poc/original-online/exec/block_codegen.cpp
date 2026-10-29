@@ -1,4 +1,4 @@
-// Small driver for the unchanged recompiler. Input provenance and live byte
+// Small driver for the retained compiler. Input provenance and live byte
 // verification belong to the exporter; this tool never modifies a guest image.
 #include "analysis.hpp"
 #include "codegen.hpp"

@@ -190,7 +190,9 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     host = source_root / 'apps/game/src/web.cpp' if image == 'game' else source / 'host/web.cpp'
     kernel_text, host_text = prep.prepare((source / 'runtime/src/kernel.cpp').read_text(), host.read_text())
     if overlay_manifest and overlay_manifest.get('variants'):
-        kernel_text = prep.replace_once(kernel_text, 'namespace ps2 {', 'namespace ps2 {\nvoid original_exec_flush_cache();')
+        # The file starts in ps2::kernel and only opens ps2 later. The cache
+        # declaration must precede that first namespace and its syscall body.
+        kernel_text = 'namespace ps2 { void original_exec_flush_cache(); }\n' + kernel_text
         kernel_text = prep.replace_once(kernel_text, 'case 0x64: case 0x68: ret(c, 0); break;',
             'case 0x64: case 0x68: original_exec_flush_cache(); ret(c, 0); break;')
     (prepared / 'kernel.cpp').write_text(kernel_text)
