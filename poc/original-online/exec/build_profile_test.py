@@ -21,10 +21,14 @@ class ProfileTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp); script = root / 'cdvd_identity.py'; header = root / 'cdvd_identity.hpp'
             header.write_text('synthetic helper')
-            script.write_text("def prepare(source):\n return {'profile':'original-online-cdvd-identity-v1','replaced_sources':['runtime/src/iop/cdvd.cpp'],'compiled_sources':[]}\n")
-            manifest, inputs = build.compose_cdvd_identity('game', root, script)
-            self.assertEqual(set(inputs), {str(script), str(header)})
-            self.assertEqual(inputs[str(header)], build.digest(header))
+            for version in [1, 2]:
+                script = root / f'cdvd_identity_v{version}.py'
+                profile = f'original-online-cdvd-identity-v{version}'
+                script.write_text("def prepare(source):\n return {'profile':"+repr(profile)+",'replaced_sources':['runtime/src/iop/cdvd.cpp'],'compiled_sources':[]}\n")
+                manifest, inputs = build.compose_cdvd_identity('game', root, script)
+                self.assertEqual(manifest['profile'], profile)
+                self.assertEqual(set(inputs), {str(script), str(header)})
+                self.assertEqual(inputs[str(header)], build.digest(header))
             for bad in ["{'profile':'unknown'}", "{'profile':'original-online-cdvd-identity-v1','replaced_sources':['runtime/src/kernel.cpp'],'compiled_sources':[]}"]:
                 script.write_text('def prepare(source):\n return '+bad+'\n')
                 with self.assertRaisesRegex(ValueError, 'profile|source scope'):

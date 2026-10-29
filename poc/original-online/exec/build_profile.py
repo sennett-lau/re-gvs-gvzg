@@ -108,7 +108,7 @@ def compose_cdvd_identity(image, source, path):
     inputs = {str(p): digest(p) for p in [path, path.with_name('cdvd_identity.hpp')]}
     preparer = module('exec_cdvd_identity', path)
     manifest = preparer.prepare(source)
-    if manifest.get('profile') != 'original-online-cdvd-identity-v1':
+    if manifest.get('profile') not in {'original-online-cdvd-identity-v1', 'original-online-cdvd-identity-v2'}:
         raise ValueError('Unsupported CDVD identity profile')
     if manifest.get('replaced_sources') != ['runtime/src/iop/cdvd.cpp'] or manifest.get('compiled_sources') != []:
         raise ValueError('Unexpected CDVD identity source scope')
@@ -327,7 +327,7 @@ def main():
     parser.add_argument('--device-prepare', type=Path, help='Explicitly compose the device-owned DEV9/SMAP slice after storage; off by default')
     parser.add_argument('--device-segment', action='store_true', help='Explicitly enable the device owner\'s local ARP/DHCP segment; requires --device-prepare')
     parser.add_argument('--overlay-profile', type=Path, help='Explicit exact original DNAS_NET entry-coverage bundle; game-only and off by default')
-    parser.add_argument('--cdvd-identity-prepare', type=Path, help='Explicit game-only cdvdman ordinal80 candidate from the device owner; off by default')
+    parser.add_argument('--cdvd-identity-prepare', type=Path, help='Explicit game-only cdvdman ordinal80/82 candidate from the device owner; off by default')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
     args = parser.parse_args()
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
