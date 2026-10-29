@@ -1,0 +1,9 @@
+# Module start stacks, run with PS2_HARNESS_DIRECT so the harness frees nothing itself. The game's AVETCP,
+# DEVGLUE and AVEWRAPE have started; AVEWRAPE left its RPC thread running. Then 50 caller modules start and
+# return. Compare the thread lists and free memory before and after.
+frames 120
+modules
+threads
+repeat 50 call devglue 6 b:4
+frames 10
+threads

@@ -1,0 +1,14 @@
+# Module start stack failure, run with PS2_HARNESS_DIRECT so the harness neither reserves nor frees. IOP
+# memory is fragmented as for module-start-createthread.txt, with one 0x5000-byte block for start stacks.
+# Five callers start one after another and must reuse that block. Then the block is taken, and the next
+# caller's 0x4000-byte start stack fits nowhere: its load must fail without running it.
+frames 120
+keep big 0x5000
+repeat 64 keep hog# leave:0x3000
+release big
+threads
+repeat 5 call devglue 6 b:4
+keep big2 0x5000
+threads
+call devglue 6 b:4
+threads

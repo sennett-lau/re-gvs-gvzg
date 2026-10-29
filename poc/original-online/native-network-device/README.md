@@ -28,6 +28,23 @@ With a configuration saved by the original utility, the original `INETCTL` bring
 
 `prepare.py` requires a tree already prepared by `native-storage`, because DEV9 registers `dev9x` with `AddDrv`. It patches `hw.cpp` at exact source points and records hashes. Its manifest lists `replaced_sources` (`hw.cpp`, `kernel.cpp`, `libs.cpp`) and `compiled_sources` (`dev9.cpp`) so a composed build recompiles every changed file. `build_utility.py --native-storage --native-network-device` applies both slices. Set `PS2_DEV9_TRACE` to log PHY operations and interrupt-mask changes.
 
+## Optional module start correction
+
+The original `MODLOAD` in the game's `IOPRP280.IMG` (module version 1.06) creates one loader thread when it starts, with a 0x1000-byte stack and priority 8. It runs every module start routine on that thread: each request restarts the thread, which returns to dormant when the routine is done. The pinned runtime instead creates a new thread with a 0x4000-byte stack for every module start and never deletes it. The real game runs load 32 modules, so finished start threads hold about 512 KiB of the 2 MiB IOP memory. The runtime also ignores a failed stack allocation, and the thread then runs with its stack at address 0.
+
+`module_start.py` is a separate opt-in correction; neither `prepare.py` nor the game build applies it. It deletes a start thread when its start routine has returned and the load callback has run. CreateThread returns `KE_NO_MEMORY` (-400) when the stack does not fit, as the original does. A module whose start thread cannot be created is not started, and a combined load and start releases its image. Threads that a module creates are not touched. The correction applies to the pinned source and to the game's split load/start form (`patches/runtime/gundam-support.patch`).
+
+`tests/module_start_run.py` builds the same runtime with and without the correction and runs the game's `AVETCP`, `DEVGLUE`, `DEV9`, `SMAP` and `AVEWRAPE`, then three scripts. With `PS2_HARNESS_DIRECT` set, the harness neither reserves memory nor frees finished threads itself. Without the correction, 50 module starts hold 50 stacks, a CreateThread that does not fit returns a thread on address 0, and the second caller would start on address 0. The harness stops before running it. With the correction:
+
+- 50 starts leave no start thread and no memory behind, and every other thread keeps its stack;
+- a 0x3000-byte stack fits exactly where 0x3001 bytes return -400, while more than 0x3100 bytes are free in total;
+- five starts reuse one block;
+- a start that fits nowhere fails with -400 and frees what it took.
+
+```sh
+python3 poc/original-online/native-network-device/tests/module_start_run.py --modules /private/NTGUIDVD/MODULES --game-dev9 /private/NETMOD_E/DEV9.IRX --game-modules /private/game-modules --work .local/module-start-run [--runtime-patch patches/runtime/gundam-support.patch]
+```
+
 ## Checks
 
 ```sh

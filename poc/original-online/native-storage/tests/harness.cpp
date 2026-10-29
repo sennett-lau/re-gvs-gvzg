@@ -176,6 +176,7 @@ struct Runner {
     std::map<std::string, std::pair<std::uint32_t, std::uint32_t>> kept; // name -> address, size
     std::set<std::uint32_t> caller_entries;
     int highest_thread = 0;
+    const bool direct = std::getenv("PS2_HARNESS_DIRECT") != nullptr;
 
     static const iop::kernel::Module *loaded(const std::string &name) {
         for (const auto &[id, m] : iop::kernel::modules())
@@ -241,6 +242,37 @@ struct Runner {
                 std::fflush(stdout);
                 results.push_back(0);
             }
+            return 0;
+        }
+        if (name == "modules") { // modules lists every loaded module with its base, entry and size
+            std::string extra, list;
+            if (words >> extra) { refuse(line, "modules takes no arguments"); return 0; }
+            for (const auto &[id, m] : iop::kernel::modules())
+                list += (list.empty() ? "" : ",") + std::string("{\"id\":") + std::to_string(id) + ",\"name\":" + json_string(m.name) +
+                        ",\"base\":" + std::to_string(m.base) + ",\"entry\":" + std::to_string(m.entry) + ",\"size\":" + std::to_string(m.size) + "}";
+            std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":true,\"result\":0,\"modules\":[%s]}\n", results.size(),
+                        json_string(line).c_str(), list.c_str());
+            std::fflush(stdout);
+            results.push_back(0);
+            return 0;
+        }
+        if (name == "threads") { // threads lists every IOP thread with its entry, status and stack
+            std::string extra;
+            if (words >> extra) { refuse(line, "threads takes no arguments"); return 0; }
+            std::string list;
+            for (int tid = 1; tid <= highest_thread + 256; ++tid) {
+                const iop::kernel::Thread *t = iop::kernel::thread(tid);
+                if (!t) continue;
+                highest_thread = std::max(highest_thread, tid);
+                char item[160];
+                std::snprintf(item, sizeof item, "%s{\"id\":%d,\"entry\":%u,\"status\":%d,\"priority\":%d,\"stack\":%u,\"stack_size\":%u}",
+                              list.empty() ? "" : ",", tid, t->entry, t->status, t->priority, t->stack, t->stack_size);
+                list += item;
+            }
+            std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":true,\"result\":0,\"threads\":[%s],\"free_max\":%u,\"free_total\":%u}\n",
+                        results.size(), json_string(line).c_str(), list.c_str(), iop::kernel::free_max(), iop::kernel::free_total());
+            std::fflush(stdout);
+            results.push_back(0);
             return 0;
         }
         if (name == "free" || name == "release") { // free prints the IOP memory left; release NAME frees a kept buffer
@@ -364,11 +396,17 @@ struct Runner {
         // a 0x4000-byte start stack, and does not check those allocations. Make the same allocations in the
         // same order and modes first; the allocator is deterministic, so after they are freed again the load
         // gets exactly these blocks. Refuse the call if any of them does not fit.
+        // With PS2_HARNESS_DIRECT set, the harness does neither, nor does it free finished caller threads,
+        // so a run shows how the runtime itself handles module start stacks.
         const bool guest = rejected.empty() && name != "checkpoint" && name != "frames";
         std::uint32_t table = 0;
         std::vector<std::uint32_t> stubs;
         std::vector<std::uint8_t> elf;
-        if (guest) {
+        if (guest && direct) {
+            table = iop::kernel::alloc(80);
+            if (table) elf = caller(table, stubs, library, library_index);
+            else rejected = "IOP memory has no room for the caller module's call table";
+        } else if (guest) {
             table = iop::kernel::alloc(80);
             if (table) elf = caller(table, stubs, library, library_index);
             const std::uint32_t image = table ? iop::kernel::alloc(static_cast<std::uint32_t>(elf.size() - 0xA0) + 0x40u) : 0;
@@ -397,6 +435,27 @@ struct Runner {
         } else {
             bool done = false;
             const int id = iop::load_module_buffer(elf, "caller", "", [&](int, int) { done = true; });
+            if (id < 0) {
+                std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":false,\"load_result\":%d,\"free_max\":%u,\"free_total\":%u}\n",
+                            results.size(), json_string(line).c_str(), id, iop::kernel::free_max(), iop::kernel::free_total());
+                std::fflush(stdout);
+                iop::kernel::free(table);
+                for (std::uint32_t at : buffers) iop::kernel::free(at);
+                results.push_back(id);
+                return id;
+            }
+            // A start thread without a stack would run on address 0 and overwrite low IOP memory: stop first.
+            for (int tid = 1; tid <= highest_thread + 256; ++tid) {
+                const iop::kernel::Thread *t = iop::kernel::thread(tid);
+                if (!t) continue;
+                highest_thread = std::max(highest_thread, tid);
+                if (t->entry == iop::kernel::modules().at(id).entry && !t->stack) {
+                    std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":false,\"stopped\":\"start thread %d has no stack\"}\n",
+                                results.size(), json_string(line).c_str(), tid);
+                    std::fflush(stdout);
+                    std::exit(5);
+                }
+            }
             const std::uint32_t base = iop::kernel::modules().at(id).base;
             std::uint32_t stub = 0, k = 0;
             for (const auto &[n, index] : kIoman) {
@@ -412,7 +471,7 @@ struct Runner {
             ok = wait_for(done, 3000);
             result = static_cast<std::int32_t>(iop::ram32(table + 32));
             iop::kernel::free(table);
-            reclaim(iop::kernel::modules().at(id).entry);
+            if (!direct && iop::kernel::modules().count(id)) reclaim(iop::kernel::modules().at(id).entry);
         }
         std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":%s,\"result\":%d", results.size(), json_string(line).c_str(), ok ? "true" : "false", result);
         std::string addresses;

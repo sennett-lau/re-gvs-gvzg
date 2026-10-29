@@ -1,0 +1,13 @@
+# CreateThread stack limits, run with the harness's own reservation and reclaim. IOP memory is fragmented
+# into blocks of at most 0x3000 bytes plus one 0x5000-byte block kept for the caller modules. A stack of
+# exactly 0x3000 bytes fits and is deleted again; 0x3001 bytes (0x3100 after rounding) fits nowhere,
+# although far more than that is free in total.
+frames 120
+keep big 0x5000
+repeat 64 keep hog# leave:0x3000
+release big
+threads
+call thbase 4 w:20:0x02000000,0,0x1000,0x3000,64
+call thbase 5 $68
+call thbase 4 w:20:0x02000000,0,0x1000,0x3001,64
+threads
