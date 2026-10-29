@@ -1,0 +1,8 @@
+# The game's own Ethernet stack: DEVGLUE's device count, then malformed calls the harness must refuse.
+frames 120
+call devglue 6 b:4
+call devglue
+call devglue12345 6
+call devglue 65536
+call devglue 6 1 2 3 4 5 6 7 8
+call

@@ -101,12 +101,35 @@ def interface(args, work, report):
             checks[f'{name}: interface never started without a link'] = 'DETACHED --Attach-> STARTING' in log and not started
 
 
+GAME_MODULES = {'AVETCP.IRX': 'aa6c1f4f0f765b6f', 'DEVGLUE.IRX': 'a3fbd8eaa84bcf61', 'AVEWRAPE.IRX': '0d85884973dfd933'}
+
+
+def game_stack(args, work, report, smap):
+    folder = work / 'game_stack'
+    folder.mkdir(parents=True)
+    report['game_stack_runtime'] = build(folder, True, args.cxx)
+    found = {name: (args.game_modules / name).resolve() for name in GAME_MODULES}
+    for name, prefix in GAME_MODULES.items():
+        if not sha(found[name]).startswith(prefix):
+            raise SystemExit(f'Unexpected game {name}')
+    order = [found['AVETCP.IRX'], found['DEVGLUE.IRX'], work / 'game-modules/DEV9.IRX', smap, found['AVEWRAPE.IRX']]
+    code, loaded, log = run(folder, order, True, 'none', 'game-stack.txt')
+    calls = [json.loads(l) for l in (folder / 'stdout.jsonl').read_text().splitlines() if '"event":"call"' in l]
+    report['game_stack'] = {'exit': code, 'results': {k: v['result'] for k, v in loaded.items()}, 'calls': calls,
+                            'devglue': [l for l in log.splitlines() if 'Register NetDev' in l or 'name' in l and '[iop-tty]' in l]}
+    checks = report['checks']
+    checks['game stack: SMAP registered with DEVGLUE'] = all(x in log for x in ['Register NetDev [0]', 'module_name smap', 'vendor_name SCE', 'device_name Ethernet (Network Adaptor)'])
+    checks['game stack: DEVGLUE counts one device'] = len(calls) > 1 and calls[1]['completed'] and calls[1]['result'] == 1 and calls[1].get('buffer') == '01000000'
+    checks['game stack: malformed calls refused'] = len(calls) == 7 and all(not c['completed'] and c.get('rejected') for c in calls[2:])
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--modules', type=Path, required=True, help='folder with the original INET.IRX, DEV9.IRX and SMAP.IRX')
     parser.add_argument('--work', type=Path, required=True, help='new output folder')
     parser.add_argument('--game-dev9', type=Path, required=True, help="the game's NETMOD_E/DEV9.IRX")
     parser.add_argument('--config-card', type=Path, help='card holding a configuration saved by the original utility; enables the interface checks')
+    parser.add_argument('--game-modules', type=Path, help="folder with the game's NETMOD/AVETCP.IRX, NETMOD_E/DEVGLUE.IRX and NETMOD_E/AVEWRAPE.IRX")
     parser.add_argument('--cxx', default='clang++')
     args = parser.parse_args()
     work = args.work.resolve()
@@ -155,6 +178,8 @@ def main():
         checks[f'{name}: no transmit outside loopback'] = 'transmit without an external link' not in log
     if args.config_card:
         interface(args, work, report)
+    if args.game_modules:
+        game_stack(args, work, report, modules[2])
     report['passed'] = all(checks.values()) and not any(report[n]['exit'] for n in report if isinstance(report[n], dict) and 'exit' in report[n])
     (work / 'report.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps({'passed': report['passed'], 'failed': [k for k, v in checks.items() if not v], 'report': str(work / 'report.json')}))

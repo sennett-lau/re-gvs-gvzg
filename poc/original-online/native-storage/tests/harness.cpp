@@ -7,6 +7,7 @@
 #include "ps2/disc.hpp"
 #include "ps2/system.hpp"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <fstream>
@@ -49,7 +50,8 @@ std::uint32_t addiu(int rt, int rs, int imm) { return 9u << 26 | std::uint32_t(r
 std::uint32_t beq(int rs, int rt, int off) { return 4u << 26 | std::uint32_t(rs) << 21 | std::uint32_t(rt) << 16 | (off & 0xFFFF); }
 
 // Entry loops over {function, a0..a3, three stack arguments, result, unused} records until function is 0.
-std::vector<std::uint8_t> caller(std::uint32_t table, std::vector<std::uint32_t> &stubs) {
+// The module imports every ioman entry used by the commands, plus one optional other library entry.
+std::vector<std::uint8_t> caller(std::uint32_t table, std::vector<std::uint32_t> &stubs, const std::string &library = "", std::uint32_t index = 0) {
     std::vector<std::uint32_t> code = {
         addiu(29, 29, -48), sw(31, 29, 44), sw(16, 29, 40), 15u << 26 | 16u << 16 | table >> 16, 13u << 26 | 16u << 21 | 16u << 16 | (table & 0xFFFF),
         lw(25, 16, 0), 0, beq(25, 0, 16), 0,
@@ -63,6 +65,15 @@ std::vector<std::uint8_t> caller(std::uint32_t table, std::vector<std::uint32_t>
         code.insert(code.end(), {0x03E00008u, 0x24000000u | index});
     }
     code.insert(code.end(), {0, 0});
+    if (!library.empty()) {
+        char name[8] = {};
+        std::memcpy(name, library.data(), std::min<std::size_t>(library.size(), 8));
+        std::uint32_t words[2];
+        std::memcpy(words, name, 8);
+        code.insert(code.end(), {0x41E00000u, 0, 0x0101u, words[0], words[1]});
+        stubs.push_back(static_cast<std::uint32_t>(code.size() * 4));
+        code.insert(code.end(), {0x03E00008u, 0x24000000u | index, 0, 0});
+    }
     std::vector<std::uint8_t> elf(0xA0 + code.size() * 4);
     auto put32 = [&](std::size_t at, std::uint32_t v) { std::memcpy(elf.data() + at, &v, 4); };
     auto put16 = [&](std::size_t at, std::uint16_t v) { std::memcpy(elf.data() + at, &v, 2); };
@@ -121,7 +132,7 @@ std::string hex(const std::uint8_t *p, std::size_t n) {
     return s;
 }
 
-std::string quoted(const std::string &s) {
+std::string json_string(const std::string &s) {
     std::string out = "\"";
     for (char ch : s) {
         if (ch == '"' || ch == '\\') out += '\\';
@@ -138,8 +149,17 @@ struct Runner {
 
     std::int32_t run(const std::string &line) {
         std::istringstream words(line);
-        std::string name;
+        std::string name, library, index_word;
+        std::uint32_t library_index = 0;
         words >> name;
+        std::string rejected;
+        if (name == "call") { // call LIBRARY INDEX args...
+            words >> library >> index_word;
+            const bool digits = !index_word.empty() && index_word.find_first_not_of("0123456789") == std::string::npos;
+            if (library.empty() || library.size() > 8) rejected = "library name must be 1-8 characters";
+            else if (!digits || index_word.size() > 5 || std::stoul(index_word) > 0xFFFF) rejected = "index must be 0-65535";
+            else library_index = static_cast<std::uint32_t>(std::stoul(index_word));
+        }
         std::vector<std::uint32_t> args, buffers;
         std::vector<std::pair<std::uint32_t, std::uint32_t>> dumps;
         std::string word;
@@ -166,6 +186,15 @@ struct Runner {
         }
         std::int32_t result = 0;
         bool ok = true;
+        if (args.size() > 7 && rejected.empty()) rejected = "more than the caller's seven argument slots";
+        if (!rejected.empty()) {
+            std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":false,\"rejected\":%s}\n", results.size(), json_string(line).c_str(),
+                        json_string(rejected).c_str());
+            std::fflush(stdout);
+            for (std::uint32_t at : buffers) iop::kernel::free(at);
+            results.push_back(0);
+            return 0;
+        }
         if (name == "checkpoint") {
             result = ps2exec_checkpoint_card();
         } else if (name == "frames") {
@@ -173,7 +202,7 @@ struct Runner {
         } else {
             std::vector<std::uint32_t> stubs;
             const std::uint32_t table = iop::kernel::alloc(80);
-            const auto elf = caller(table, stubs);
+            const auto elf = caller(table, stubs, library, library_index);
             bool done = false;
             const int id = iop::load_module_buffer(elf, "caller", "", [&](int, int) { done = true; });
             const std::uint32_t base = iop::kernel::modules().at(id).base;
@@ -182,6 +211,7 @@ struct Runner {
                 if (n == name) stub = base + stubs[k];
                 ++k;
             }
+            if (name == "call") stub = base + stubs.back();
             if (!stub) throw std::runtime_error("unknown command " + name);
             std::memset(iop::ram_ptr(table), 0, 80);
             iop::set_ram32(table, stub);
@@ -190,7 +220,7 @@ struct Runner {
             result = static_cast<std::int32_t>(iop::ram32(table + 32));
             iop::kernel::free(table);
         }
-        std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":%s,\"result\":%d", results.size(), quoted(line).c_str(), ok ? "true" : "false", result);
+        std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":%s,\"result\":%d", results.size(), json_string(line).c_str(), ok ? "true" : "false", result);
         for (const auto &[at, size] : dumps) {
             std::printf(",\"buffer\":\"%s\"", hex(iop::ram_ptr(at), size).c_str());
         }
