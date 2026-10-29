@@ -98,12 +98,17 @@ bool wait_for(bool &done, int frames) {
     return done;
 }
 
-bool load(const std::string &path) {
+// PATH or PATH::ARG::ARG..., with the arguments passed NUL-separated as LoadModule does.
+bool load(const std::string &spec) {
+    const auto split = spec.find("::");
+    const std::string path = spec.substr(0, split);
+    std::string args = split == std::string::npos ? "" : spec.substr(split + 2);
+    for (std::size_t at; (at = args.find("::")) != std::string::npos;) args.replace(at, 2, std::string(1, '\0'));
     std::ifstream in(path, std::ios::binary);
     std::vector<std::uint8_t> bytes((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     bool done = false;
     int result = 0;
-    const int id = iop::load_module_buffer(bytes, path, "", [&](int, int r) { done = true; result = r; });
+    const int id = iop::load_module_buffer(bytes, path, args, [&](int, int r) { done = true; result = r; });
     const bool ok = id >= 0 && wait_for(done, 600);
     std::printf("{\"event\":\"module\",\"path\":\"%s\",\"id\":%d,\"started\":%s,\"result\":%d}\n", path.c_str(), id, ok ? "true" : "false", result);
     return ok;

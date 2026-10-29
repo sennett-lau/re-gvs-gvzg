@@ -43,7 +43,14 @@ while(performance.now()<deadline){await sleep(2000);const sample=await snap(page
 if(samples.length===1||samples.length%10===0){await page.screenshot({path:path.join(out,'sample-'+samples.length+'.png')});}
 if(sample.status.startsWith('Halted:')||halt||errors.length){mark('stopped',{halt,status:sample.status});break;}
 let c;try{c=JSON.parse(fs.readFileSync(process.env.PROBE_CONTROL_FILE,'utf8'));}catch{}
-if(c&&Number.isSafeInteger(c.id)&&c.id>lastId){lastId=c.id;mark('command',{command:c});if(c.action==='finish')break;if(c.action!=='press'||!['KeyX','KeyZ','KeyA','KeyS','KeyQ','KeyW','Digit1','Digit2','Enter','Backspace','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(c.code))throw Error('unsupported operator command');await page.screenshot({path:path.join(out,'operator-'+lastId+'-before.png')});mark('keydown',{code:c.code});await page.evaluate(code=>dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true})),c.code);await sleep(250);await page.evaluate(code=>dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true})),c.code);mark('keyup',{code:c.code});await sleep(1500);await page.screenshot({path:path.join(out,'operator-'+lastId+'-after.png')});save('operator-ack',{id:lastId});}}
+if(c&&Number.isSafeInteger(c.id)&&c.id>lastId){lastId=c.id;mark('command',{command:c});if(c.action==='finish')break;
+// A sequence is the same ordinary key presses in order, at most 64, with a bounded gap between them.
+const keys=['KeyX','KeyZ','KeyA','KeyS','KeyQ','KeyW','Digit1','Digit2','Enter','Backspace','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+const codes=c.action==='press'?[c.code]:c.action==='sequence'&&Array.isArray(c.codes)&&c.codes.length<=64?c.codes:null,gap=c.action==='sequence'?Number(c.gap_ms??400):0;
+if(!codes||!codes.every(code=>keys.includes(code))||!Number.isSafeInteger(gap)||gap<0||gap>2000)throw Error('unsupported operator command');
+await page.screenshot({path:path.join(out,'operator-'+lastId+'-before.png')});
+for(const code of codes){mark('keydown',{code});await page.evaluate(code=>dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true})),code);await sleep(c.action==='press'?250:120);await page.evaluate(code=>dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true})),code);mark('keyup',{code});await sleep(gap);}
+await sleep(1500);await page.screenshot({path:path.join(out,'operator-'+lastId+'-after.png')});save('operator-ack',{id:lastId});}}
 await page.screenshot({path:path.join(out,'final.png')});
 const download=page.waitForEvent('download',{timeout:3000}).catch(()=>null);await page.locator('#export-card').click();const d=await download;if(d){const p=path.join(out,'result-card.ps2');await d.saveAs(p);save('card',{sha256:sha(fs.readFileSync(p)),bytes:fs.statSync(p).size});}
 save('result',{scope:'Standalone original utility compatibility probe, not in-place exec',network_success:false,utility_save_verified:false,run,browser:browser.version(),samples,events,halt,errors,blocked,audio_running:samples.length>0&&samples.every(s=>s.audio.length&&s.audio.every(x=>x==='running')),audio_consumed:samples.length>1&&samples.at(-1).ring[1]!==samples[0].ring[1]});
