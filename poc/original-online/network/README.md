@@ -4,10 +4,12 @@ This directory contains an executable private backend, a browser byte transport,
 and an opt-in runtime adapter for the original AVETCP client. It does not use
 local-Versus mode4, controller replication, or a replacement session protocol.
 The original game has **not yet connected to the backend** through this candidate.
-Actual game captures now show original module/device discovery, an Ethernet DHCP
-handshake and accepted lease, followed by two original DNAS code transformations,
-guarded execution and exact inverse restoration. Capture08 still stops inside the
-next transformation helper. No original DNS transaction, TCP connection, DNAS
+Actual game captures show original module/device discovery, an Ethernet DHCP
+handshake and accepted lease, and guarded execution of original DNAS code.
+Capture11 verifies 32 decoded ranges against the recovered bytes and reaches an
+original failure return to the title flow without a missing-code halt. An
+unimplemented `cdvdman` ordinal 80 call precedes that return; its causal role is
+under investigation. No original DNS transaction, TCP connection, DNAS
 authentication, account login, lobby or battle has reached the backend.
 Backend protocol tests, a real threaded WASM bridge test, and selected original
 IRX instruction tests cover different boundaries; none establishes two game
