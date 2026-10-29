@@ -6,6 +6,13 @@ const {parseConfig} = require('./private-config.cjs');
 const scene = require('../../../apps/game/assets/scene-snapshot.js');
 const base = new URL(process.argv[2]), out = path.resolve(process.argv[3]);
 const count = Number(process.env.PROBE_CLIENTS || 1), operatorMs = Number(process.env.PROBE_OPERATOR_MS || 600000);
+const watch = process.env.PROBE_WATCH || null;
+if (watch) {
+  const match = /^([0-9a-fA-F]+),([0-9a-fA-F]+)$/.exec(watch);
+  const address = match ? parseInt(match[1],16) : NaN, bytes = match ? parseInt(match[2],16) : NaN;
+  if (!Number.isSafeInteger(address) || !Number.isSafeInteger(bytes) || (address & 3) || (bytes & 3) ||
+      bytes < 4 || bytes > 256 || address + bytes > 0x2000000) throw Error('Invalid bounded guest code watch');
+}
 if (!['127.0.0.1','localhost'].includes(base.hostname) || fs.existsSync(out)) throw Error('Loopback URL and fresh output required');
 if (![1,2].includes(count) || !Number.isSafeInteger(operatorMs) || operatorMs < 1000 || operatorMs > 600000) throw Error('Invalid probe bounds');
 const fixturePath = process.env.PROBE_CARD_FIXTURE, expected = process.env.PROBE_CARD_SHA256;
@@ -81,22 +88,30 @@ class Client {
   fs.writeFileSync(path.join(out,'build-info.json'),buildText);
   write('run',{started_utc:new Date().toISOString(),scope:'Original mode7 with independent contexts and private byte transport',
     clients:count,fixture_sha256:expected,fixture_bytes:fixture.length,build_info_sha256:digest(buildText),harness_sha256:digest(fs.readFileSync(__filename)),
-    muted:true,audioSuspendedForTiming:false,gateway_origin:gateway.origin,operatorMs,argv:process.argv.slice(2),network_success:false,battle_success:false});
+    muted:true,audioSuspendedForTiming:false,gateway_origin:gateway.origin,operatorMs,watch,argv:process.argv.slice(2),network_success:false,battle_success:false});
   browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,headless:false,args:['--mute-audio','--autoplay-policy=no-user-gesture-required',
     '--no-first-run','--disable-background-networking','--disable-background-timer-throttling','--disable-renderer-backgrounding','--disable-backgrounding-occluded-windows']});
   for(let i=0;i<count;i++) {
     const context=await browser.newContext({viewport:{width:1280,height:1000},serviceWorkers:'block'}),page=await context.newPage();
     const client=new Client(String.fromCharCode(65+i),context,page);clients.push(client);page.setDefaultTimeout(120000);
     await context.route('**/*',route=>{const url=new URL(route.request().url());if(url.origin===base.origin)return route.continue();client.blocked.push(url.origin);return route.abort();});
-    await context.addInitScript(({config})=>{
+    await context.addInitScript(({config,watch})=>{
       window.originalExecNetworkConfig=config;window.testAudioContexts=[];
+      if(watch) addEventListener('message',event=>{
+        if(event.source===parent&&event.origin===location.origin&&event.data?.originalExec===1&&
+           event.data.type==='start'&&window.Module?.execImage==='game') {
+          // Original runtime watchpoint logs stores/bulk copies only. It does
+          // not write guest RAM or change dispatch/matching behavior.
+          Module.ENV.PS2_WATCH=watch;
+        }
+      });
       const Audio=AudioContext;window.AudioContext=new Proxy(Audio,{construct(target,args){const value=new target(...args);window.testAudioContexts.push(value);return value;}});
       const Socket=WebSocket, allowed=new URL(config.gatewayURL).origin;
       window.WebSocket=new Proxy(Socket,{construct(target,args){const url=new URL(args[0]);
         if(url.origin!==allowed||!['/tcp/dnas','/tcp/lobby','/tcp/battle','/udp/dns'].includes(url.pathname)||url.search||url.hash)throw Error('Outside private native route');
         return Reflect.construct(target,args);}});
       window.RTCPeerConnection=class{constructor(){throw Error('Original-mode7 probe blocks WebRTC')}};
-    },{config});
+    },{config,watch});
     page.on('pageerror',error=>{client.errors.push(scrub(error));mark('pageerror',{client:client.label,error:scrub(error)});});
     page.on('console',message=>{
       const text=scrub(message.text());fs.appendFileSync(path.join(out,client.label+'-console.jsonl'),JSON.stringify({utc:new Date().toISOString(),text})+'\n');

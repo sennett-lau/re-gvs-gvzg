@@ -92,10 +92,11 @@ def manifest_sources(tree, *manifests):
     return names
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None):
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
     if device_segment and not device_path: raise ValueError('Device segment requires an explicit device preparer')
+    if overlay_path and image != 'game': raise ValueError('Original overlay entry profile is game-only')
     info_path = base / 'web/build-info.json'
     info, info_sha, retained_provenance = base_metadata(image, base)
     prep = module('exec_preparation', HERE / 'prepare.py')
@@ -135,6 +136,26 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         if digest(network_path) != network_hash: raise ValueError('Network preparer changed during composition')
     discovery = module('exec_module_discovery', HERE / 'discovery_prepare.py')
     discovery_manifest = discovery.prepare(source, source_root / 'poc/original-online/module_names.hpp')
+    overlay_manifest = None
+    if overlay_path:
+        overlay_manifest = json.loads((overlay_path / 'manifest.json').read_text())
+        if overlay_manifest.get('profile') != 'original-online-dnas-overlay-entries-v1':
+            raise ValueError('Unsupported original overlay profile')
+        if overlay_manifest.get('artifact_sha256') != module('exec_overlay_preparer', HERE / 'overlay_prepare.py').ARTIFACT_SHA:
+            raise ValueError('Unsupported original overlay fingerprint')
+        for name, expected in overlay_manifest['files_sha256'].items():
+            if Path(name).name != name or digest(overlay_path / name) != expected:
+                raise ValueError('Original overlay bundle changed: ' + name)
+        dispatch_path = source / 'runtime/src/dispatch.cpp'
+        dispatch = '#include "dispatch_observer.hpp"\n' + dispatch_path.read_text()
+        dispatch = prep.replace_once(dispatch, 'namespace ps2 {',
+            'namespace original_exec { const ps2::ModuleInfo* overlay_modules(const ps2::ModuleInfo*, std::uint32_t); }\nnamespace ps2 {')
+        dispatch = prep.replace_once(dispatch, '    g_modules = modules;', '    g_modules = original_exec::overlay_modules(modules, count);')
+        dispatch = prep.replace_once(dispatch, '            if (entry) {\n                c.base = base;',
+            '            original_exec::observe_dispatch(c, pc, m->module, entry);\n            if (entry) {\n                c.base = base;')
+        dispatch = prep.replace_once(dispatch, '        record_miss(pc);',
+            '        record_miss(pc);\n        original_exec::observe_dispatch(c, pc, nullptr, 0);')
+        dispatch_path.write_text(dispatch)
     prepared = work / 'exec'; prepared.mkdir()
     host = source_root / 'apps/game/src/web.cpp' if image == 'game' else source / 'host/web.cpp'
     kernel_text, host_text = prep.prepare((source / 'runtime/src/kernel.cpp').read_text(), host.read_text())
@@ -151,6 +172,12 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     for name in composed_names:
         path = source / name
         if path not in sources: sources.append(path)
+    if overlay_manifest:
+        sources.append(source / 'runtime/src/dispatch.cpp')
+        for name in overlay_manifest['compiled_sources']:
+            if Path(name).name != name or name not in overlay_manifest['files_sha256']:
+                raise ValueError('Invalid overlay source path')
+            sources.append(overlay_path / name)
     if image == 'utility' and composed_names:
         retained = utility_objects(base, info, REPLACED | {'upstream/' + name for name in composed_names})
     retained_hashes = {str(path): digest(path) for path in retained}
@@ -206,6 +233,8 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         'storage_preparation_sha256': storage_hash, 'storage': storage_manifest, 'observer': observer,
         'device_preparation_sha256': device_hash if device_path else None, 'device': device_manifest,
         'resident_module_lookup': discovery_manifest,
+        'overlay': overlay_manifest,
+        'overlay_inputs_sha256': {str(overlay_path / name): value for name, value in overlay_manifest['files_sha256'].items()} if overlay_manifest else {},
         'network_preparation_sha256': network_hash if network_path else None,
         'network': network_manifest, 'network_js_sha256': network_js_hashes,
         'commands': commands, 'shell_sha256': digest(prepared / 'frame.html'),
@@ -224,12 +253,13 @@ def main():
     parser.add_argument('--network-prepare', type=Path, help='Explicitly compose the network-owned game runtime adapter; off by default')
     parser.add_argument('--device-prepare', type=Path, help='Explicitly compose the device-owned DEV9/SMAP slice after storage; off by default')
     parser.add_argument('--device-segment', action='store_true', help='Explicitly enable the device owner\'s local ARP/DHCP segment; requires --device-prepare')
+    parser.add_argument('--overlay-profile', type=Path, help='Explicit exact original DNAS_NET entry-coverage bundle; game-only and off by default')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
     args = parser.parse_args()
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -249,7 +279,7 @@ def main():
         for command in manifest['commands']:
             manifest['active_command'] = command
             subprocess.run(command, env=env, check=True)
-        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256']:
+        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256']:
             for filename, expected in manifest[category].items():
                 if digest(filename) != expected: raise ValueError('Build input changed during build: ' + filename)
         manifest['status'] = 'built-not-runtime-tested'
