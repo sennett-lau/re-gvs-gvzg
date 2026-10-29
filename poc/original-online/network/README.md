@@ -7,12 +7,14 @@ The original game has **not yet authenticated or reached a lobby or battle**
 through this candidate.
 Actual game captures show original module/device discovery, an Ethernet DHCP
 handshake and accepted lease, and guarded execution of original DNAS code.
-Capture16 reaches a DNS gateway exchange and two original DNS callbacks, then
-halts when the browser bridge rejects the host-open submission with internal
-`EINVAL`. An isolated test in the same Chromium build reproduces rejection of
-the shared hostname buffer by `TextDecoder`; the bridge now copies the validated
-hostname bytes before decoding. That isolated test does not establish a successful
-original TCP connection, DNAS authentication, account login, lobby or battle.
+Capture17 reaches a DNS gateway exchange, original DNS callbacks and a real host
+TCP handshake to the private DNAS service after the shared-hostname decoder fix.
+It sends no TLS bytes in the retained observation. Its completion stub was
+allocated below the AVETCP module, where an early address check prevented the
+guarded connection-state update. The adapter now admits its exact owned stub
+addresses regardless of that allocation order; the native regression covers both
+layouts. An original-client rerun must establish the corrected completion and
+subsequent DNAS authentication, account login, lobby and battle.
 Backend protocol tests, a real threaded WASM bridge test, and selected original
 IRX instruction tests cover different boundaries; none establishes two game
 instances reaching a lobby or battle.
@@ -143,6 +145,7 @@ original operations pass through.
 | `avetcp` ordinal4 / `0x4105` | Original API dispatch and interface operation; never treated as a socket connect |
 | Active open `CE88` | Original allocator, bind, configuration and initialization run; ownership begins at `B3D4` with caller `CF5C` |
 | TCP state2 → state4 | State4 commits under the original inner semaphore only after a real host connection completes |
+| Runtime completion stubs | Exact allocated control/reset addresses may lie below the module; thread, socket serial and operation epoch guards remain in force |
 | `D9C8` / `DCD8` | Selected original send/receive descriptors; unchanged upper API wait records and blocking caller logic |
 | `105EC` / `10BC0` | Original completion helpers run on scheduler threads with captured GP/priority, inside original `12490` / `124B8` guard calls |
 | `A7CC` | Actual buffered host byte count for owned sockets, including data remaining before EOF |
@@ -159,8 +162,8 @@ packet-level timing differences. Unknown host errors, unsupported descriptor
 types or send flags, passive TCP accepts and other unimplemented owned operations
 remain limitations requiring actual-client traces. Original device discovery,
 DEVGLUE/DEV9/SMAP bootstrap and saved settings are separate runtime integration
-work; the current game capture passes DHCP and reaches the DNS route before
-failing host-open admission. It has not established an original TCP connection.
+work; the current game capture passes DHCP and DNS and establishes the host TCP
+connection, but the retained observation has no original TLS transmission.
 
 ## Executable checks
 
@@ -196,6 +199,9 @@ transport, scheduler and OS imports are deterministic substitutes. It tests actu
 blocking `4118` success/cancel return, wait-record cleanup, original `DECC`, guarded
 completion and DNS callbacks, shutdown, RST cleanup and reconnect. It does not
 prove full-runtime scheduling contention or actual original network bootstrap.
+The complete contract runs with small runtime allocations both above and below
+the module base. Unrelated lower addresses, neighboring stub instructions and
+the exact control stub in an unrelated thread cannot commit the connected state.
 
 `threaded_bridge_probe.cpp` with `threaded_bridge_pre.js` is a small real Emscripten
 `-pthread -sPROXY_TO_PTHREAD=1 -sPTHREAD_POOL_SIZE=1 -sENVIRONMENT=node`
@@ -208,7 +214,7 @@ worker/main-thread boundary against actual TCP and UDP services.
 
 Actual game testing must use a muted browser while the AudioContext and ring
 consumer continue. The next acceptance step is original DNAS execution reaching
-an actual TCP connection after its DNS exchange, followed by genuine
+its connected state and transmitting the TLS handshake, followed by genuine
 authentication and login. Then use two independent original instances with
 separate account registrations and card namespaces to reach the same lobby and
 complete a real mode7 battle. Do not clone account bytes or substitute mode4.

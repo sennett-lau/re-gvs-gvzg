@@ -10,6 +10,7 @@
 #include <iterator>
 #include <map>
 #include <stdexcept>
+#include <string>
 #include <vector>
 using U=std::uint32_t;
 namespace test {
@@ -17,6 +18,8 @@ constexpr U base=0x10000,slot=0x50000,stack=0x1d0000,exit_pc=0x1ff000;
 std::map<int,ps2::iop::kernel::Thread> threads;
 int current=1,next_thread=2,wakes=0,guard_depth=0;
 bool switched=false;
+bool low_stubs=false;
+U stub_allocation=0x4000,control_address=0;
 U clock=0,allocation=0x120000,next_ticket=1,last_ticket=0,stream_status=0;
 struct Request {original_online::Result result{};std::vector<std::uint8_t> data;bool done=false;};
 std::map<U,Request> requests;std::vector<std::uint8_t> written;
@@ -71,7 +74,13 @@ std::uint64_t now(){return test::clock;}
 std::uint64_t usec_to_cycles(std::uint64_t n){return n;}
 bool in_interrupt(){return false;}
 bool switch_pending(){return test::switched;}
-U alloc(U n,int,U){auto p=test::allocation;test::allocation+=(n+255)&~255u;assert(test::allocation<0x1c0000);return p;}
+U alloc(U n,int,U){
+ U p;
+ if(test::low_stubs && n<=128){p=test::stub_allocation;test::stub_allocation+=256;assert(test::stub_allocation<test::base);}
+ else{p=test::allocation;test::allocation+=(n+255)&~255u;assert(test::allocation<0x1c0000);}
+ if(n==8 && !test::control_address)test::control_address=p;
+ return p;
+}
 void free(U){}
 int create_thread(U entry,U size,int priority,U gp,U attr,U option){
  Thread t;t.id=test::next_thread++;t.entry=entry;t.stack=alloc(size,0,0);t.stack_size=size;t.priority=priority;t.gp=gp;t.attr=attr;t.option=option;
@@ -97,7 +106,8 @@ static void run_helper(int tid){
  std::int64_t budget=10000;execute(g_cpu,budget);assert(test::switched);test::current=1;
 }
 int main(int argc,char** argv){
- assert(argc==3);std::ifstream file(argv[1],std::ios::binary);std::vector<std::uint8_t> image((std::istreambuf_iterator<char>(file)),{});assert(image.size()>0x18860);std::memcpy(ram_ptr(test::base),image.data(),image.size());
+ assert(argc==3 || (argc==4 && std::string(argv[3])=="--low-stubs"));test::low_stubs=argc==4;
+ std::ifstream file(argv[1],std::ios::binary);std::vector<std::uint8_t> image((std::istreambuf_iterator<char>(file)),{});assert(image.size()>0x18860);std::memcpy(ram_ptr(test::base),image.data(),image.size());
  test::threads[1].id=1;test::threads[1].priority=32;
  set_ram32(test::exit_pc,(kHleOpcode<<26)|2);
  // Only an OS import is bound to the harness; helper instructions are original.
@@ -114,7 +124,14 @@ int main(int argc,char** argv){
  test::put16(test::slot+312,1);test::put16(test::slot+314,2);set_ram32(test::slot+344,0x0100007f);test::put16(test::slot+326,0xe047);
  auto c=call(0xb3d4,test::slot,0,0,0,test::base+0xcf5c);assert(native::intercept(c));auto opening=test::last_ticket;assert(test::get16(test::slot+314)==2);
  auto timer=call(0xbf5c);timer.r[2]=test::slot;assert(!native::intercept(timer));
- test::ready(opening,0,91);test::tick();assert(test::get16(test::slot+314)==2);run_helper(helper());assert(test::get16(test::slot+314)==4);test::tick();
+ test::ready(opening,0,91);test::tick();assert(test::get16(test::slot+314)==2);
+ assert(test::control_address && (test::control_address<test::base)==test::low_stubs);
+ // Neither a nearby PC nor the exact stub in an unrelated thread owns this completion.
+ for(U pc:{U(0x100),test::control_address+4,test::control_address}){
+  auto stray=call(0);stray.pc=pc;stray.npc=pc+4;
+  assert(!native::intercept(stray));assert(test::get16(test::slot+314)==2);
+ }
+ run_helper(helper());assert(test::get16(test::slot+314)==4);test::tick();
  timer=call(0xbf5c);timer.r[2]=test::slot;timer.r[18]=0;assert(native::intercept(timer));assert(timer.pc==test::base+0xc038 && timer.r[2]==1);
  auto available=call(0xa7cc,test::slot);assert(native::intercept(available)&&available.r[2]==3);
  // Original 4118 creates this stack descriptor and wait record.
@@ -161,5 +178,5 @@ int main(int argc,char** argv){
  test::tick();run_helper(helper());assert(std::memcmp(ram_ptr(out),"end",3)==0 && test::get16(test::slot+312)==1);
  test::tick();run_helper(helper());assert(test::get16(test::slot+312)==0);test::stream_status=0;
  native::reset();assert(test::requests.empty());
- std::cout<<"NATIVE_CONTRACT_OK: original helpers105ec/10bc0/137cc, real IOP interpreter; synthetic host/scheduler, not game execution\n";
+ std::cout<<"NATIVE_CONTRACT_OK: original helpers105ec/10bc0/137cc, real IOP interpreter; synthetic host/scheduler, not game execution; stubs="<<(test::low_stubs?"below-module":"above-module")<<"\n";
 }

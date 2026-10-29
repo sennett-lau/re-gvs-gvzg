@@ -180,7 +180,10 @@ void library(const std::string& name,std::uint32_t table) {
 }
 
 bool intercept(Cpu& c) {
-    if(!base || c.pc<base)return false;
+    // Runtime stubs may be allocated below the relocated module. Admit only
+    // their exact owned PCs; the helper thread/serial/epoch guards still apply.
+    const bool owned_stub=(control_stub && c.pc==control_stub) || (rst_stub && c.pc==rst_stub);
+    if(!base || (c.pc<base && !owned_stub))return false;
     const auto offset=c.pc-base;
     if(offset==0x105ec || offset==0x10bc0 || offset==0xc428 || offset==0xad44 || c.pc==control_stub || c.pc==rst_stub){
         if(auto* thread=kernel::current()){

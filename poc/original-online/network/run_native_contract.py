@@ -57,16 +57,20 @@ def main():
     shutil.copytree(ROOT/'vendor/ps2-web-recomp/runtime/src/iop',tree/'runtime/src/iop')
     spec=importlib.util.spec_from_file_location('network_prepare',HERE/'prepare_runtime.py');prep=importlib.util.module_from_spec(spec);spec.loader.exec_module(prep);prep.prepare(tree)
     command=['c++','-std=c++20','-Wall','-Wextra','-Werror','-I'+str(tree/'runtime/src/iop'),str(HERE/'native_contract_probe.cpp'),str(tree/'runtime/src/iop/cpu.cpp'),str(tree/'runtime/src/iop/native_transport.cpp'),str(tree/'runtime/src/iop/sha256.cpp'),'-o',str(args.work/'probe')]
-    report={'started_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'avetcp_sha256':EXPECTED,'image_sha256':hashlib.sha256(image).hexdigest(),'game_executed':False,'host_transport':'deterministic substitute','scheduler':'deterministic substitute','original_instruction_execution':True,'commands':[command,[str(args.work/'probe'),str(private_image),str(args.avetcp)]],'sources_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in HERE.iterdir() if p.is_file()}}
+    run=[str(args.work/'probe'),str(private_image),str(args.avetcp)]
+    logs=['build.log','run.log','run-low-stubs.log']
+    report={'started_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'avetcp_sha256':EXPECTED,'image_sha256':hashlib.sha256(image).hexdigest(),'game_executed':False,'host_transport':'deterministic substitute','scheduler':'deterministic substitute','original_instruction_execution':True,'commands':[command,run,run+['--low-stubs']],'logs':logs,'sources_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in HERE.iterdir() if p.is_file()}}
     try:
         for i,cmd in enumerate(report['commands']):
             proc=subprocess.run(cmd,text=True,capture_output=True,timeout=45)
-            (args.work/('build.log' if i==0 else 'run.log')).write_text(proc.stdout+proc.stderr)
+            (args.work/logs[i]).write_text(proc.stdout+proc.stderr)
             if proc.returncode:raise RuntimeError('command failed: '+str(proc.returncode))
         report['success']=True
         report['checks']=[
             'raw input SHA256 and altered-byte rejection',
             'state2 retained until guarded host-handshake commit',
+            'complete contract with runtime stubs both above and below module base',
+            'unrelated low PC, neighboring stub PC and unrelated thread cannot commit state4',
             'owned established timer exclusion and actual buffered count',
             'original105EC/10BC0 wait-record writes under original semaphore calls',
             'actual DECC -14 completion then stale queued helper suppression',
