@@ -21,6 +21,10 @@ EXPORTS = ['main', 'ps2web_pad', 'ps2web_pad_connected', 'ps2web_resize', 'ps2we
 REPLACED = {'upstream/runtime/src/kernel.cpp', 'upstream/host/web.cpp',
             'upstream/runtime/src/iop/io.cpp', 'upstream/runtime/src/iop/sif.cpp',
             'upstream/runtime/src/iop/sio2.cpp', 'diagnostic.cpp'}
+RETAINED_GAME_ARCHIVES = {
+    'base/libps2game.a': '78eff5c002c95db5a202a0297be636375aa363eccf1d140d51c2ac01b19aafe4',
+    'base/libps2runtime.a': 'b55a7fe68a220412c637f412f3a9e61250f66f71f6a2cc8abbecce251ccc155f',
+}
 
 
 def digest(path):
@@ -35,6 +39,19 @@ def module(name, path):
     result = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(result)
     return result
+
+
+def base_metadata(image, base):
+    path = base / 'web/build-info.json'
+    if path.is_file():
+        raw = path.read_bytes()
+        return json.loads(raw), hashlib.sha256(raw).hexdigest(), None
+    if image != 'game': raise ValueError('Utility build metadata is required')
+    # The retained PC source/object bundle predates its web metadata copy. This
+    # exact archive pair was independently fingerprinted in native-boundary.
+    actual = {name: digest(base / name) for name in RETAINED_GAME_ARCHIVES}
+    if actual != RETAINED_GAME_ARCHIVES: raise ValueError('Unrecognized game archive pair without build metadata')
+    return None, None, {'method': 'exact retained archive pair', 'web_build_metadata': 'absent', 'archives_sha256': actual}
 
 
 def utility_objects(base, info):
@@ -57,27 +74,27 @@ def utility_objects(base, info):
     return [obj for name, obj in mappings.items() if name not in REPLACED]
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT):
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
     info_path = base / 'web/build-info.json'
-    info = json.loads(info_path.read_text())
+    info, info_sha, retained_provenance = base_metadata(image, base)
     prep = module('exec_preparation', HERE / 'prepare.py')
     elf = base / ('inputs/core.elf' if image == 'game' else 'NTGDVDJ.BIN')
     if digest(elf) != prep.HASHES[image]: raise ValueError('Original executable digest mismatch')
     if image == 'game':
-        if info.get('profile') != 'full-game-adaptive': raise ValueError('Game base must be original adaptive, without multiplayer overrides')
+        if info is not None and info.get('profile') != 'full-game-adaptive': raise ValueError('Game base must be original adaptive, without multiplayer overrides')
         names = ['system', 'full_game_web_hooks', 'full_game_interpolation', 'vif', 'unit_0039', 'unit_0049', 'unit_004D', 'unit_0047']
         retained = [base / 'overrides' / (name + '.o') for name in names]
         retained += [base / 'base/libps2game.a', base / 'base/libps2runtime.a']
-        generated = ROOT / 'generated/gundam-vs-z-gundam'
+        generated = source_root / 'generated/gundam-vs-z-gundam'
     else:
         if not info.get('profile', '').startswith('isolated-original-network-utility'):
             raise ValueError('Utility base must be the verified standalone utility build')
         retained = utility_objects(base, info)
         generated = base / 'generated'
         # Original entry bytes + both observed translation targets are required.
-        subprocess.run([sys.executable, str(HERE.parent / 'verify_utility.py'), '--elf', str(elf), '--generated', str(generated)], check=True)
+        subprocess.run([sys.executable, str(source_root / 'poc/original-online/verify_utility.py'), '--elf', str(elf), '--generated', str(generated)], check=True)
     retained_hashes = {str(path): digest(path) for path in retained}
     storage_hash = digest(storage_path)
     storage = module('exec_storage_preparation', storage_path)
@@ -93,7 +110,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None):
         network_manifest = network.prepare(source)
         if digest(network_path) != network_hash: raise ValueError('Network preparer changed during composition')
     prepared = work / 'exec'; prepared.mkdir()
-    host = ROOT / 'apps/game/src/web.cpp' if image == 'game' else source / 'host/web.cpp'
+    host = source_root / 'apps/game/src/web.cpp' if image == 'game' else source / 'host/web.cpp'
     kernel_text, host_text = prep.prepare((source / 'runtime/src/kernel.cpp').read_text(), host.read_text())
     (prepared / 'kernel.cpp').write_text(kernel_text)
     (prepared / 'web.cpp').write_text(host_text)
@@ -111,12 +128,12 @@ def plan(image, base, sdk, work, storage_path, network_path=None):
             sources.append(path)
     observer = None
     if image == 'game':
-        online = module('exec_online_observation', HERE.parent / 'prepare.py')
+        online = module('exec_online_observation', source_root / 'poc/original-online/prepare.py')
         observation = work / 'observation'
         observer = online.prepare(base / 'overrides', observation)
         sources += [observation / name for name in online.POINTS]
     includes = [HERE, source / 'runtime/include', source / 'runtime/src', source / 'runtime/src/iop', generated,
-                ROOT / 'src/hooks', ROOT / 'research/source/render-hooks', work / 'observation']
+                source_root / 'src/hooks', source_root / 'research/source/render-hooks', work / 'observation']
     flags = [*FLAGS, '-DORIGINAL_EXEC_IMAGE="' + image + '"', *['-I' + str(path) for path in includes]]
     if image == 'game': flags.append('-DNDEBUG')
     objects = work / 'objects'; objects.mkdir()
@@ -149,9 +166,14 @@ def plan(image, base, sdk, work, storage_path, network_path=None):
     manifest = {
         'profile': 'experimental-original-exec-with-native-storage-v1', 'image': image, 'fresh_build': False,
         'status': 'prepared-not-built', 'prepared_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        'elf_sha256': prep.HASHES[image], 'base_build_info_sha256': digest(info_path),
+        'elf_sha256': prep.HASHES[image], 'base_build_info_sha256': info_sha, 'retained_baseline_provenance': retained_provenance,
         'retained_objects_sha256': retained_hashes, 'sources_sha256': {str(path): digest(path) for path in sources},
         'headers_sha256': {str(path): digest(path) for path in source.rglob('*.hpp')},
+        'repository_inputs_sha256': {str(path): digest(path) for path in
+            [host, *generated.glob('*.hpp'), *(source_root / 'src/hooks').glob('*.hpp'),
+             *(source_root / 'research/source/render-hooks').glob('*.hpp'),
+             source_root / 'poc/original-online/prepare.py', source_root / 'poc/original-online/observer.hpp',
+             source_root / 'poc/original-online/verify_utility.py']},
         'exec_inputs_sha256': {str(path): digest(path) for path in HERE.iterdir() if path.is_file()},
         'storage_preparation_sha256': storage_hash, 'storage': storage_manifest, 'observer': observer,
         'network_preparation_sha256': network_hash if network_path else None,
@@ -170,11 +192,12 @@ def main():
     parser.add_argument('--storage-prepare', type=Path, default=HERE.parent / 'native-storage/prepare.py')
     parser.add_argument('--prepare-only', action='store_true', help='Prepare sources and exact command plan; never run compiler or game')
     parser.add_argument('--network-prepare', type=Path, help='Explicitly compose the network-owned game runtime adapter; off by default')
+    parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
     args = parser.parse_args()
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve())
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -194,7 +217,7 @@ def main():
         for command in manifest['commands']:
             manifest['active_command'] = command
             subprocess.run(command, env=env, check=True)
-        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'exec_inputs_sha256', 'network_js_sha256']:
+        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256']:
             for filename, expected in manifest[category].items():
                 if digest(filename) != expected: raise ValueError('Build input changed during build: ' + filename)
         manifest['status'] = 'built-not-runtime-tested'

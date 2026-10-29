@@ -12,6 +12,13 @@ spec.loader.exec_module(build)
 
 
 class ProfileTest(unittest.TestCase):
+    def test_missing_metadata_never_labels_an_unknown_archive_pair_as_a_game(self):
+        with tempfile.TemporaryDirectory() as temp:
+            base = Path(temp); (base / 'base').mkdir()
+            for filename in build.RETAINED_GAME_ARCHIVES: (base / filename).write_bytes(b'unknown archive')
+            with self.assertRaisesRegex(ValueError, 'Unrecognized'): build.base_metadata('game', base)
+            with self.assertRaisesRegex(ValueError, 'metadata is required'): build.base_metadata('utility', base)
+
     def test_source_paths_distinguish_ee_and_iop_kernel_objects(self):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp)
