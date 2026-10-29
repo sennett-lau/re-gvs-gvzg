@@ -34,6 +34,15 @@ def digest(path):
     return h.hexdigest()
 
 
+def prepared_headers(source):
+    return {str(path): digest(path) for pattern in ['*.hpp', '*.inc'] for path in source.rglob(pattern)}
+
+
+def verify_hashes(inputs):
+    for filename, expected in inputs.items():
+        if digest(filename) != expected: raise ValueError('Build input changed during build: ' + filename)
+
+
 def module(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     result = importlib.util.module_from_spec(spec)
@@ -117,12 +126,30 @@ def compose_cdvd_identity(image, source, path):
     return manifest, inputs
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None):
+def compose_disc_model(image, source, path):
+    """Explicit reference-emulator HLE; no physical-disc identity claim."""
+    if path is None: return None, {}
+    if image != 'game': raise ValueError('Disc model composition is game-only; utility remains original')
+    inputs = {str(p): digest(p) for p in [path, *[path.with_name(name) for name in ['model.hpp', 'model.cpp', 'adapter.inc']]]}
+    preparer = module('exec_disc_model', path)
+    manifest = preparer.prepare(source)
+    if manifest.get('profile') != 'original-online-disc-model-pcsx2-command75-v1':
+        raise ValueError('Unsupported disc model profile')
+    if manifest.get('replaced_sources') != ['runtime/src/iop/cdvd.cpp', 'runtime/src/iop/kernel.cpp', 'runtime/src/disc.cpp'] or \
+            manifest.get('compiled_sources') != ['runtime/src/iop/model.cpp']:
+        raise ValueError('Unexpected disc model source scope')
+    for filename, expected in inputs.items():
+        if digest(filename) != expected: raise ValueError('Disc model input changed during composition: ' + filename)
+    return manifest, inputs
+
+
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None):
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
     if device_segment and not device_path: raise ValueError('Device segment requires an explicit device preparer')
     if overlay_path and image != 'game': raise ValueError('Original overlay entry profile is game-only')
     if cdvd_identity_path and image != 'game': raise ValueError('CDVD identity composition is game-only; utility remains original')
+    if disc_model_path and image != 'game': raise ValueError('Disc model composition is game-only; utility remains original')
     info_path = base / 'web/build-info.json'
     info, info_sha, retained_provenance = base_metadata(image, base)
     prep = module('exec_preparation', HERE / 'prepare.py')
@@ -163,6 +190,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     discovery = module('exec_module_discovery', HERE / 'discovery_prepare.py')
     discovery_manifest = discovery.prepare(source, source_root / 'poc/original-online/module_names.hpp')
     cdvd_identity_manifest, cdvd_identity_inputs = compose_cdvd_identity(image, source, cdvd_identity_path)
+    disc_model_manifest, disc_model_inputs = compose_disc_model(image, source, disc_model_path)
     overlay_manifest = None
     if overlay_path:
         overlay_manifest = json.loads((overlay_path / 'manifest.json').read_text())
@@ -240,7 +268,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     sources = [prepared / 'kernel.cpp', prepared / 'web.cpp', HERE / 'runtime.cpp', HERE / 'web_notify.cpp']
     sources += [source / 'runtime/src/iop' / name for name in ['io.cpp', 'sif.cpp', 'sio2.cpp', 'native_storage.cpp']]
     if image == 'utility': sources.append(HERE / 'utility_diagnostic.cpp')
-    composed_names = manifest_sources(source, device_manifest, network_manifest, discovery_manifest, cdvd_identity_manifest)
+    composed_names = manifest_sources(source, device_manifest, network_manifest, discovery_manifest, cdvd_identity_manifest, disc_model_manifest)
     for name in composed_names:
         path = source / name
         if path not in sources: sources.append(path)
@@ -295,7 +323,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         'status': 'prepared-not-built', 'prepared_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
         'elf_sha256': prep.HASHES[image], 'base_build_info_sha256': info_sha, 'retained_baseline_provenance': retained_provenance,
         'retained_objects_sha256': retained_hashes, 'sources_sha256': {str(path): digest(path) for path in sources},
-        'headers_sha256': {str(path): digest(path) for path in source.rglob('*.hpp')},
+        'headers_sha256': prepared_headers(source),
         'repository_inputs_sha256': {str(path): digest(path) for path in
             [host, *generated.glob('*.hpp'), *(source_root / 'src/hooks').glob('*.hpp'),
              *(source_root / 'research/source/render-hooks').glob('*.hpp'),
@@ -306,6 +334,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         'device_preparation_sha256': device_hash if device_path else None, 'device': device_manifest,
         'resident_module_lookup': discovery_manifest,
         'cdvd_identity': cdvd_identity_manifest, 'cdvd_identity_inputs_sha256': cdvd_identity_inputs,
+        'disc_model': disc_model_manifest, 'disc_model_inputs_sha256': disc_model_inputs,
         'overlay': overlay_manifest,
         'overlay_inputs_sha256': {str(overlay_path / name): value for name, value in overlay_manifest['files_sha256'].items()} if overlay_manifest else {},
         'network_preparation_sha256': network_hash if network_path else None,
@@ -328,12 +357,13 @@ def main():
     parser.add_argument('--device-segment', action='store_true', help='Explicitly enable the device owner\'s local ARP/DHCP segment; requires --device-prepare')
     parser.add_argument('--overlay-profile', type=Path, help='Explicit exact original DNAS_NET entry-coverage bundle; game-only and off by default')
     parser.add_argument('--cdvd-identity-prepare', type=Path, help='Explicit game-only cdvdman ordinal80/82 candidate from the device owner; off by default')
+    parser.add_argument('--disc-model-prepare', type=Path, help='Explicit game-only reference-emulator command75 HLE; modeled output, off by default')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
     args = parser.parse_args()
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -353,9 +383,8 @@ def main():
         for command in manifest['commands']:
             manifest['active_command'] = command
             subprocess.run(command, env=env, check=True)
-        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256', 'cdvd_identity_inputs_sha256']:
-            for filename, expected in manifest[category].items():
-                if digest(filename) != expected: raise ValueError('Build input changed during build: ' + filename)
+        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256', 'cdvd_identity_inputs_sha256', 'disc_model_inputs_sha256']:
+            verify_hashes(manifest[category])
         manifest['status'] = 'built-not-runtime-tested'
         manifest['outputs_sha256'] = {path.relative_to(work / 'web').as_posix(): digest(path) for path in (work / 'web').rglob('*') if path.is_file()}
     except Exception as error:

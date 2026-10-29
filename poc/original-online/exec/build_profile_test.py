@@ -12,6 +12,38 @@ spec.loader.exec_module(build)
 
 
 class ProfileTest(unittest.TestCase):
+    def test_copied_adapter_include_is_checked_after_build(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); copied = root / 'runtime/src/iop/adapter.inc'
+            copied.parent.mkdir(parents=True); copied.write_text('prepared adapter')
+            inputs = build.prepared_headers(root)
+            self.assertEqual(inputs, {str(copied): build.digest(copied)})
+            build.verify_hashes(inputs)
+            copied.write_text('changed after preparation')
+            with self.assertRaisesRegex(ValueError, 'changed during build'): build.verify_hashes(inputs)
+
+    def test_disc_model_is_opt_in_and_game_only(self):
+        self.assertEqual(build.compose_disc_model('game', None, None), (None, {}))
+        with self.assertRaisesRegex(ValueError, 'game-only'):
+            build.compose_disc_model('utility', None, Path('/nonexistent/prepare.py'))
+
+    def test_disc_model_fingerprints_and_scope(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp); script = root / 'prepare.py'
+            for name in ['model.hpp', 'model.cpp', 'adapter.inc']: (root / name).write_text('synthetic helper')
+            expected = {'profile': 'original-online-disc-model-pcsx2-command75-v1',
+                        'replaced_sources': ['runtime/src/iop/cdvd.cpp', 'runtime/src/iop/kernel.cpp', 'runtime/src/disc.cpp'],
+                        'compiled_sources': ['runtime/src/iop/model.cpp']}
+            script.write_text('def prepare(source):\n return '+repr(expected)+'\n')
+            result, inputs = build.compose_disc_model('game', root, script)
+            self.assertEqual(result, expected)
+            self.assertEqual(set(inputs), {str(root / name) for name in ['prepare.py', 'model.hpp', 'model.cpp', 'adapter.inc']})
+            for bad in [dict(expected, profile='unknown'), dict(expected, replaced_sources=['runtime/src/system.cpp'])]:
+                script.write_text('def prepare(source):\n return '+repr(bad)+'\n')
+                with self.assertRaisesRegex(ValueError, 'profile|source scope'): build.compose_disc_model('game', root, script)
+            script.write_text("from pathlib import Path\ndef prepare(source):\n Path(__file__).with_name('model.hpp').write_text('changed')\n return "+repr(expected)+'\n')
+            with self.assertRaisesRegex(ValueError, 'changed during composition'): build.compose_disc_model('game', root, script)
+
     def test_cdvd_identity_is_opt_in_and_rejects_utility_before_mutation(self):
         self.assertEqual(build.compose_cdvd_identity('game', None, None), (None, {}))
         with self.assertRaisesRegex(ValueError, 'game-only'):
