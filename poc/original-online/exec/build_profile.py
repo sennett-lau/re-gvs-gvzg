@@ -155,10 +155,44 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
             '            original_exec::observe_dispatch(c, pc, m->module, entry);\n            if (entry) {\n                c.base = base;')
         dispatch = prep.replace_once(dispatch, '        record_miss(pc);',
             '        record_miss(pc);\n        original_exec::observe_dispatch(c, pc, nullptr, 0);')
+        if overlay_manifest.get('variants'):
+            dispatch = '#include "code_variant.hpp"\n' + dispatch
+            dispatch = prep.replace_once(dispatch, 'bool loaded_at(const ModuleInfo &m, std::uint32_t base) {',
+                'bool loaded_at(const ModuleInfo &m, std::uint32_t base) {\n    if (original_exec::dnas_module(&m) && !original_exec::protected_markers_valid()) return false;')
+            dispatch = prep.replace_once(dispatch, 'if (full || !i.module->fixed_base)',
+                'if (full || !i.module->fixed_base || original_exec::dnas_module(i.module))')
+            dispatch = prep.replace_once(dispatch, 'const Instance *in_place(const Instance &i) {', '''const Instance *in_place(const Instance &i) {
+    if (original_exec::dnas_module(i.module)) {
+        static std::uint64_t checks = 0;
+        ++checks;
+        if (!(checks & (checks - 1)))
+            std::fprintf(stderr, "[original-exec-identity] cached_full_checks=%llu words_per_check=%u\\n",
+                         static_cast<unsigned long long>(checks), i.module->check_count);
+    }''')
+            dispatch = prep.replace_once(dispatch, '    const Instance *m = instance_for(pc);\n    const UnitInfo *mu',
+                '    const Instance *m = instance_for(pc);\n    if (m && original_exec::dnas_module(m->module) && original_exec::protected_range(pc)) return original_exec::has_variant_code(pc, m->module);\n    const UnitInfo *mu')
+            dispatch = prep.replace_once(dispatch, '            const std::uint32_t base = m->base;',
+                '            if (original_exec::dispatch_variant(c, pc, depth, m->module)) return;\n            const std::uint32_t base = m->base;')
+            flush = '''void original_exec_flush_cache() {
+    const bool had_dnas = std::any_of(g_instances.begin(), g_instances.end(),
+        [](const Instance& instance) { return original_exec::dnas_module(instance.module); });
+    const auto count = g_instances.size();
+    g_instances.clear();
+    static unsigned records = 0;
+    if (had_dnas && records++ < 64)
+        std::fprintf(stderr, "[original-exec-cache] original_flush invalidated=%zu\\n", count);
+}
+
+'''
+            dispatch = prep.replace_once(dispatch, 'bool has_code(std::uint32_t pc) {', flush + 'bool has_code(std::uint32_t pc) {')
         dispatch_path.write_text(dispatch)
     prepared = work / 'exec'; prepared.mkdir()
     host = source_root / 'apps/game/src/web.cpp' if image == 'game' else source / 'host/web.cpp'
     kernel_text, host_text = prep.prepare((source / 'runtime/src/kernel.cpp').read_text(), host.read_text())
+    if overlay_manifest and overlay_manifest.get('variants'):
+        kernel_text = prep.replace_once(kernel_text, 'namespace ps2 {', 'namespace ps2 {\nvoid original_exec_flush_cache();')
+        kernel_text = prep.replace_once(kernel_text, 'case 0x64: case 0x68: ret(c, 0); break;',
+            'case 0x64: case 0x68: original_exec_flush_cache(); ret(c, 0); break;')
     (prepared / 'kernel.cpp').write_text(kernel_text)
     (prepared / 'web.cpp').write_text(host_text)
     shell = (HERE / 'frame.html').read_text().replace('__ORIGINAL_EXEC_IMAGE__', image).replace('__ORIGINAL_EXEC_SHA256__', prep.HASHES[image])

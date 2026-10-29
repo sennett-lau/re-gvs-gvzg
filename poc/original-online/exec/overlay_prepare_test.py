@@ -22,7 +22,7 @@ L_01181C84:
         text, blocks, calls = guard_translation(self.fixture(), self.checks())
         self.assertEqual((blocks, calls), (3, 1))
         self.assertIn('L_01181C84:\n    if (!original_exec::guard_block(c, 0x01181C84u, exec_guard_01181C84)) return;', text)
-        self.assertLess(text.index('set32(c.r[6]'), text.index('observe_before(c, 0x01181C48u)'))
+        self.assertLess(text.index('set32(c.r[6]'), text.index('observe_before(c, 0x01181C48u, 0x011AAA68u)'))
         self.assertLess(text.index('if (c.pc != 0x01181C50u)'), text.index('observe_words(c, exec_observation, "after")'))
         first = text.split('exec_guard_01181C40[] = {', 1)[1].split('};', 1)[0]
         self.assertIn('0x01181C44u', first)

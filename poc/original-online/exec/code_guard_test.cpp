@@ -18,7 +18,12 @@ int main() {
     assert(!original_exec::guard_block(cpu, 0x100, checks));
     assert(cpu.pc == (0x100 | ps2::kUnwind) && ps2::reason == "Original code changed before translated block execution");
     assert(!std::memcmp(before.data(), ps2::g_ram + 0x100, before.size()));
-    cpu.r[4].w[0] = 0x100;
+    cpu.r[4].w[0] = 0x120; cpu.r[5].w[0] = 0x1234; cpu.r[6].w[0] = 0x1214; cpu.r[7].w[0] = 1;
+    const auto inverse = original_exec::observe_before(cpu, 0x1181CDC);
+    assert(inverse.active && inverse.address == 0x100 && inverse.input[0] == 0x120 && inverse.words == 16);
+    cpu.r[4].w[0] = 0x10;
+    assert(!original_exec::observe_before(cpu, 0x1181CDC).active);
+    cpu.r[4].w[0] = 0x100; cpu.r[5].w[0] = cpu.r[6].w[0] = cpu.r[7].w[0] = 0;
     const auto observation = original_exec::observe_before(cpu, 0x1181D50);
     assert(observation.active && observation.address == 0x100);
     original_exec::observe_words(cpu, observation, "after");

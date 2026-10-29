@@ -66,7 +66,8 @@ def guard_translation(text, checks):
         ra = one(r'c.r\[31\].sd\[0\] = static_cast<std::int32_t>\(0x([0-9A-F]+)u\);', line)[1]
         if line.count('if (depth < kMaxDepth)') != 1 or not line.endswith(' [[unlikely]] return; }'):
             raise ValueError('Transformation call source changed')
-        line = line.replace('if (depth < kMaxDepth)', f'const auto exec_observation = original_exec::observe_before(c, 0x{int(ra,16)-8:08X}u); if (depth < kMaxDepth)')
+        helper = one(r'else \{ c.pc = 0x([0-9A-F]+)u; return; \}', line)[1]
+        line = line.replace('if (depth < kMaxDepth)', f'const auto exec_observation = original_exec::observe_before(c, 0x{int(ra,16)-8:08X}u, 0x{helper}u); if (depth < kMaxDepth)')
         line = line[:-2] + ' original_exec::observe_words(c, exec_observation, "after"); }'
         lines.append(line); calls += 1
     return '\n'.join(lines) + '\n', len(labels), calls
