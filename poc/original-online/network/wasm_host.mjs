@@ -21,7 +21,11 @@ export function installOriginalOnlineBridge(Module, config) {
       if (!span(pointer,length) || length < 1 || length > 253 || !Number.isInteger(port) || port < 1 || port > 65535)
         {bridge.lastError=hostErrors.EINVAL;return 0;}
       let host;
-      try { host=new TextDecoder('utf-8',{fatal:true}).decode(Module.HEAPU8.subarray(pointer,pointer+length)); }
+      try {
+        // Browser decoders may reject shared WASM views. Copy the validated span.
+        const bytes=new Uint8Array(Module.HEAPU8.subarray(pointer,pointer+length));
+        host=new TextDecoder('utf-8',{fatal:true}).decode(bytes);
+      }
       catch {bridge.lastError=hostErrors.EINVAL;return 0;}
       return bridge.submit({op:'open',host,port,timeoutMs});
     },

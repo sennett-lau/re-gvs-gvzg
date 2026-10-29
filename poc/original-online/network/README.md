@@ -3,14 +3,16 @@
 This directory contains an executable private backend, a browser byte transport,
 and an opt-in runtime adapter for the original AVETCP client. It does not use
 local-Versus mode4, controller replication, or a replacement session protocol.
-The original game has **not yet connected to the backend** through this candidate.
+The original game has **not yet authenticated or reached a lobby or battle**
+through this candidate.
 Actual game captures show original module/device discovery, an Ethernet DHCP
 handshake and accepted lease, and guarded execution of original DNAS code.
-Capture11 verifies 32 decoded ranges against the recovered bytes and reaches an
-original failure return to the title flow without a missing-code halt. An
-unimplemented `cdvdman` ordinal 80 call precedes that return; its causal role is
-under investigation. No original DNS transaction, TCP connection, DNAS
-authentication, account login, lobby or battle has reached the backend.
+Capture16 reaches a DNS gateway exchange and two original DNS callbacks, then
+halts when the browser bridge rejects the host-open submission with internal
+`EINVAL`. An isolated test in the same Chromium build reproduces rejection of
+the shared hostname buffer by `TextDecoder`; the bridge now copies the validated
+hostname bytes before decoding. That isolated test does not establish a successful
+original TCP connection, DNAS authentication, account login, lobby or battle.
 Backend protocol tests, a real threaded WASM bridge test, and selected original
 IRX instruction tests cover different boundaries; none establishes two game
 instances reaching a lobby or battle.
@@ -118,6 +120,10 @@ write guest RAM. A ticket is consumed once. Reset invalidates old requests and
 closes transports. Save-state operations are explicitly unavailable in this
 experimental profile.
 
+Host-open validation bounds the hostname span to 1–253 bytes before copying it
+out of shared WASM memory. Fatal UTF-8 decoding and the existing port, timeout and
+destination checks remain in force; copying does not authorize a new destination.
+
 If the browser runs on another private machine, use an explicitly authorized
 loopback tunnel for the gateway port. Backend-advertised lobby/battle addresses
 are logical destinations resolved by the adapter, so those listeners need not be
@@ -153,8 +159,8 @@ packet-level timing differences. Unknown host errors, unsupported descriptor
 types or send flags, passive TCP accepts and other unimplemented owned operations
 remain limitations requiring actual-client traces. Original device discovery,
 DEVGLUE/DEV9/SMAP bootstrap and saved settings are separate runtime integration
-work; the current game capture passes DHCP without establishing an original
-DNS or TCP request through this transport.
+work; the current game capture passes DHCP and reaches the DNS route before
+failing host-open admission. It has not established an original TCP connection.
 
 ## Executable checks
 
@@ -162,6 +168,7 @@ Each probe requires a fresh private evidence directory and records success or
 failure, timestamps, and relevant fingerprints. Keep failed attempts too.
 
 ```sh
+node poc/original-online/network/wasm_open_probe.mjs /private/wasm-open-evidence
 node poc/original-online/network/protocol_probe.mjs /private/backend-run /private/protocol-evidence
 node poc/original-online/network/transport_probe.mjs /private/backend-build/gateway /private/transport-evidence
 node poc/original-online/network/adapter_probe.mjs /private/backend-run /private/adapter-evidence
@@ -177,6 +184,11 @@ lobby descriptions, a named room, battle allocation, bidirectional fragmented
 battle frames, rejection/EOF and reconnect/logout. Its battle bytes are synthetic,
 not gameplay. The DNAS probe runs upstream's synthetic PS2 TLS client through the
 real JS/WebSocket/TCP path.
+
+The offline host-open probe uses shared WASM memory, records adapter submissions,
+and requires decoder input to be nonshared. It checks byte preservation, bounds,
+fatal UTF-8 errors and updated memory views without opening a socket. Node's own
+decoder accepts shared views, so the Chromium reproduction is separate evidence.
 
 `run_native_contract.py` verifies and relocates the private original IRX, then
 executes selected original instructions with the real IOP interpreter. Its host
@@ -196,7 +208,7 @@ worker/main-thread boundary against actual TCP and UDP services.
 
 Actual game testing must use a muted browser while the AudioContext and ring
 consumer continue. The next acceptance step is original DNAS execution reaching
-actual DNS and TCP service operations through this adapter, followed by genuine
+an actual TCP connection after its DNS exchange, followed by genuine
 authentication and login. Then use two independent original instances with
 separate account registrations and card namespaces to reach the same lobby and
 complete a real mode7 battle. Do not clone account bytes or substitute mode4.
