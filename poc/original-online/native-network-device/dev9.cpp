@@ -28,6 +28,8 @@ constexpr std::uint8_t kMac[6] = {0x02, 0x50, 0x53, 0x32, 0x00, 0x01}; // locall
 
 constexpr std::uint16_t kTxDnv = 1u << 2, kRxDnv = 1u << 3, kTxEnd = 1u << 4, kRxEnd = 1u << 5;
 constexpr std::uint16_t kBdReady = 0x8000; // TX ready / RX empty
+// Descriptors are {control, reserved, length, pointer} 16-bit fields, as both drivers write them.
+constexpr unsigned kControl = 0, kLength = 2, kPointer = 3;
 constexpr unsigned kTxFifo = 4096, kRxFifo = 16384, kDescriptors = 64, kInterrupt = 13;
 
 struct Device {
@@ -36,7 +38,7 @@ struct Device {
     std::uint16_t smap[128];
     std::uint16_t intr_stat, intr_mask;
     std::uint8_t pio_data, tx_ctrl, rx_ctrl;
-    std::uint16_t tx_write, rx_read, rx_write, tx_frames, rx_frames;
+    std::uint16_t tx_write, rx_read, rx_write, tx_frames, rx_frames, tx_blocks, rx_blocks;
     std::uint8_t tx_fifo[kTxFifo];
     std::uint8_t rx_fifo[kRxFifo];
     std::uint16_t bd[(kBdEnd - kBd) / 2];
@@ -89,7 +91,7 @@ void set_field(unsigned index, std::uint16_t v) { g.bd[index] = (g.smap[1] & 1) 
 
 void receive(const std::uint8_t *frame, std::uint16_t length) {
     const unsigned at = (kDescriptors + g.rx_index) * 4;
-    if (!(field(at) & kBdReady)) {
+    if (!(field(at + kControl) & kBdReady)) {
         g.intr_stat |= kRxDnv;
         std::fprintf(stderr, "[dev9] receive descriptor %u busy, %u-byte frame dropped\n", g.rx_index, length);
         return;
@@ -97,9 +99,9 @@ void receive(const std::uint8_t *frame, std::uint16_t length) {
     const std::uint16_t start = g.rx_write;
     for (unsigned i = 0; i < length; ++i) g.rx_fifo[(start + i) % kRxFifo] = frame[i];
     g.rx_write = static_cast<std::uint16_t>((start + ((length + 3u) & ~3u)) % kRxFifo);
-    set_field(at + 1, length);
-    set_field(at + 2, static_cast<std::uint16_t>(0x4000 + start));
-    set_field(at, 0);
+    set_field(at + kLength, length);
+    set_field(at + kPointer, static_cast<std::uint16_t>(0x4000 + start));
+    set_field(at + kControl, 0);
     g.rx_index = (g.rx_index + 1) % kDescriptors;
     ++g.rx_frames;
     g.intr_stat |= kRxEnd;
@@ -109,18 +111,19 @@ void transmit() {
     std::uint8_t frame[kTxFifo];
     for (unsigned n = 0; n < kDescriptors; ++n) {
         const unsigned at = g.tx_index * 4;
-        const std::uint16_t control = field(at);
+        const std::uint16_t control = field(at + kControl);
         if (!(control & kBdReady)) {
             g.intr_stat |= kTxDnv;
             break;
         }
-        const std::uint16_t length = field(at + 1) < kTxFifo ? field(at + 1) : kTxFifo;
-        const unsigned start = (field(at + 2) - 0x1000u) % kTxFifo;
+        const std::uint16_t length = field(at + kLength) < kTxFifo ? field(at + kLength) : kTxFifo;
+        const unsigned start = (field(at + kPointer) - 0x1000u) % kTxFifo;
         for (unsigned i = 0; i < length; ++i) frame[i] = g.tx_fifo[(start + i) % kTxFifo];
-        set_field(at, static_cast<std::uint16_t>(control & ~kBdReady));
+        set_field(at + kControl, static_cast<std::uint16_t>(control & ~kBdReady));
         if (g.tx_frames) --g.tx_frames;
         if (g.phy[0] & 0x4000) {
             ++g.looped;
+            if (g_trace) std::fprintf(stderr, "[dev9] loopback of a %u-byte frame\n", length);
             receive(frame, length);
         } else {
             ++g.dropped;
@@ -220,9 +223,11 @@ std::uint16_t read16(std::uint32_t a) {
     case kSpeed + 0x2E: return static_cast<std::uint16_t>((g.pio_data & ~0x10) | (g.ee_dout << 4));
     case kFifo + 0x00: return g.tx_ctrl;
     case kFifo + 0x04: return g.tx_write;
+    case kFifo + 0x08: return g.tx_blocks;
     case kFifo + 0x0C: return g.tx_frames;
     case kFifo + 0x30: return g.rx_ctrl;
     case kFifo + 0x34: return g.rx_read;
+    case kFifo + 0x38: return g.rx_blocks;
     case kFifo + 0x3C: return g.rx_frames;
     }
     if (a >= kBd && a < kBdEnd) return g.bd[(a - kBd) / 2];
@@ -259,12 +264,14 @@ void write16(std::uint32_t a, std::uint16_t v) {
         g.tx_ctrl = static_cast<std::uint8_t>(v & 2);
         return;
     case kFifo + 0x04: g.tx_write = v % kTxFifo; return;
+    case kFifo + 0x08: g.tx_blocks = v; return; // DMA block count SMAP.IRX sets before a FIFO transfer
     case kFifo + 0x10: ++g.tx_frames; return;
     case kFifo + 0x30:
         if (v & 1) g.rx_read = g.rx_write = g.rx_frames = 0;
         g.rx_ctrl = static_cast<std::uint8_t>(v & 2);
         return;
     case kFifo + 0x34: g.rx_read = v % kRxFifo; return;
+    case kFifo + 0x38: g.rx_blocks = v; return;
     case kFifo + 0x40:
         if (g.rx_frames) --g.rx_frames;
         return;

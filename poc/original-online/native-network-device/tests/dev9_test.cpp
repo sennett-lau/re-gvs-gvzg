@@ -61,10 +61,10 @@ std::uint16_t eeprom_word(int index) {
 void queue_frame(std::uint16_t length) {
     w16(0x10001004, 0);
     for (std::uint32_t i = 0; i < length; i += 4) dev9::write(0x10001100, 0x11223344u + i, 4);
-    // Byte-swapped descriptor fields, as DEV9.IRX writes them once BD_MODE is set.
+    // Byte-swapped {control, reserved, length, pointer}, as DEV9.IRX writes them once BD_MODE is set.
+    w16(0x10003004, static_cast<std::uint16_t>(length << 8 | length >> 8));
+    w16(0x10003006, 0x0010);
     w16(0x10003000, 0x0083);
-    w16(0x10003002, static_cast<std::uint16_t>(length << 8 | length >> 8));
-    w16(0x10003004, 0x0010);
     w16(0x10002008, 0x8000);
     w16(0x1000200A, 0x0000);
 }
@@ -122,7 +122,8 @@ int main() {
     w16(0x10003200, 0x0080);
     w16(0x10000128, 0xFFFF);
     queue_frame(64);
-    expect((r16(0x10000028) & 0x34) == 0x34 && r16(0x10003200) == 0 && r16(0x10003202) == 0x4000, "PHY loopback receives the frame");
+    expect((r16(0x10000028) & 0x34) == 0x34 && r16(0x10003200) == 0 && r16(0x10003204) == 0x4000 && r16(0x10003206) == 0x0040, "PHY loopback receives the frame with its length and pointer");
+    expect(dev9::read(0x10001200, 4) == 0x11223344u && dev9::read(0x10001200, 4) == 0x11223348u, "received bytes match the transmitted frame");
 
     std::printf("%d failures\n", g_failures);
     return g_failures ? 1 : 0;

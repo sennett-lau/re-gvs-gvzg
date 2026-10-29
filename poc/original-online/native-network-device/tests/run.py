@@ -113,6 +113,7 @@ def main():
         checks[f'{name}: SMAP resident'] = d['results'].get('SMAP.IRX') == 2
         log = (work / name / 'stderr.log').read_text()
         checks[f'{name}: self-test used PHY loopback'] = '[dev9] PHY 1 write 0 = 0x6100' in log
+        checks[f'{name}: self-test frame looped back in full'] = '[dev9] loopback of a 1514-byte frame' in log
         checks[f'{name}: no unmodelled access'] = not d['unmodelled']
         checks[f'{name}: no transmit outside loopback'] = 'transmit without an external link' not in log
     report['passed'] = all(checks.values()) and not any(report[n]['exit'] for n in variants)
