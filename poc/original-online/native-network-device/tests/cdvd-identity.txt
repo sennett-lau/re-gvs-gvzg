@@ -1,0 +1,35 @@
+# cdvdman export 22 (sceCdRI) keeps its report; export 80 (sceCdReadGUID) derives the retail GUID from it.
+# Each output sits in a pattern buffer, so every byte written and every byte left alone is visible.
+call cdvdman 22 p:8:22 w:4:0x5A5A5A5A
+call cdvdman 80 p:16:80
+keep out 16 seed:7
+call cdvdman 80 a:out+4
+dump out
+keep odd 16 seed:9
+call cdvdman 80 a:odd+2
+dump odd
+# A segment alias and a RAM mirror of a kept buffer store into the buffer itself.
+keep seg 16 seed:11
+call cdvdman 80 a:seg+4@0x80000000
+dump seg
+keep mirror 16 seed:13
+call cdvdman 80 a:mirror+8@0x600000
+dump mirror
+# The last scratchpad words are supported; a span that reaches one word past them is not.
+call cdvdman 80 0x1F8003F8
+ram 0x1F8003F0 16
+call cdvdman 80 0x1F8003FC
+ram 0x1F8003F0 16
+# The end of the RAM window (0x7FFFFC mirrors 0x1FFFFC), a device register and a wrapping span store nothing.
+ram 0x001FFFF8 8
+call cdvdman 80 0x007FFFFC
+ram 0x001FFFF8 8
+call cdvdman 80 0x1F801070
+call cdvdman 80 0xFFFFFFFC
+# Across the 2 MiB mirror boundary the second word lands on RAM 0, as the runtime maps it; a GUID stored at
+# RAM 0 first makes that second (zero) word visible.
+call cdvdman 80 0x00000000
+ram 0x00000000 4
+call cdvdman 80 0x001FFFFC
+ram 0x001FFFF8 8
+ram 0x00000000 4

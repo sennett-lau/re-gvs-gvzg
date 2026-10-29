@@ -148,6 +148,20 @@ std::string json_string(const std::string &s) {
     return out + "\"";
 }
 
+void fill_pattern(std::uint32_t at, std::uint32_t size, std::uint32_t seed) {
+    for (std::uint32_t i = 0, value = seed; i < size; ++i) value = value * 1103515245u + 12345u, *iop::ram_ptr(at + i) = static_cast<std::uint8_t>(value >> 16);
+}
+
+}
+
+// A runtime halt is reported and the script goes on, so later commands can show what it left in memory.
+void ps2::halt(const std::string &reason) {
+    std::printf("{\"event\":\"halt\",\"reason\":%s}\n", json_string(reason).c_str());
+    std::fflush(stdout);
+}
+
+namespace {
+
 constexpr std::uint32_t kMaxBuffer = 0x10000;
 
 // A whole word as an unsigned number (decimal, 0x hex or leading-0 octal), at most max. Signs,
@@ -287,14 +301,38 @@ struct Runner {
             results.push_back(0);
             return 0;
         }
-        // keep NAME SIZE: a buffer that outlives commands; dump NAME prints it. keep NAME leave:BYTES takes the
-        // largest free block except BYTES, so a script can exhaust IOP memory and check that calls are refused.
+        if (name == "ram") { // ram ADDRESS SIZE prints IOP RAM (any mirror or segment) or scratchpad bytes; no device is read
+            std::string address_word, size_word, extra;
+            words >> address_word >> size_word >> extra;
+            const auto address = number(address_word);
+            const auto size = number(size_word, 4096);
+            bool mapped = address && size && *size && extra.empty();
+            for (std::uint32_t i = 0; mapped && i < *size; ++i) {
+                const std::uint32_t p = iop::phys(*address + i);
+                mapped = p < 0x00800000u || (p & ~0x3FFu) == 0x1F800000u;
+            }
+            if (!mapped) { refuse(line, "ram needs ADDRESS SIZE (1-4096) inside IOP RAM or scratchpad"); return 0; }
+            std::string bytes;
+            for (std::uint32_t i = 0; i < *size; ++i) {
+                const std::uint8_t b = iop::read8(*address + i);
+                bytes += hex(&b, 1);
+            }
+            std::printf("{\"event\":\"call\",\"index\":%zu,\"command\":%s,\"completed\":true,\"result\":0,\"address\":%u,\"size\":%u,\"buffer\":\"%s\"}\n",
+                        results.size(), json_string(line).c_str(), *address, *size, bytes.c_str());
+            std::fflush(stdout);
+            results.push_back(0);
+            return 0;
+        }
+        // keep NAME SIZE [seed:N]: a buffer that outlives commands, zeroed or filled like p:SIZE:N; dump NAME
+        // prints it. keep NAME leave:BYTES takes the largest free block except BYTES, so a script can exhaust
+        // IOP memory and check that calls are refused.
         if (name == "keep" || name == "dump") {
-            std::string label, size_word, extra;
+            std::string label, size_word, seed_word, extra;
             words >> label;
-            if (name == "keep") words >> size_word;
+            if (name == "keep") words >> size_word >> seed_word;
             words >> extra;
-            if (label.empty() || !extra.empty()) { refuse(line, "keep NAME SIZE or dump NAME"); return 0; }
+            const auto seed = seed_word.rfind("seed:", 0) == 0 ? number(seed_word.substr(5)) : std::nullopt;
+            if (label.empty() || !extra.empty() || (!seed_word.empty() && !seed)) { refuse(line, "keep NAME SIZE [seed:N] or dump NAME"); return 0; }
             if (name == "dump" && !kept.count(label)) { refuse(line, "no kept buffer " + label); return 0; }
             if (name == "keep" && kept.count(label)) { refuse(line, "kept buffer " + label + " already exists"); return 0; }
             if (name == "keep") {
@@ -313,6 +351,7 @@ struct Runner {
                 const std::uint32_t at = iop::kernel::alloc(size);
                 if (!at) { refuse(line, "IOP memory has no room for the buffer"); return 0; }
                 std::memset(iop::ram_ptr(at), 0, size);
+                if (seed) fill_pattern(at, size, *seed);
                 kept[label] = {at, size};
             }
             const auto &[at, size] = kept.at(label);
@@ -342,9 +381,19 @@ struct Runner {
                 const std::uint32_t at = iop::kernel::alloc(*size);
                 if (!at) { rejected = "IOP memory has no room for the buffer"; break; }
                 std::memset(iop::ram_ptr(at), 0, *size);
-                if (word[0] == 'p')
-                    for (std::uint32_t i = 0, value = *seed; i < *size; ++i) value = value * 1103515245u + 12345u, *iop::ram_ptr(at + i) = static_cast<std::uint8_t>(value >> 16);
+                if (word[0] == 'p') fill_pattern(at, *size, *seed);
                 args.push_back(at), buffers.push_back(at), dumps.emplace_back(at, *size);
+            } else if (word.rfind("a:", 0) == 0) {
+                // a:NAME+OFFSET is an address inside a kept buffer, aligned or not; dump NAME shows what changed.
+                // @ADD adds a number to it (wrapping), e.g. a segment base or a RAM mirror.
+                const auto at_sign = word.find('@');
+                const std::string place = word.substr(2, at_sign == std::string::npos ? std::string::npos : at_sign - 2);
+                const auto plus = place.find('+');
+                const auto found = kept.find(place.substr(0, plus));
+                const auto offset = plus == std::string::npos ? std::optional<std::uint32_t>(0) : number(place.substr(plus + 1));
+                const auto add = at_sign == std::string::npos ? std::optional<std::uint32_t>(0) : number(word.substr(at_sign + 1));
+                if (found == kept.end() || !offset || *offset >= found->second.second || !add) { rejected = "a:NAME+OFFSET[@ADD] needs an offset inside a kept buffer"; break; }
+                args.push_back(found->second.first + *offset + *add);
             } else if (word.rfind("w:", 0) == 0) {
                 // w:SIZE:v0,v1,... fills 32-bit words; @OFFSET is this buffer's address plus OFFSET and
                 // ^NAME+OFFSET an address inside a kept buffer. Both offsets must stay inside their buffer.
@@ -490,8 +539,8 @@ struct Runner {
 }
 
 int main(int argc, char **argv) {
-    if (argc < 4) {
-        std::fprintf(stderr, "usage: %s CARD|none SCRIPT MODULE...\n", argv[0]);
+    if (argc < 3) {
+        std::fprintf(stderr, "usage: %s CARD|none SCRIPT [MODULE...]\n", argv[0]);
         return 2;
     }
     if (std::string(argv[1]) != "none") g_options.memcard_path = argv[1];
