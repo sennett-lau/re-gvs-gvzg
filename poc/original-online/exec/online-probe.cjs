@@ -3,10 +3,13 @@
 const fs = require('node:fs'), path = require('node:path'), {createHash} = require('node:crypto');
 const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {parseConfig} = require('./private-config.cjs');
+const {StateRetention} = require('./probe-retention.cjs');
 const scene = require('../../../apps/game/assets/scene-snapshot.js');
 const base = new URL(process.argv[2]), out = path.resolve(process.argv[3]);
 const count = Number(process.env.PROBE_CLIENTS || 1), operatorMs = Number(process.env.PROBE_OPERATOR_MS || 600000);
 const watch = process.env.PROBE_WATCH || null;
+const retainStates = process.env.PROBE_RETAIN_STATES === '1';
+if(process.env.PROBE_RETAIN_STATES && !retainStates)throw Error('PROBE_RETAIN_STATES must be 1 or absent');
 if (watch) {
   const match = /^([0-9a-fA-F]+),([0-9a-fA-F]+)$/.exec(watch);
   const address = match ? parseInt(match[1],16) : NaN, bytes = match ? parseInt(match[2],16) : NaN;
@@ -30,7 +33,7 @@ const mark=(event,detail={})=>fs.appendFileSync(path.join(out,'timeline.jsonl'),
 let browser;
 
 class Client {
-  constructor(label,context,page) {this.label=label;this.context=context;this.page=page;this.errors=[];this.blocked=[];this.traceLost=false;this.lastState=null;this.sockets=[];}
+  constructor(label,context,page) {this.label=label;this.context=context;this.page=page;this.errors=[];this.blocked=[];this.traceLost=false;this.lastState=null;this.sockets=[];this.retention=retainStates?new StateRetention(out,label):null;}
   async state() {return this.page.evaluate(()=>({clientId:window.originalExec?.clientId,image:window.originalExec?.session?.image,
     generation:window.originalExec?.session?.generation,state:window.originalExec?.session?.state,events:window.originalExec?.events||[]}));}
   frame() {const frame=this.page.frames().find(f=>/\/(game|utility)\/index\.html/.test(f.url()));if(!frame)throw Error('No executable document');return frame;}
@@ -43,7 +46,7 @@ class Client {
           requestCount:Module.originalOnlineBridge.adapter.requests.size,streamCount:Module.originalOnlineBridge.adapter.streams.size}:null}));
       if(sample.scene!==null)sample.scene=scene.decode(sample.scene);
     }
-    return {label:this.label,...current,sample,lastState:this.lastState,errors:this.errors,blocked:this.blocked,traceLost:this.traceLost,sockets:this.sockets};
+    return {label:this.label,...current,sample,lastState:this.lastState,errors:this.errors,blocked:this.blocked,traceLost:this.traceLost,sockets:this.sockets,stateRetentionLimited:this.retention?.limited||false};
   }
   async healthy() {const s=await this.state();if(this.errors.length||this.traceLost||s.state==='failed')throw Error(this.label+': original/browser failure or trace loss');return s;}
   async until(predicate,description,timeout=90000) {
@@ -58,7 +61,13 @@ class Client {
     if(!frame.isDetached())try{await frame.evaluate(code=>dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true})),code);}catch(error){if(!frame.isDetached())throw error;}
     mark('keyup',{client:this.label,code,image,generation});await sleep(450);
   }
-  async capture(name) {await this.page.screenshot({path:path.join(out,this.label+'-'+name+'.png')});write(this.label+'-'+name,await this.snapshot());}
+  async capture(name) {
+    const captureStartedUtc=new Date().toISOString(),stem=this.label+'-'+name,png=path.join(out,stem+'.png');
+    await this.page.screenshot({path:png});const screenshotCompletedUtc=new Date().toISOString();
+    const snapshot={...(await this.snapshot()),captureStartedUtc,screenshotCompletedUtc,snapshotCompletedUtc:new Date().toISOString()};
+    write(stem,snapshot);
+    if(name==='live'&&this.retention){const result=this.retention.retain(png,path.join(out,stem+'.json'),snapshot);if(result)mark('state-capture',{client:this.label,...result});}
+  }
   async prompt(word,name) {
     await this.until(()=>this.lastState?.state_word===word&&this.lastState.activity===0&&this.lastState.timer4<=0&&this.lastState.timer6<=0,name,45000);
     await sleep(300);await this.capture(name+'-before');
@@ -88,7 +97,10 @@ class Client {
   fs.writeFileSync(path.join(out,'build-info.json'),buildText);
   write('run',{started_utc:new Date().toISOString(),scope:'Original mode7 with independent contexts and private byte transport',
     clients:count,fixture_sha256:expected,fixture_bytes:fixture.length,build_info_sha256:digest(buildText),harness_sha256:digest(fs.readFileSync(__filename)),
-    muted:true,audioSuspendedForTiming:false,gateway_origin:gateway.origin,operatorMs,watch,argv:process.argv.slice(2),network_success:false,battle_success:false});
+    muted:true,audioSuspendedForTiming:false,gateway_origin:gateway.origin,operatorMs,watch,retainStates,
+    stateRetention:retainStates?{limit:96,retention_sha256:digest(fs.readFileSync(require.resolve('./probe-retention.cjs'))),
+      sampling:'Periodic screenshots followed by a read-only snapshot; intermediate transitions may be missed, timestamps are retained.'}:null,
+    argv:process.argv.slice(2),network_success:false,battle_success:false});
   browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,headless:false,args:['--mute-audio','--autoplay-policy=no-user-gesture-required',
     '--no-first-run','--disable-background-networking','--disable-background-timer-throttling','--disable-renderer-backgrounding','--disable-backgrounding-occluded-windows']});
   for(let i=0;i<count;i++) {
