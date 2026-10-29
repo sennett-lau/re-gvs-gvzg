@@ -1,4 +1,5 @@
-# cdvdman export 22 (sceCdRI) keeps its report; export 80 (sceCdReadGUID) derives the retail GUID from it.
+# cdvdman export 22 (sceCdRI) keeps its report; exports 80 (sceCdReadGUID) and 82 (sceCdReadModelID) derive
+# the retail GUID and model ID from it.
 # Each output sits in a pattern buffer, so every byte written and every byte left alone is visible.
 call cdvdman 22 p:8:22 w:4:0x5A5A5A5A
 call cdvdman 80 p:16:80
@@ -33,3 +34,19 @@ ram 0x00000000 4
 call cdvdman 80 0x001FFFFC
 ram 0x001FFFF8 8
 ram 0x00000000 4
+# Export 82 stores one word, ID bytes 1-3 (0 here), so only its own 4 bytes of a pattern change.
+call cdvdman 82 p:8:82
+keep model 12 seed:15
+call cdvdman 82 a:model+4
+dump model
+call cdvdman 82 a:model+6
+dump model
+# One word may end the RAM window (0x7FFFFC mirrors 0x1FFFFC, which holds a GUID word now) or the
+# scratchpad; one word past either, or a wrapping address, may not.
+call cdvdman 82 0x007FFFFC
+ram 0x001FFFF8 8
+call cdvdman 82 0x1F8003FC
+call cdvdman 82 0x00800000
+call cdvdman 82 0x1F800400
+call cdvdman 82 0xFFFFFFFC
+ram 0x001FFFF8 8

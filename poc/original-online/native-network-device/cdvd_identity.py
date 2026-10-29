@@ -1,11 +1,13 @@
-"""Opt-in runtime candidate: cdvdman export 80 (sceCdReadGUID) as the game's DNAS280.IMG CDVDMAN has it.
+"""Opt-in runtime candidate: cdvdman exports 80 (sceCdReadGUID) and 82 (sceCdReadModelID) as the game's
+DNAS280.IMG CDVDMAN has them.
 
-The game reboots the IOP with cdrom0:\\MODULE\\DNAS280.IMG. Its CDVDMAN implements export 80; the
-utility's IOPRP280 leaves it a stub that returns 0, and the runtime has no export 80 at all, so a call
-returns 0 and stores nothing. The DNAS IOP module calls it before the original game leaves the
-connection sequence with an error.
+The game reboots the IOP with cdrom0:\\MODULE\\DNAS280.IMG. Its CDVDMAN implements exports 80 and 82;
+the utility's IOPRP280 leaves them stubs that return 0, and the runtime has neither, so a call returns 0
+and stores nothing. In a run without them the DNAS IOP module called export 80 and the game then showed a
+device information error (-401); with export 80 added, the module called export 82 next. The module's own
+branches on these results are not observed.
 
-This patch adds export 80 with the retail derivation (cdvd_identity.hpp) from the report sceCdRI
+This patch adds both exports with the retail derivation (cdvd_identity.hpp) from the report sceCdRI
 (export 22) already gives: success, status 0 and an all-zero i.LINK ID. sceCdRI keeps that report and
 behaves as before. No other export and no per-client identity is added.
 """
@@ -14,8 +16,8 @@ import json
 import shutil
 from pathlib import Path
 
-PROFILE = 'original-online-cdvd-identity-v1'
-MARKER = '// original-online-cdvd-identity-v1'
+PROFILE = 'original-online-cdvd-identity-v2'
+MARKER = '// original-online-cdvd-identity-v2'
 HERE = Path(__file__).resolve().parent
 
 INCLUDES = ('''#include "kernel.hpp"
@@ -37,11 +39,12 @@ PROVIDER = ('''std::uint8_t bcd(int v) { return static_cast<std::uint8_t>(((v / 
 ''', f'''std::uint8_t bcd(int v) {{ return static_cast<std::uint8_t>(((v / 10) << 4) | (v % 10)); }}
 
 {MARKER}: the report sceCdRI has always given here (success, status 0, all-zero
-// i.LINK ID). sceCdReadGUID derives from the same report, as the original CDVDMAN does.
+// i.LINK ID). sceCdReadGUID and sceCdReadModelID derive from the same report, as the original CDVDMAN does.
 cdvd_identity::ILinkId read_ilink_id() {{ return {{1, {{}}, 0}}; }}
 
-// A word store sceCdReadGUID may make: IOP RAM with its mirrors and segment aliases, or the scratchpad,
-// exactly as hw.cpp maps them (is_ram, is_scratchpad). Anything else is a device or unmapped.
+// A word store sceCdReadGUID or sceCdReadModelID may make: IOP RAM with its mirrors and segment aliases,
+// or the scratchpad, exactly as hw.cpp maps them (is_ram, is_scratchpad). Anything else is a device or
+// unmapped.
 bool guid_store_supported(std::uint32_t a) {{
     const std::uint32_t p = phys(a);
     return p < 0x00800000u || (p & ~0x3FFu) == 0x1F800000u;
@@ -73,6 +76,20 @@ EXPORTS = ('''    def("cdvdman", 22, "sceCdRI", [](Cpu &c) {
         }
         c.r[2] = done == cdvd_identity::GuidResult::stored ? 1u : 0u;
     });
+    def("cdvdman", 82, "sceCdReadModelID", [](Cpu &c) {
+        const std::uint32_t out = arg(c, 0);
+        const auto done = cdvd_identity::read_model_id(read_ilink_id(), out, guid_store_supported,
+                                                       [](std::uint32_t a, std::uint32_t v) { write32(a, v); });
+        if (done == cdvd_identity::GuidResult::misaligned) {
+            std::fprintf(stderr, "[iop] sceCdReadModelID output %08X is not word aligned\\n", out);
+            ps2::halt("sceCdReadModelID output is not word aligned");
+        }
+        if (done == cdvd_identity::GuidResult::unsupported) {
+            std::fprintf(stderr, "[iop] sceCdReadModelID output %08X..%08X is not IOP RAM or scratchpad\\n", out, out + 3u);
+            ps2::halt("sceCdReadModelID output is not IOP RAM or scratchpad");
+        }
+        c.r[2] = done == cdvd_identity::GuidResult::stored ? 1u : 0u;
+    });
 ''')
 
 # guid_store_supported copies these two hw.cpp rules; a tree with a different address map is refused.
@@ -85,7 +102,8 @@ ORIGINAL_REFERENCE = {
     'export_80': '0x4014 calls 0x3EC4(0, out); retail: QueryBootMode(6) (loadcore 12) gives no entry, sceCdRI (export 22 at 0xB514) '
                  'with status preset -1; return 0 if sceCdRI returns 0 or status is nonzero; else sw 0x08004600|id[0] at out, '
                  'sw id[4..7] at out+4, return 1',
-    'utility_ioprp280': 'NTGUIDVD IOPRP280 CDVDMAN export 80 is the shared stub at 0xB938 (return 0)',
+    'export_82': '0x4038 calls 0x3EC4(1, out); retail: same sceCdRI call and failure checks, then sw (id word 0 >> 8) at out, return 1',
+    'utility_ioprp280': 'NTGUIDVD IOPRP280 CDVDMAN exports 80 and 82 are the shared stub at 0xB938 (return 0)',
 }
 
 
@@ -100,8 +118,8 @@ def prepare(tree):
     text = cdvd.read_text()
     if MARKER in text:
         raise ValueError('Runtime tree already has the cdvd identity export')
-    if 'cdvdman", 80,' in text or (iop / 'cdvd_identity.hpp').exists():
-        raise ValueError('Runtime tree already defines cdvdman export 80')
+    if 'cdvdman", 80,' in text or 'cdvdman", 82,' in text or (iop / 'cdvd_identity.hpp').exists():
+        raise ValueError('Runtime tree already defines cdvdman export 80 or 82')
     hw = (iop / 'hw.cpp').read_text()
     if any(hw.count(rule) != 1 for rule in ADDRESS_MAP):
         raise ValueError('hw.cpp address map changed')
@@ -120,8 +138,8 @@ def prepare(tree):
         'added_sources': ['runtime/src/iop/cdvd_identity.hpp'],
         'compiled_sources': [],
         'ilink_id': 'unchanged sceCdRI report: success, status 0, all-zero ID',
-        'output_span': 'both words checked before the first store against hw.cpp is_ram (mirrors and aliases) and is_scratchpad; '
-                       'unaligned or unsupported output halts with no store',
+        'output_span': 'every output word (two for export 80, one for 82) checked before the first store against hw.cpp is_ram '
+                       '(mirrors and aliases) and is_scratchpad; unaligned or unsupported output halts with no store',
         'original_reference': ORIGINAL_REFERENCE,
     }
     (Path(tree) / 'cdvd-identity-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')

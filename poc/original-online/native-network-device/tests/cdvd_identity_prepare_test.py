@@ -30,6 +30,7 @@ class CdvdIdentityPreparation(unittest.TestCase):
                 manifest = identity.prepare(temporary)
                 text = cdvd.read_text()
                 self.assertEqual(text.count('def("cdvdman", 80, "sceCdReadGUID"'), 1)
+                self.assertEqual(text.count('def("cdvdman", 82, "sceCdReadModelID"'), 1)
                 self.assertEqual(text.count('def("cdvdman", 22, "sceCdRI"'), 1)
                 self.assertEqual((Path(temporary) / 'runtime/src/iop/cdvd_identity.hpp').read_bytes(),
                                  (HERE.parent / 'cdvd_identity.hpp').read_bytes())
@@ -66,12 +67,13 @@ class CdvdIdentityPreparation(unittest.TestCase):
                 identity.prepare(temporary)
             self.assertEqual(cdvd.read_text(), before)
 
-    def test_existing_export_80_is_refused(self):
-        with tempfile.TemporaryDirectory() as temporary:
-            cdvd = copy(Path(temporary))
-            cdvd.write_text(cdvd.read_text().replace('    def("cdvdman", 24,', '    def("cdvdman", 80, "x", [](Cpu &) {});\n    def("cdvdman", 24,'))
-            with self.assertRaisesRegex(ValueError, 'already defines'):
-                identity.prepare(temporary)
+    def test_existing_export_80_or_82_is_refused(self):
+        for index in (80, 82):
+            with tempfile.TemporaryDirectory() as temporary:
+                cdvd = copy(Path(temporary))
+                cdvd.write_text(cdvd.read_text().replace('    def("cdvdman", 24,', f'    def("cdvdman", {index}, "x", [](Cpu &) {{}});\n    def("cdvdman", 24,'))
+                with self.assertRaisesRegex(ValueError, 'already defines'):
+                    identity.prepare(temporary)
 
 
 if __name__ == '__main__':

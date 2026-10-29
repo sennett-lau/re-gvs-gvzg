@@ -1,5 +1,6 @@
 #pragma once
-// original-online-cdvd-identity-v1: console GUID of the CDVDMAN in the game's DNAS280.IMG, export 80.
+// original-online-cdvd-identity-v2: console GUID and model ID of the CDVDMAN in the game's DNAS280.IMG,
+// exports 80 and 82.
 #include <cstdint>
 
 namespace ps2::iop::cdvd_identity {
@@ -26,6 +27,18 @@ GuidResult read_guid(const ILinkId &ilink, std::uint32_t out, Supported &&suppor
     if (!supported(out) || !supported(out + 4u)) return GuidResult::unsupported;
     store(out, 0x08004600u | ilink.id[0]);
     store(out + 4u, ilink.id[4] | ilink.id[5] << 8 | ilink.id[6] << 16 | static_cast<std::uint32_t>(ilink.id[7]) << 24);
+    return GuidResult::stored;
+}
+
+// sceCdReadModelID(u32 *out), export 82 at 0x4038: the same routine with mode 1. The retail path makes the
+// same sceCdRI call and failure checks, then stores one word with sw, the ID's first word shifted right by
+// 8 (ID bytes 1-3), and returns 1. The 0x1A0002 substitution in 0x3EC4 belongs to the boot mode 6 board path.
+template <class Supported, class Store>
+GuidResult read_model_id(const ILinkId &ilink, std::uint32_t out, Supported &&supported, Store &&store) {
+    if (!ilink.result || ilink.stat) return GuidResult::failed;
+    if (out & 3u) return GuidResult::misaligned;
+    if (!supported(out)) return GuidResult::unsupported;
+    store(out, ilink.id[1] | ilink.id[2] << 8 | static_cast<std::uint32_t>(ilink.id[3]) << 16);
     return GuidResult::stored;
 }
 

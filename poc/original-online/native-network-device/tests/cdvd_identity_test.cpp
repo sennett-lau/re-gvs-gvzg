@@ -1,4 +1,5 @@
-// sceCdReadGUID derivation (cdvd_identity.hpp) against the retail path of DNAS280.IMG CDVDMAN export 80.
+// sceCdReadGUID and sceCdReadModelID derivation (cdvd_identity.hpp) against the retail path of DNAS280.IMG
+// CDVDMAN exports 80 and 82.
 #include "cdvd_identity.hpp"
 
 #include <cassert>
@@ -19,6 +20,11 @@ static bool supported(std::uint32_t a) {
 static GuidResult run(const ILinkId &ilink, std::uint32_t out, Stores &stores) {
     stores.clear();
     return ps2::iop::cdvd_identity::read_guid(ilink, out, supported, [&](std::uint32_t a, std::uint32_t v) { stores.emplace_back(a, v); });
+}
+
+static GuidResult model(const ILinkId &ilink, std::uint32_t out, Stores &stores) {
+    stores.clear();
+    return ps2::iop::cdvd_identity::read_model_id(ilink, out, supported, [&](std::uint32_t a, std::uint32_t v) { stores.emplace_back(a, v); });
 }
 
 int main() {
@@ -61,5 +67,17 @@ int main() {
     // Failure and alignment are decided before the span, as no store is reached for them.
     assert(run(ILinkId{0, {}, 0}, 0x1F801070u, stores) == GuidResult::failed && stores.empty());
     assert(run(zero, 0x1F801072u, stores) == GuidResult::misaligned && stores.empty());
+
+    // Export 82: one word, ID bytes 1-3 (byte 0 and bytes 4-7 are not part of it), 0 for the runtime's ID.
+    assert(model(zero, 0x00100000u, stores) == GuidResult::stored && (stores == Stores{{0x00100000u, 0}}));
+    assert(model(id, 0x00100000u, stores) == GuidResult::stored && (stores == Stores{{0x00100000u, 0x00D4C3B2u}}));
+    assert(model(ILinkId{0, {1, 2, 3, 4}, 0}, 0x100u, stores) == GuidResult::failed && stores.empty());
+    assert(model(ILinkId{1, {}, 1}, 0x100u, stores) == GuidResult::failed && stores.empty());
+    for (std::uint32_t low = 1; low < 4; ++low) assert(model(zero, 0x100u + low, stores) == GuidResult::misaligned && stores.empty());
+    // One word may end the RAM window or the scratchpad; one word past either, a device or a wrap may not.
+    for (const std::uint32_t out : {0x007FFFFCu, 0x1F8003FCu, 0x8001FFFCu})
+        assert(model(zero, out, stores) == GuidResult::stored && (stores == Stores{{out, 0}}));
+    for (const std::uint32_t out : {0x00800000u, 0x1F800400u, 0x1F801070u, 0xFFFFFFFCu})
+        assert(model(zero, out, stores) == GuidResult::unsupported && stores.empty());
     std::puts("cdvd identity derivation: ok");
 }

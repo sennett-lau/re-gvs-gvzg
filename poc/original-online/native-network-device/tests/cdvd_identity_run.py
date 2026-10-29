@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the opt-in cdvdman export 80 natively against the same runtime without it.
+"""Check the opt-in cdvdman exports 80 and 82 natively against the same runtime without them.
 
 Both runtimes run tests/cdvd-identity.txt through the harness, which calls each export through an IOP
 import stub as a module does. No original module is needed: the library is the runtime's own cdvdman.
@@ -62,15 +62,17 @@ def scenario(work):
 
 
 SPAN = 'sceCdReadGUID output is not IOP RAM or scratchpad'
+MODEL_SPAN = 'sceCdReadModelID output is not IOP RAM or scratchpad'
 GUID_CALLS = [1, 3, 6, 9, 12, 14, 16, 19, 21, 22, 23, 25]  # every export 80 call in the script
+MODEL_CALLS = [28, 30, 32, 34, 36, 37, 38, 39]  # every export 82 call
 
 
 def checks(code, calls, halts, log, corrected):
     at = lambda i: calls[i] if len(calls) > i else {}
     result = lambda i: at(i).get('result')
     data = lambda i: at(i).get('buffer')
-    out, odd, seg, mirror = pattern(16, 7), pattern(16, 9), pattern(16, 11), pattern(16, 13)
-    common = code == 0 and len(calls) == 28 and all(c.get('completed') for c in calls)
+    out, odd, seg, mirror, model = pattern(16, 7), pattern(16, 9), pattern(16, 11), pattern(16, 13), pattern(12, 15)
+    common = code == 0 and len(calls) == 41 and all(c.get('completed') for c in calls)
     unchanged = common and data(15) == data(17) and data(18) == data(20)
     ri = {'sceCdRI report unchanged: result 1, zero ID, status 0': common and result(0) == 1 and at(0).get('buffers') == ['00' * 8, '00' * 4]}
     if corrected:
@@ -84,14 +86,24 @@ def checks(code, calls, halts, log, corrected):
                 and result(25) == 1 and data(26) == data(18)[:8] + GUID[:8] and data(27) == GUID[8:],
                 'export 80: unaligned output stops the run and stores nothing': common and result(6) == 0 and data(7) == odd,
                 'export 80: unsupported spans stop the run and store nothing': unchanged and [result(i) for i in (16, 19, 21, 22)] == [0, 0, 0, 0],
-                'export 80: one stop for each refused output, in order':
-                halts == [(6, 'sceCdReadGUID output is not word aligned'), (16, SPAN), (19, SPAN), (21, SPAN), (22, SPAN)],
-                'export 80: no missing-export report': '[iop] missing cdvdman #80' not in log}
+                'export 82: returns 1 and stores one zero word over a pattern': common and result(28) == 1 and data(28) == '00' * 4 + pattern(8, 82)[8:]
+                and result(30) == 1 and data(31) == model[:8] + '00' * 4 + model[16:],
+                'export 82: unaligned output stops the run and stores nothing': common and result(32) == 0 and data(33) == data(31),
+                'export 82: one word may end the RAM window or the scratchpad': common and result(34) == 1
+                and data(35) == data(26)[:8] + '00' * 4 and data(26)[8:] != '00' * 4 and result(36) == 1,
+                'export 82: one word past them or a wrap stops the run and stores nothing': common
+                and [result(i) for i in (37, 38, 39)] == [0, 0, 0] and data(40) == data(35),
+                'exports 80 and 82: one stop for each refused output, in order':
+                halts == [(6, 'sceCdReadGUID output is not word aligned'), (16, SPAN), (19, SPAN), (21, SPAN), (22, SPAN),
+                          (32, 'sceCdReadModelID output is not word aligned'), (37, MODEL_SPAN), (38, MODEL_SPAN), (39, MODEL_SPAN)],
+                'exports 80 and 82: no missing-export report': '[iop] missing cdvdman #80' not in log and '[iop] missing cdvdman #82' not in log}
     return {**ri,
             'control export 80: missing export returns 0 and stores nothing': common and all(result(i) == 0 for i in GUID_CALLS)
             and data(1) == pattern(16, 80) and data(4) == out and data(7) == odd and data(10) == seg and data(13) == mirror
             and unchanged and data(26) == data(18) and data(27) == data(24) and not halts,
-            'control export 80: runtime reports the missing export': '[iop] missing cdvdman #80' in log}
+            'control export 82: missing export returns 0 and stores nothing': common and all(result(i) == 0 for i in MODEL_CALLS)
+            and data(28) == pattern(8, 82) and data(31) == model and data(33) == model and data(35) == data(26) and data(40) == data(35),
+            'control exports 80 and 82: runtime reports both missing exports': '[iop] missing cdvdman #80' in log and '[iop] missing cdvdman #82' in log}
 
 
 def main():
