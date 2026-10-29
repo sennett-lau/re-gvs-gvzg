@@ -159,6 +159,14 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
             dispatch = '#include "code_variant.hpp"\n' + dispatch
             dispatch = prep.replace_once(dispatch, 'bool loaded_at(const ModuleInfo &m, std::uint32_t base) {',
                 'bool loaded_at(const ModuleInfo &m, std::uint32_t base) {\n    if (original_exec::dnas_module(&m) && !original_exec::protected_markers_valid()) return false;')
+            dispatch = prep.replace_once(dispatch,
+                '        if (ld32(base + m.checks[2 * k]) != m.checks[2 * k + 1]) return false;', '''        if (const auto actual = ld32(base + m.checks[2 * k]); actual != m.checks[2 * k + 1]) {
+            if (original_exec::dnas_module(&m))
+                original_exec::observe_identity_rejection("immutable-word", base + m.checks[2 * k], m.checks[2 * k + 1], actual);
+            return false;
+        }''')
+            dispatch = prep.replace_once(dispatch, '    return true;\n}\n\n// The word a call checks',
+                '    if (original_exec::dnas_module(&m)) original_exec::observe_nontext_change();\n    return true;\n}\n\n// The word a call checks')
             dispatch = prep.replace_once(dispatch, 'if (full || !i.module->fixed_base)',
                 'if (full || !i.module->fixed_base || original_exec::dnas_module(i.module))')
             dispatch = prep.replace_once(dispatch, 'const Instance *in_place(const Instance &i) {', '''const Instance *in_place(const Instance &i) {
@@ -170,7 +178,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
                          static_cast<unsigned long long>(checks), i.module->check_count);
     }''')
             dispatch = prep.replace_once(dispatch, '    const Instance *m = instance_for(pc);\n    const UnitInfo *mu',
-                '    const Instance *m = instance_for(pc);\n    if (m && original_exec::dnas_module(m->module) && original_exec::protected_range(pc)) return original_exec::has_variant_code(pc, m->module);\n    const UnitInfo *mu')
+                '    const Instance *m = instance_for(pc);\n    if (m && original_exec::dnas_module(m->module) && !original_exec::original_text_address(pc)) return false;\n    if (m && original_exec::dnas_module(m->module) && original_exec::protected_range(pc)) return original_exec::has_variant_code(pc, m->module);\n    const UnitInfo *mu')
             dispatch = prep.replace_once(dispatch, '            const std::uint32_t base = m->base;',
                 '            if (original_exec::dispatch_variant(c, pc, depth, m->module)) return;\n            const std::uint32_t base = m->base;')
             flush = '''void original_exec_flush_cache() {

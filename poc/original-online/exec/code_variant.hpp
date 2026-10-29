@@ -1,6 +1,7 @@
 #pragma once
 #include "code_guard.hpp"
 #include <algorithm>
+#include <utility>
 
 namespace original_exec {
 struct ProtectedRange {
@@ -12,13 +13,63 @@ struct ProtectedRange {
 };
 std::span<const ProtectedRange> protected_ranges(); // Private, verified exporter output.
 std::span<const std::uint32_t> protected_identity_checks();
+std::span<const std::uint32_t> excluded_nontext_checks();
+std::pair<std::uint32_t, std::uint32_t> protected_text_bounds();
 enum class CodeState { outside, encrypted, decoded, invalid };
+
+inline bool original_text_address(std::uint32_t address) {
+    const auto [begin, end] = protected_text_bounds();
+    return !(address & 3u) && begin < end && end <= ps2::kRamSize &&
+           address >= begin && address < end;
+}
+inline bool guard_text(ps2::Cpu& cpu, std::uint32_t pc) {
+    if (original_text_address(pc)) return true;
+    std::fprintf(stderr, "[original-exec-identity] nontext_execution pc=%08X ra=%08X\n", pc, cpu.r[31].w[0]);
+    ps2::halt("Original overlay execution outside declared text");
+    cpu.pc = pc | ps2::kUnwind;
+    return false;
+}
+inline bool guard_original_block(ps2::Cpu& cpu, std::uint32_t pc, std::span<const std::uint32_t> checks) {
+    for (std::size_t i = 0; i < checks.size(); i += 2)
+        if (!original_text_address(checks[i])) {
+            ps2::halt("Original translated block crosses declared text");
+            cpu.pc = pc | ps2::kUnwind;
+            return false;
+        }
+    return guard_block(cpu, pc, checks);
+}
+
+inline void observe_identity_rejection(const char* kind, std::uint32_t address,
+                                       std::uint32_t expected, std::uint32_t actual) {
+    static unsigned records = 0;
+    if (records++ < 16)
+        std::fprintf(stderr, "[original-exec-identity] rejected kind=%s address=%08X expected=%08X actual=%08X\n",
+                     kind, address, expected, actual);
+}
+
+inline void observe_nontext_change() {
+    static bool recorded = false;
+    if (recorded) return;
+    const auto checks = excluded_nontext_checks();
+    for (std::size_t i = 0; i + 1 < checks.size(); i += 2) {
+        if ((checks[i] & 3u) || checks[i] > ps2::kRamSize - 4) return;
+        std::uint32_t actual; std::memcpy(&actual, ps2::g_ram + checks[i], 4);
+        if (actual == checks[i + 1]) continue;
+        recorded = true;
+        std::fprintf(stderr, "[original-exec-identity] excluded_nontext_change address=%08X expected=%08X actual=%08X\n",
+                     checks[i], checks[i + 1], actual);
+        return;
+    }
+}
 
 inline bool protected_markers_valid() {
     for (const auto& range : protected_ranges()) {
         if ((range.marker & 3u) || range.marker > ps2::kRamSize - 4) return false;
         std::uint32_t marker; std::memcpy(&marker, ps2::g_ram + range.marker, 4);
-        if (marker && marker != range.marker) return false;
+        if (marker && marker != range.marker) {
+            observe_identity_rejection("marker-zero-or-self", range.marker, range.marker, marker);
+            return false;
+        }
     }
     return true;
 }
@@ -44,6 +95,7 @@ inline CodeState range_state(const ProtectedRange& range) {
     return CodeState::invalid;
 }
 inline CodeState guard_protected(ps2::Cpu& cpu, std::uint32_t pc) {
+    if (!guard_text(cpu, pc)) return CodeState::invalid;
     // Dispatch verifies the complete immutable image. Inline branches and
     // call returns also retain bounded immutable anchors plus the exact
     // instructions of the current block/range; they never rely on its name.
@@ -85,7 +137,9 @@ inline bool has_variant_code(std::uint32_t pc, const ps2::ModuleInfo* module) {
     return unit && unit->entries[(pc - unit->base) / 4] != 0;
 }
 inline bool dispatch_variant(ps2::Cpu& cpu, std::uint32_t pc, std::uint32_t depth, const ps2::ModuleInfo* module) {
-    if (!dnas_module(module) || !protected_range(pc)) return false;
+    if (!dnas_module(module)) return false;
+    if (!guard_text(cpu, pc)) return true;
+    if (!protected_range(pc)) return false;
     const auto state = guard_protected(cpu, pc);
     if (state == CodeState::invalid) return true;
     if (state != CodeState::decoded) return false;

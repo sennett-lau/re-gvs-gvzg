@@ -63,6 +63,8 @@ void run(ps2::Cpu& c) {
 namespace original_exec {
 std::span<const ProtectedRange> protected_ranges() { return ranges; }
 std::span<const std::uint32_t> protected_identity_checks() { return inline_identity; }
+std::span<const std::uint32_t> excluded_nontext_checks() { return {}; }
+std::pair<std::uint32_t, std::uint32_t> protected_text_bounds() { return {base + 0x40, base + 0x70F80}; }
 const ps2::ModuleInfo* overlay_modules(const ps2::ModuleInfo* source, std::uint32_t count) { assert(count == 2); return source; }
 }
 int main() {
@@ -86,6 +88,13 @@ int main() {
     c = fresh(); put(base + 0x100, 0); decoded_unit(c, 2, 0); // Inline return/loop re-entry without dispatcher.
     assert(!ps2::reason.empty() && continuations == 0 && c.r[2].w[0] == 0 && (c.pc & ps2::kUnwind));
     c = fresh(); put(marker, 123); run(c); assert(!ps2::reason.empty() && !variants);
+    c = fresh(); c.pc = base + 0x70F80; assert(!ps2::has_code(c.pc)); run(c);
+    assert(ps2::reason == "Original overlay execution outside declared text" && !variants && !originals);
+    c = fresh(); c.pc = base + 0x70F80; original_label(c, 1, 0);
+    assert(ps2::reason == "Original overlay execution outside declared text" && !variants);
+    c = fresh(); const std::uint32_t crossing[] = {base + 0x70F7C, 0, base + 0x70F80, 0};
+    assert(!original_exec::guard_original_block(c, base + 0x70F7C, crossing));
+    assert(ps2::reason == "Original translated block crosses declared text");
     c = fresh(); put(begin + 0xEC, begin + 0xEC); assert(original_exec::protected_markers_valid());
     put(begin + 0xEC, 1); assert(!original_exec::protected_markers_valid());
     c = fresh(); run(c); ps2::original_exec_flush_cache(); c.pc = begin; run(c);

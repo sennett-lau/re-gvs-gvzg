@@ -15,6 +15,25 @@ from overlay_prepare import ARTIFACT_SHA, NAME, PREFIX, one, sha
 BASE = 0x0117F000
 
 
+def text_bounds(data):
+    # MWo3 text_size excludes the 0x40-byte file header. The retained
+    # compiler's main.cpp uses the same section contract for code discovery.
+    if len(data) < 0x80 or data[:4] != b'MWo3':
+        raise ValueError('Original overlay lacks its MWo3 section header')
+    address, text_size, data_size = struct.unpack_from('<III', data, 8)
+    if address != BASE or not text_size or (text_size | data_size) & 3 or 0x40 + text_size + data_size != len(data):
+        raise ValueError('Invalid original MWo3 section bounds')
+    return 0x40, 0x40 + text_size
+
+
+def immutable_code_checks(data, pairs, ranges):
+    begin, end = text_bounds(data)
+    markers = {start - 0x14 for start, _ in ranges}
+    return [(offset, value) for offset, value in pairs
+            if begin <= offset < end and offset + BASE not in markers
+            and not any(start <= offset + BASE < stop for start, stop in ranges)]
+
+
 def inventory(data):
     if hashlib.sha256(data).hexdigest() != ARTIFACT_SHA:
         raise ValueError('Original artifact fingerprint mismatch')
@@ -150,6 +169,9 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
     for name, expected in manifest['files_sha256'].items():
         if Path(name).name != name or sha(bundle / name) != expected: raise ValueError('Guarded overlay bundle changed')
     data = artifact.read_bytes(); rows, ranges = inventory(data)
+    text_begin, text_end = text_bounds(data)
+    if any(not BASE + text_begin <= begin - 0x14 <= begin <= end <= BASE + text_end for begin, end in ranges):
+        raise ValueError('Protected code/marker outside original text')
     verified = {}
     for address, first, second in variants:
         begin = int(address, 16)
@@ -173,6 +195,7 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
             pc = int(match[1], 16); all_labels.add(pc)
             return match[0] + '\n    { const auto state = original_exec::guard_protected(c, 0x%08Xu); if (state == original_exec::CodeState::invalid) return; if (state == original_exec::CodeState::decoded) { c.pc = 0x%08Xu; [[clang::musttail]] return dispatch(c, 0u, depth); } }' % (pc, pc)
         text = re.sub(r'^L_([0-9A-F]{8}):$', protect, text, flags=re.M)
+        text = text.replace('original_exec::guard_block(', 'original_exec::guard_original_block(')
         path.write_text('#include "code_variant.hpp"\n' + text)
     for begin, end in ranges:
         encrypted = data[begin - BASE:end - BASE]
@@ -225,9 +248,9 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
     profile = (output / 'overlay_profile.cpp').read_text()
     check_match = one(r'const std::uint32_t ' + PREFIX + r'_checks\[\] = \{(.*?)\};', profile)
     values = [int(v, 16) for v in re.findall(r'0x([0-9A-F]+)u', check_match[1])]
-    markers = {begin - 0x14 for begin, _ in ranges}
     pairs = list(zip(values[::2], values[1::2]))
-    immutable = [(offset, value) for offset, value in pairs if offset + BASE not in markers and not any(begin <= offset + BASE < end for begin, end in ranges)]
+    immutable = immutable_code_checks(data, pairs, ranges)
+    mutable_data_checks = sum(not text_begin <= offset < text_end for offset, _ in pairs)
     nonzero = [pair for pair in immutable if pair[1]]
     if len(nonzero) < 32: raise ValueError('Insufficient immutable identity anchors')
     anchors = [nonzero[index * len(nonzero) // 32] for index in range(32)]
@@ -238,9 +261,13 @@ def prepare(bundle, artifact, compiler, variants, output, candidate_catalog=None
     range_code = '#include "units.hpp"\n#include "code_variant.hpp"\nnamespace original_exec {\n' + '\n'.join(declarations)
     range_code += '\nstatic const ProtectedRange ranges[] = {' + ',\n'.join(descriptors) + '};\nstd::span<const ProtectedRange> protected_ranges() { return ranges; }\n}\n'
     range_code += '\nnamespace original_exec {\nstatic const std::uint32_t identity_checks[] = {' + ','.join('0x%08Xu,0x%08Xu' % (offset + BASE, value) for offset, value in anchors) + '};\nstd::span<const std::uint32_t> protected_identity_checks() { return identity_checks; }\n}\n'
+    range_code += '\nnamespace original_exec { std::pair<std::uint32_t, std::uint32_t> protected_text_bounds() { return {0x%08Xu,0x%08Xu}; } }\n' % (BASE + text_begin, BASE + text_end)
+    nontext = [(offset + BASE, value) for offset, value in pairs if not text_begin <= offset < text_end]
+    range_code += '\nnamespace original_exec {\nstatic const std::uint32_t nontext_checks[] = {' + ','.join('0x%08Xu,0x%08Xu' % pair for pair in nontext) + '};\nstd::span<const std::uint32_t> excluded_nontext_checks() { return nontext_checks; }\n}\n'
     (output / 'protected_ranges.cpp').write_text(range_code)
     manifest.update(status='prepared-not-built', created_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
         variants=True, protected_ranges=len(ranges), transform_sites=len(rows), immutable_check_count=len(immutable),
+        immutable_text_offsets=[text_begin, text_end], excluded_nontext_checks=mutable_data_checks,
         moved_identity_checks=len(pairs)-len(immutable), live_variants=[p[1] for p in verified.values() if p[1]['runtime_status'].startswith('two-fresh')],
         inline_identity_anchors=[hex(offset + BASE) for offset, value in anchors],
         static_candidates=[p[1] for p in verified.values() if p[1]['runtime_status']=='unverified-static-candidate'], rejected_candidates=rejected,

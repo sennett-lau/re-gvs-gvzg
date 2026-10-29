@@ -1,8 +1,32 @@
 import json
 from pathlib import Path
 import tempfile
+import struct
 import unittest
-from variant_prepare import observations
+from variant_prepare import BASE, immutable_code_checks, observations, text_bounds
+
+
+class SectionIdentityTest(unittest.TestCase):
+    def image(self):
+        data = bytearray(0x140)
+        data[:4] = b'MWo3'
+        struct.pack_into('<III', data, 8, BASE, 0x80, 0x80)
+        return data
+
+    def test_header_text_and_mutable_data_are_separate(self):
+        data = self.image()
+        self.assertEqual(text_bounds(data), (0x40, 0xC0))
+        pairs = [(0x3C, 1), (0x40, 2), (0xBC, 3), (0xC0, 4), (0x13C, 5)]
+        self.assertEqual(immutable_code_checks(data, pairs, []), [(0x40, 2), (0xBC, 3)])
+
+    def test_marker_and_protected_bytes_stay_separately_guarded(self):
+        pairs = [(0x6C, 0), (0x7C, 1), (0x80, 2), (0x84, 3), (0x88, 4)]
+        self.assertEqual(immutable_code_checks(self.image(), pairs, [(BASE + 0x80, BASE + 0x88)]), [(0x7C, 1), (0x88, 4)])
+
+    def test_invalid_sections_fail_closed(self):
+        for offset, value in [(8, BASE + 4), (12, 0), (12, 0x81), (16, 0x84)]:
+            data = self.image(); struct.pack_into('<I', data, offset, value)
+            with self.assertRaises(ValueError): text_bounds(data)
 
 
 class ObservationTest(unittest.TestCase):
