@@ -3,21 +3,33 @@
 This directory contains an executable private backend, a browser byte transport,
 and an opt-in runtime adapter for the original AVETCP client. It does not use
 local-Versus mode4, controller replication, or a replacement session protocol.
-The original game has **not yet authenticated or reached a lobby or battle**
-through this candidate.
-Actual game captures show original module/device discovery, an Ethernet DHCP
-handshake and accepted lease, and guarded execution of original DNAS code.
-Capture17 reaches a DNS gateway exchange, original DNS callbacks and a real host
-TCP handshake to the private DNAS service after the shared-hostname decoder fix.
-It sends no TLS bytes in the retained observation. Its completion stub was
-allocated below the AVETCP module, where an early address check prevented the
-guarded connection-state update. The adapter now admits its exact owned stub
-addresses regardless of that allocation order; the native regression covers both
-layouts. An original-client rerun must establish the corrected completion and
-subsequent DNAS authentication, account login, lobby and battle.
-Backend protocol tests, a real threaded WASM bridge test, and selected original
-IRX instruction tests cover different boundaries; none establishes two game
-instances reaching a lobby or battle.
+Two independent original mode7 clients have reached an **active battle**
+through this candidate, as two browser instances on one PC. Neither client used a
+synthetic protocol client or mode4. The backend logs show this path:
+
+1. DNAS `i-connect` and `others` requests.
+2. The original browser's `GET /00000020/CRS-top.jsp`.
+3. Account registration, then `POST /00000020/login`.
+4. A lobby key-pair that matches each account's session.
+5. Pilot creation, then auto-start in lobby 02 (エゥーゴ against ティターンズ).
+6. Both clients joining the same central TCP battle relay.
+
+Round completion, results posting, return to the room, deliberate disconnects
+and reconnects have not been tested yet. Two physical devices have not been
+tested either.
+
+The login request appeared only after a runtime fix: an EE thread whose entry
+function returns now ends as `ExitThread`. Before the fix, the libhttp open worker
+stayed runnable at the idle address and starved its equal-priority supervisor.
+Missing cross-image dispatch entries were also added: browser.bin zlib and two
+functions in the post-registration state machine, plus the core zlib
+allocator thunks. Both changes are exec-owned opt-in profiles.
+
+Earlier captures reached module/device discovery, Ethernet DHCP, DNS and the
+DNAS TCP connection. The shared-hostname decoder fix and the completion-stub
+address fix described below enabled those steps. Backend protocol tests, the
+threaded WASM bridge test and the original IRX instruction tests each cover a
+separate boundary.
 
 ## Intended service path
 
