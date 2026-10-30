@@ -154,6 +154,18 @@ class Client {
     if(command&&Number.isSafeInteger(command.id)&&command.id>lastId) {
       lastId=command.id;mark('operator-command',{command});
       if(command.action==='finish'){finished=true;break;}
+      if(command.action==='export-card') {
+        // Read-only copy of the running document's current card file; it is
+        // not a durable checkpoint and never writes guest or browser storage.
+        const client=clients.find(c=>c.label===command.client);
+        if(client&&(await client.state()).state==='running') {
+          const encoded=await client.frame().evaluate(()=>{const data=Module.FS.readFile('/memcard/Mcd001.ps2');let text='';
+            for(let i=0;i<data.length;i+=0x8000)text+=String.fromCharCode.apply(null,data.subarray(i,i+0x8000));return btoa(text);});
+          const bytes=Buffer.from(encoded,'base64'),name=client.label+'-card-'+lastId+'.ps2';fs.writeFileSync(path.join(out,name),bytes);
+          mark('card-export',{client:client.label,file:name,bytes:bytes.length,sha256:digest(bytes),scope:'running MEMFS card, not a durable checkpoint'});
+        }else mark('operator-rejected',{reason:'Card export requires a running client'});
+        write('operator-ack',{id:lastId});continue;
+      }
       const client=clients.find(c=>c.label===command.client),current=client?await client.state():null;
       if(command.action==='press'&&client&&['KeyX','KeyZ','Enter','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(command.code)&&
          command.image===current.image&&command.generation===current.generation&&
