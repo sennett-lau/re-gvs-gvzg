@@ -9,6 +9,9 @@ const base = new URL(process.argv[2]), out = path.resolve(process.argv[3]);
 const count = Number(process.env.PROBE_CLIENTS || 1), operatorMs = Number(process.env.PROBE_OPERATOR_MS || 600000);
 const watch = process.env.PROBE_WATCH || null;
 const retainStates = process.env.PROBE_RETAIN_STATES === '1';
+// Explicit: keep running after the observer's trace cap; the loss stays recorded.
+const traceContinue = process.env.PROBE_TRACE_CAP_CONTINUE === '1';
+if(process.env.PROBE_TRACE_CAP_CONTINUE && !traceContinue)throw Error('PROBE_TRACE_CAP_CONTINUE must be 1 or absent');
 if(process.env.PROBE_RETAIN_STATES && !retainStates)throw Error('PROBE_RETAIN_STATES must be 1 or absent');
 if (watch) {
   const match = /^([0-9a-fA-F]+),([0-9a-fA-F]+)$/.exec(watch);
@@ -17,10 +20,18 @@ if (watch) {
       bytes < 4 || bytes > 256 || address + bytes > 0x2000000) throw Error('Invalid bounded guest code watch');
 }
 if (!['127.0.0.1','localhost'].includes(base.hostname) || fs.existsSync(out)) throw Error('Loopback URL and fresh output required');
-if (![1,2].includes(count) || !Number.isSafeInteger(operatorMs) || operatorMs < 1000 || operatorMs > 600000) throw Error('Invalid probe bounds');
+if (![1,2].includes(count) || !Number.isSafeInteger(operatorMs) || operatorMs < 1000 || operatorMs > 1800000) throw Error('Invalid probe bounds');
 const fixturePath = process.env.PROBE_CARD_FIXTURE, expected = process.env.PROBE_CARD_SHA256;
 const digest = bytes => createHash('sha256').update(bytes).digest('hex'), fixture = fs.readFileSync(fixturePath);
 if (fixture.length !== 8650752 || digest(fixture) !== expected) throw Error('Exact original saved-card fingerprint required');
+// Client B may use its own fingerprinted card; otherwise every client imports the same fixture.
+const fixtures = {A:{path:fixturePath,sha256:expected}};
+if (process.env.PROBE_CARD_FIXTURE_B) {
+  const bytes = fs.readFileSync(process.env.PROBE_CARD_FIXTURE_B);
+  if (bytes.length !== 8650752 || digest(bytes) !== process.env.PROBE_CARD_SHA256_B) throw Error('Exact client B card fingerprint required');
+  fixtures.B = {path:process.env.PROBE_CARD_FIXTURE_B,sha256:process.env.PROBE_CARD_SHA256_B};
+}
+const fixtureFor = label => fixtures[label] || fixtures.A;
 const config = parseConfig(fs.readFileSync(process.env.PROBE_NETWORK_CONFIG,'utf8'));
 const gateway = new URL(config.gatewayURL);
 if (gateway.protocol !== 'ws:' || gateway.hostname !== '127.0.0.1' || gateway.pathname !== '/' || gateway.search || gateway.hash ||
@@ -48,7 +59,7 @@ class Client {
     }
     return {label:this.label,...current,sample,lastState:this.lastState,errors:this.errors,blocked:this.blocked,traceLost:this.traceLost,sockets:this.sockets,stateRetentionLimited:this.retention?.limited||false};
   }
-  async healthy() {const s=await this.state();if(this.errors.length||this.traceLost||s.state==='failed')throw Error(this.label+': original/browser failure or trace loss');return s;}
+  async healthy() {const s=await this.state();if(this.errors.length||(this.traceLost&&!traceContinue)||s.state==='failed')throw Error(this.label+': original/browser failure or trace loss');return s;}
   async until(predicate,description,timeout=90000) {
     const deadline=performance.now()+timeout;
     while(!(await predicate())) {await this.healthy();if(performance.now()>deadline)throw Error(this.label+': timed out '+description);await sleep(100);}
@@ -73,7 +84,7 @@ class Client {
     await sleep(300);await this.capture(name+'-before');
   }
   async enterSettingsMenu() {
-    await this.page.goto(base.href);await this.page.locator('#card').setInputFiles(fixturePath);await this.page.locator('#sha').fill(expected);await this.page.locator('#start').click();
+    await this.page.goto(base.href);const card=fixtureFor(this.label);await this.page.locator('#card').setInputFiles(card.path);await this.page.locator('#sha').fill(card.sha256);await this.page.locator('#start').click();
     await this.until(async()=>(await this.state()).state==='running','game host',180000);
     await this.until(async()=>{const s=(await this.snapshot()).sample?.scene;return s?.mode===1||(s?.mode===0&&s.state===2&&s.stage===3);},'normal boot');
     for(let i=0;i<30&&(await this.snapshot()).sample?.scene?.mode!==1;i++){await this.press('ArrowLeft');await this.press('KeyX');await sleep(1500);}
@@ -96,7 +107,7 @@ class Client {
   if(!build.modules?.game?.network_enabled||build.modules.utility.network_enabled)throw Error('Expected game-only native network adapter');
   fs.writeFileSync(path.join(out,'build-info.json'),buildText);
   write('run',{started_utc:new Date().toISOString(),scope:'Original mode7 with independent contexts and private byte transport',
-    clients:count,fixture_sha256:expected,fixture_bytes:fixture.length,build_info_sha256:digest(buildText),harness_sha256:digest(fs.readFileSync(__filename)),
+    clients:count,fixture_sha256:expected,fixtures_sha256:Object.fromEntries(Object.entries(fixtures).map(([k,v])=>[k,v.sha256])),trace_cap_continue:traceContinue,fixture_bytes:fixture.length,build_info_sha256:digest(buildText),harness_sha256:digest(fs.readFileSync(__filename)),
     muted:true,audioSuspendedForTiming:false,gateway_origin:gateway.origin,operatorMs,watch,retainStates,
     stateRetention:retainStates?{limit:96,retention_sha256:digest(fs.readFileSync(require.resolve('./probe-retention.cjs'))),
       sampling:'Periodic screenshots followed by a read-only snapshot; intermediate transitions may be missed, timestamps are retained.'}:null,
@@ -128,7 +139,7 @@ class Client {
     page.on('console',message=>{
       const text=scrub(message.text());fs.appendFileSync(path.join(out,client.label+'-console.jsonl'),JSON.stringify({utc:new Date().toISOString(),text})+'\n');
       if(text.startsWith('[original-online] ')) {
-        try{const record=JSON.parse(text.slice(18));if(record.event==='trace_cap'||record.dropped>0||record.boot_dropped>0)client.traceLost=true;
+        try{const record=JSON.parse(text.slice(18));if((record.event==='trace_cap'||record.dropped>0||record.boot_dropped>0)&&!client.traceLost){client.traceLost=true;if(traceContinue)mark('trace-cap-continue',{client:client.label,record});}
           if(record.state!==undefined&&record.substate!==undefined)client.lastState=record;
         }catch(error){client.errors.push('Original observer record parse failed: '+String(error));}
       }
