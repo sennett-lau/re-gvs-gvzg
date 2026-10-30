@@ -5,8 +5,8 @@
 > **At a glance**
 >
 > - **Question:** Can two independent game instances use the original 通信対戦 lifecycle?
-> - **Result:** The experimental lockstep POC synchronized local Versus through checkpoint 13,560. Original mode `7` reaches its settings handoff; a separate utility boot reaches unsupported card-file access.
-> - **Still open:** A working original network connection and battle. Lockstep results do not establish Online Mode.
+> - **Result:** The experimental lockstep POC synchronized local Versus through checkpoint 13,560. Separately, two original mode `7` clients registered, logged in, met in the same lobby and entered an active battle through a private compatible backend.
+> - **Still open:** A complete match to the result screen, return to the lobby, reconnect checks and separate devices. Lockstep results do not establish Online Mode.
 
 **🟡 Partially verified · Experimental local-Versus lockstep.** The retained POC runs a copy on each device and exchanges inputs and state checks. It has no video stream. Its normal-boot results preserve useful transport evidence.
 
@@ -130,7 +130,7 @@ These are separate implementations with different acceptance criteria:
 | Integration option | Work needed | Current status |
 | --- | --- | --- |
 | Experimental lockstep POC | Agree on settings, then synchronize local Versus | Normal boot, selection and battle tested. Does not implement Online Mode. |
-| Original Online Mode | Preserve mode `7` and bridge its native network/session requests | Native RPC boundary mapped; separate utility reaches card-file failure. In-game handoff and online connection remain unsupported. |
+| Original Online Mode | Preserve mode `7` and bridge its native network/session requests | Two clients on one PC reached an active battle through a private backend. Opt-in runtime corrections; full match and separate devices remain. |
 
 An Online Mode invitation should identify its server and room. Browser invitation handling alone cannot replace the native session lifecycle.
 
@@ -187,6 +187,20 @@ Existing game saves use the serial card device. They do not establish a host fil
 
 The next bounded step is to observe the original card driver's registration, operation table and real completion/error values. A faithful adapter must preserve scheduling and all write paths, then demonstrate close, flush and fresh-process readback on a disposable card clone. The current nested guest-callback helper suppresses normal scheduling, so it cannot simply be assumed safe for blocking card operations. Utility rendering, executable replacement, DEV9/SMAP and the original network session remain separate gaps.
 
+### Two original clients reach a private-backend battle
+
+**Measured · Original mode `7`, two browser contexts on one PC.** Both clients ran the original game in separate Chrome contexts with separate card copies and muted output. A private compatible backend supplied DNAS, login, lobby and battle services over loopback. Ordinary pad input reached an active two-human battle. This is not a cross-device test or a completed match.
+
+Three runtime gaps blocked this path, in order:
+
+1. **A returned thread never left the scheduler.** After the third TLS handshake, the game showed NOW LOADING and sent no HTTP request. A bounded, read-only wait snapshot found the cause. The browser library's worker thread had returned from its entry function. The pinned runtime gives each thread `kIdle` as its return address, so the finished thread stayed current and running. Its equal-priority supervisor stayed ready and never ran. The PS2 kernel ends such a thread as `ExitThread`. An opt-in correction routes this case through the runtime's existing `ExitThread` path. The login request followed immediately.
+2. **Direct calls crossed executable images.** The main executable calls four functions inside the original browser overlay directly, including zlib `inflateInit_` and `inflate`. The browser overlay also calls two allocator thunks in the main executable through registers. Neither translation had dispatch entries for these targets. Two of the browser targets are entries only in another overlay that uses the same address range. Coverage therefore has to be checked for each image separately. Added entries reproduce the retained translation and add only check words for the new functions.
+3. **The lobby map needed the full pad.** The original map pointer and space-map switch need held direction input and the shoulder buttons. The test document now maps every ordinary pad button and the left analog stick.
+
+The successful run used two cards registered earlier through the original top page. Each client used its saved connection, passed DNAS, logged in and selected its server-issued pilot. Both entered the same battlefield, whose server description reads `Lobby 02`; its header showed two players. One client chose 連邦・エゥーゴ and the other ジオン・ティターンズ. The backend paired them, and both clients switched from the lobby session to the battle relay. Both showed the original VS screen, sortie preparation and briefing, then an active battle at ソロモン. One client showed full armor while targeting the other side's CPU partner. The other showed damage and the message that the opposing CPU unit was destroyed.
+
+Both games kept running with active audio consumption and no reported page or runtime error. The bounded observer reached its record cap earlier in the run, so the trace is not complete. The result rests on screenshots, card fingerprints, socket counts and backend logs. All corrections are opt-in profiles; the default game build is unchanged. The returned-thread and cross-image entry gaps are candidates for the upstream runtime and recompiler. Private captures, cards and build fingerprints remain under `.local/`.
+
 ## What Co-op Anything contributes
 
 The pinned [Co-op Anything review target](https://github.com/cranebeaker/coop-anything/tree/5b86e5bb10ce864ab9872f2589651f73ffcae5db) supplied development guidance and candidate testing utilities, not a Gundam multiplayer adapter. It was inspected, not installed or executed. Its trace, pose-comparison and impairment-testing ideas could help diagnose divergence. Native bridge and PC-engine detection tools need adaptation for this PS2/browser target.
@@ -197,4 +211,4 @@ Rendering interpolation is useful observability, but positions alone are not a r
 
 Carry the next briefing into a second battle with matching checkpoints, then test cancellation and session restart. Repeat on separate devices, delayed networks and an actual phone. The current normal-boot profile already excludes personal memory cards and agrees on the initial settings. Session interruption stops safely; in-match resynchronization remains future work.
 
-Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. For Online Mode, resolve the observed native card-file boundary and verify original configuration persistence. Then resolve the measured executable handoff and capture the next native network boundary. Preserve the original lobby and battle synchronization throughout. A successful login alone will not establish playable Online Mode.
+Keep adaptive presentation separate until it preserves canonical checkpoints with different render rates and both split-screen cameras. For Online Mode, play a match to the result screen and the return to the lobby. Then test a deliberate disconnect, a fresh reconnect and two separate devices. Keep the original lobby and battle synchronization throughout.
