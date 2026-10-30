@@ -167,10 +167,12 @@ def compose_disc_model(image, source, path):
     return manifest, inputs
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False, browser_path=None, core_entry_path=None):
     if image != 'game' and trace_budget is not None: raise ValueError('Observer budget is game-only')
     if image != 'game' and wait_snapshot: raise ValueError('Wait snapshot is game-only')
     if image != 'game' and thread_return_exit: raise ValueError('Thread-return exit is game-only')
+    if browser_path and (image != 'game' or not overlay_path): raise ValueError('Browser entry profile is game-only and requires the overlay profile')
+    if core_entry_path and image != 'game': raise ValueError('Core entry profile is game-only')
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
     if device_segment and not device_path: raise ValueError('Device segment requires an explicit device preparer')
@@ -226,6 +228,25 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         if overlay_manifest.get('artifact_sha256') != module('exec_overlay_preparer', HERE / 'overlay_prepare.py').ARTIFACT_SHA:
             raise ValueError('Unsupported original overlay fingerprint')
         require_overlay_coverage(overlay_manifest)
+    browser_manifest = None
+    if browser_path:
+        browser_manifest = json.loads((browser_path / 'manifest.json').read_text())
+        browser_preparer = module('exec_browser_preparer', HERE / 'browser_entry_prepare.py')
+        if browser_manifest.get('profile') != browser_preparer.PROFILE or browser_manifest.get('artifact_sha256') != browser_preparer.ARTIFACT_SHA:
+            raise ValueError('Unsupported original browser overlay profile')
+        for name, expected in browser_manifest['files_sha256'].items():
+            if Path(name).name != name or digest(browser_path / name) != expected:
+                raise ValueError('Original browser overlay bundle changed: ' + name)
+    core_entry_manifest = None
+    if core_entry_path:
+        core_entry_manifest = json.loads((core_entry_path / 'manifest.json').read_text())
+        core_preparer = module('exec_core_entry_preparer', HERE / 'core_entry_prepare.py')
+        if core_entry_manifest.get('profile') != core_preparer.PROFILE or core_entry_manifest.get('retained_sha256') != core_preparer.RETAINED_SHA:
+            raise ValueError('Unsupported original core entry profile')
+        for name, expected in core_entry_manifest['files_sha256'].items():
+            if Path(name).name != name or digest(core_entry_path / name) != expected:
+                raise ValueError('Original core entry bundle changed: ' + name)
+    if overlay_manifest:
         for name, expected in overlay_manifest['files_sha256'].items():
             if Path(name).name != name or digest(overlay_path / name) != expected:
                 raise ValueError('Original overlay bundle changed: ' + name)
@@ -233,7 +254,12 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         dispatch = '#include "dispatch_observer.hpp"\n' + dispatch_path.read_text()
         dispatch = prep.replace_once(dispatch, 'namespace ps2 {',
             'namespace original_exec { const ps2::ModuleInfo* overlay_modules(const ps2::ModuleInfo*, std::uint32_t); }\nnamespace ps2 {')
-        dispatch = prep.replace_once(dispatch, '    g_modules = modules;', '    g_modules = original_exec::overlay_modules(modules, count);')
+        modules_expression = 'original_exec::overlay_modules(modules, count)'
+        if browser_manifest:
+            dispatch = prep.replace_once(dispatch, 'namespace ps2 {',
+                'namespace original_exec { const ps2::ModuleInfo* browser_overlay_modules(const ps2::ModuleInfo*, std::uint32_t); }\nnamespace ps2 {')
+            modules_expression = 'original_exec::browser_overlay_modules(' + modules_expression + ', count)'
+        dispatch = prep.replace_once(dispatch, '    g_modules = modules;', '    g_modules = ' + modules_expression + ';')
         dispatch = prep.replace_once(dispatch, '            if (entry) {\n                c.base = base;',
             '            original_exec::observe_dispatch(c, pc, m->module, entry);\n            if (entry) {\n                c.base = base;')
         dispatch = prep.replace_once(dispatch, '        record_miss(pc);',
@@ -321,6 +347,17 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
             if Path(name).name != name or name not in overlay_manifest['files_sha256']:
                 raise ValueError('Invalid overlay source path')
             sources.append(overlay_path / name)
+    if core_entry_manifest:
+        # The amended unit is linked before the archive, so its retained member is not used.
+        for name in core_entry_manifest['compiled_sources']:
+            if Path(name).name != name or name not in core_entry_manifest['files_sha256']:
+                raise ValueError('Invalid core entry source path')
+            sources.append(core_entry_path / name)
+    if browser_manifest:
+        for name in browser_manifest['compiled_sources']:
+            if Path(name).name != name or name not in browser_manifest['files_sha256']:
+                raise ValueError('Invalid browser overlay source path')
+            sources.append(browser_path / name)
     if image == 'utility' and composed_names:
         retained = utility_objects(base, info, REPLACED | {'upstream/' + name for name in composed_names})
     retained_hashes = {str(path): digest(path) for path in retained}
@@ -384,7 +421,9 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         'disc_model': disc_model_manifest, 'disc_model_inputs_sha256': disc_model_inputs,
         'wait_snapshot': wait_manifest, 'thread_return_exit': thread_exit_manifest,
         'wait_snapshot_inputs_sha256': {str(HERE / name): value for name, value in wait_manifest['inputs_sha256'].items()} if wait_manifest else {},
-        'overlay': overlay_manifest,
+        'overlay': overlay_manifest, 'browser_overlay': browser_manifest, 'core_entries': core_entry_manifest,
+        'core_entry_inputs_sha256': {str(core_entry_path / name): value for name, value in core_entry_manifest['files_sha256'].items()} if core_entry_manifest else {},
+        'browser_overlay_inputs_sha256': {str(browser_path / name): value for name, value in browser_manifest['files_sha256'].items()} if browser_manifest else {},
         'overlay_inputs_sha256': {str(overlay_path / name): value for name, value in overlay_manifest['files_sha256'].items()} if overlay_manifest else {},
         'network_preparation_sha256': network_hash if network_path else None,
         'network': network_manifest, 'network_js_sha256': network_js_hashes,
@@ -404,6 +443,8 @@ def main():
     parser.add_argument('--observer-trace-budget', type=int, help='Explicit game diagnostic log limit, 16384..131072; default observer stays unchanged')
     parser.add_argument('--wait-snapshot', action='store_true', help='Explicit game-only read-only EE/IOP wait records after original state 39; off by default')
     parser.add_argument('--thread-return-exit', action='store_true', help='Explicit game-only ExitThread for an EE thread whose entry returns; off by default')
+    parser.add_argument('--browser-entry-profile', type=Path, help='Explicit exact original browser.bin direct-call entry bundle; game-only, requires --overlay-profile')
+    parser.add_argument('--core-entry-profile', type=Path, help='Explicit amended retained core unit with original entries reached from browser.bin; game-only')
     parser.add_argument('--network-prepare', type=Path, help='Explicitly compose the network-owned game runtime adapter; off by default')
     parser.add_argument('--device-prepare', type=Path, help='Explicitly compose the device-owned DEV9/SMAP slice after storage; off by default')
     parser.add_argument('--device-segment', action='store_true', help='Explicitly enable the device owner\'s local ARP/DHCP segment; requires --device-prepare')
@@ -415,7 +456,7 @@ def main():
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit, args.browser_entry_profile.resolve() if args.browser_entry_profile else None, args.core_entry_profile.resolve() if args.core_entry_profile else None)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -435,7 +476,7 @@ def main():
         for command in manifest['commands']:
             manifest['active_command'] = command
             subprocess.run(command, env=env, check=True)
-        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'observer_headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256', 'cdvd_identity_inputs_sha256', 'disc_model_inputs_sha256', 'wait_snapshot_inputs_sha256']:
+        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'observer_headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256', 'cdvd_identity_inputs_sha256', 'disc_model_inputs_sha256', 'wait_snapshot_inputs_sha256', 'browser_overlay_inputs_sha256', 'core_entry_inputs_sha256']:
             verify_hashes(manifest[category])
         manifest['status'] = 'built-not-runtime-tested'
         manifest['outputs_sha256'] = {path.relative_to(work / 'web').as_posix(): digest(path) for path in (work / 'web').rglob('*') if path.is_file()}
