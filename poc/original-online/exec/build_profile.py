@@ -167,9 +167,10 @@ def compose_disc_model(image, source, path):
     return manifest, inputs
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False):
     if image != 'game' and trace_budget is not None: raise ValueError('Observer budget is game-only')
     if image != 'game' and wait_snapshot: raise ValueError('Wait snapshot is game-only')
+    if image != 'game' and thread_return_exit: raise ValueError('Thread-return exit is game-only')
     if work.exists(): raise ValueError('Use a new work directory')
     if network_path and image != 'game': raise ValueError('Network composition is game-only; utility remains original')
     if device_segment and not device_path: raise ValueError('Device segment requires an explicit device preparer')
@@ -287,6 +288,12 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         kernel_text = 'namespace ps2 { void original_exec_flush_cache(); }\n' + kernel_text
         kernel_text = prep.replace_once(kernel_text, 'case 0x64: case 0x68: ret(c, 0); break;',
             'case 0x64: case 0x68: original_exec_flush_cache(); ret(c, 0); break;')
+    thread_exit_manifest = None
+    if thread_return_exit:
+        exits = module('exec_thread_exit', HERE / 'thread_exit_prepare.py')
+        before = kernel_text
+        kernel_text = exits.prepare_kernel(kernel_text)
+        thread_exit_manifest = exits.manifest(before, kernel_text)
     wait_manifest = None
     if waits:
         before = kernel_text
@@ -375,7 +382,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         'resident_module_lookup': discovery_manifest,
         'cdvd_identity': cdvd_identity_manifest, 'cdvd_identity_inputs_sha256': cdvd_identity_inputs,
         'disc_model': disc_model_manifest, 'disc_model_inputs_sha256': disc_model_inputs,
-        'wait_snapshot': wait_manifest,
+        'wait_snapshot': wait_manifest, 'thread_return_exit': thread_exit_manifest,
         'wait_snapshot_inputs_sha256': {str(HERE / name): value for name, value in wait_manifest['inputs_sha256'].items()} if wait_manifest else {},
         'overlay': overlay_manifest,
         'overlay_inputs_sha256': {str(overlay_path / name): value for name, value in overlay_manifest['files_sha256'].items()} if overlay_manifest else {},
@@ -396,6 +403,7 @@ def main():
     parser.add_argument('--prepare-only', action='store_true', help='Prepare sources and exact command plan; never run compiler or game')
     parser.add_argument('--observer-trace-budget', type=int, help='Explicit game diagnostic log limit, 16384..131072; default observer stays unchanged')
     parser.add_argument('--wait-snapshot', action='store_true', help='Explicit game-only read-only EE/IOP wait records after original state 39; off by default')
+    parser.add_argument('--thread-return-exit', action='store_true', help='Explicit game-only ExitThread for an EE thread whose entry returns; off by default')
     parser.add_argument('--network-prepare', type=Path, help='Explicitly compose the network-owned game runtime adapter; off by default')
     parser.add_argument('--device-prepare', type=Path, help='Explicitly compose the device-owned DEV9/SMAP slice after storage; off by default')
     parser.add_argument('--device-segment', action='store_true', help='Explicitly enable the device owner\'s local ARP/DHCP segment; requires --device-prepare')
@@ -407,7 +415,7 @@ def main():
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
