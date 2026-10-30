@@ -11,6 +11,9 @@ const watch = process.env.PROBE_WATCH || null;
 const retainStates = process.env.PROBE_RETAIN_STATES === '1';
 // Explicit: keep running after the observer's trace cap; the loss stays recorded.
 const traceContinue = process.env.PROBE_TRACE_CAP_CONTINUE === '1';
+// A card with a saved login offers the original 'same connection as last time' item; stop there for the operator.
+const savedRoute = process.env.PROBE_ROUTE === 'saved-connection';
+if(process.env.PROBE_ROUTE && !savedRoute)throw Error('PROBE_ROUTE must be saved-connection or absent');
 if(process.env.PROBE_TRACE_CAP_CONTINUE && !traceContinue)throw Error('PROBE_TRACE_CAP_CONTINUE must be 1 or absent');
 if(process.env.PROBE_RETAIN_STATES && !retainStates)throw Error('PROBE_RETAIN_STATES must be 1 or absent');
 if (watch) {
@@ -95,7 +98,8 @@ class Client {
     await this.until(()=>this.lastState?.state===1&&this.lastState.substate===1&&this.lastState.timer6<=0,'original mode7 confirm');
     await this.capture('mode7-confirm');await this.press('KeyX');
     for(const [word,name] of [[1026,'load-net'],[67330,'load-slot1'],[198402,'load-confirm'],[524803,'broadband'],[516,'network-connection'],[517,'connection-notice']]){
-      await this.prompt(word,name);if(name==='connection-notice')await this.press('ArrowUp');await this.press('KeyX');await sleep(1500);
+      await this.prompt(word,name);if(savedRoute&&name==='broadband')return;
+      if(name==='connection-notice')await this.press('ArrowUp');await this.press('KeyX');await sleep(1500);
     }
     await this.prompt(518,'settings-menu'); // Selection of an actual saved setting is operator-led.
   }
@@ -107,7 +111,7 @@ class Client {
   if(!build.modules?.game?.network_enabled||build.modules.utility.network_enabled)throw Error('Expected game-only native network adapter');
   fs.writeFileSync(path.join(out,'build-info.json'),buildText);
   write('run',{started_utc:new Date().toISOString(),scope:'Original mode7 with independent contexts and private byte transport',
-    clients:count,fixture_sha256:expected,fixtures_sha256:Object.fromEntries(Object.entries(fixtures).map(([k,v])=>[k,v.sha256])),trace_cap_continue:traceContinue,fixture_bytes:fixture.length,build_info_sha256:digest(buildText),harness_sha256:digest(fs.readFileSync(__filename)),
+    clients:count,route:savedRoute?'saved-connection':'settings-menu',fixture_sha256:expected,fixtures_sha256:Object.fromEntries(Object.entries(fixtures).map(([k,v])=>[k,v.sha256])),trace_cap_continue:traceContinue,fixture_bytes:fixture.length,build_info_sha256:digest(buildText),harness_sha256:digest(fs.readFileSync(__filename)),
     muted:true,audioSuspendedForTiming:false,gateway_origin:gateway.origin,operatorMs,watch,retainStates,
     stateRetention:retainStates?{limit:96,retention_sha256:digest(fs.readFileSync(require.resolve('./probe-retention.cjs'))),
       sampling:'Periodic screenshots followed by a read-only snapshot; intermediate transitions may be missed, timestamps are retained.'}:null,
