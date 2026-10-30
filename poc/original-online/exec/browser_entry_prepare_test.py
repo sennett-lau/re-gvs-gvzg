@@ -13,7 +13,7 @@ browser = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(browser)
 P = browser.PREFIX
 OLD = {0x80: 0x27BDFFE0, 0x84: 0xFFBF0010}
-NEW = {**OLD, 0x2F360: 0x00A0102D, 0x2F364: 0x00C0382D, 0x2F380: 0x27BDFFC0, 0x2F384: 0xFFBF0030}
+NEW = {**OLD, 0x2F360: 0x00A0102D, 0x2F364: 0x00C0382D, 0x2F380: 0x27BDFFC0, 0x2F384: 0xFFBF0030, 0x30870: 0x24030004, 0x30880: 0x03E00008}
 
 # Synthetic stand-ins for the private generated tree, image and main executable.
 NATIVE = r'''#include "units.hpp"
@@ -38,7 +38,7 @@ int main(int argc, char **) {
     try {
         const ps2::ModuleInfo *result = original_exec::browser_overlay_modules(source, 3);
         assert(result[0].checks == dnas && result[0].units == units && result[2].units == units);
-        assert(!std::strcmp(result[1].name, "%(n)s") && result[1].check_count == 6 && result[1].units != units);
+        assert(!std::strcmp(result[1].name, "%(n)s") && result[1].check_count == 8 && result[1].units != units);
         assert(result[1].checks[4] == 0x2F360 && result[1].units[0].function == gen::%(p)s_unit_0000);
         assert(source[1].checks == old_checks);
         std::puts("replaced");
@@ -55,17 +55,17 @@ def table(checks):
 
 
 def elf(words):
-    data = bytearray(0x4100)
+    data = bytearray(0x60100)
     data[:4] = b'\x7fELF'
     struct.pack_into('<I', data, 0x1C, 0x34)
     struct.pack_into('<HH', data, 0x2A, 32, 1)
-    struct.pack_into('<8I', data, 0x34, 1, 0x100, 0x00327000, 0x00327000, 0x4000, 0x4000, 5, 0x10)
+    struct.pack_into('<8I', data, 0x34, 1, 0x100, 0x00327000, 0x00327000, 0x60000, 0x60000, 5, 0x10)
     for address, word in words.items(): struct.pack_into('<I', data, 0x100 + address - 0x00327000, word)
     return bytes(data)
 
 
 class BrowserEntryPrepareTest(unittest.TestCase):
-    def fixture(self, root, regenerated_checks=NEW, calls=None, entries=('2f360', '2f380'), cases=(0x011AE360, 0x011AE380)):
+    def fixture(self, root, regenerated_checks=NEW, calls=None, entries=('2f360', '2f380', '30870', '30880'), cases=(0x011AE360, 0x011AE380, 0x011AF870, 0x011AF880)):
         base, regen = root / 'baseline', root / 'regenerated'
         base.mkdir(); regen.mkdir()
         (base / 'table.cpp').write_text(table(OLD)); (base / 'units.hpp').write_text('// units\n')
@@ -84,7 +84,7 @@ class BrowserEntryPrepareTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp); args, expected = self.fixture(root)
             manifest = browser.prepare(*args, expected=expected)
-            self.assertEqual(manifest['added_check_offsets'], [0x2F360, 0x2F364, 0x2F380, 0x2F384])
+            self.assertEqual(manifest['added_check_offsets'], [0x2F360, 0x2F364, 0x2F380, 0x2F384, 0x30870, 0x30880])
             self.assertEqual(manifest['compiled_sources'], ['browser_profile.cpp', f'{P}_unit_0000.cpp'])
             out = root / 'out'
             self.assertEqual(json.loads((out / 'manifest.json').read_text())['files_sha256'],
@@ -101,12 +101,12 @@ class BrowserEntryPrepareTest(unittest.TestCase):
 
     def test_fail_closed_cases(self):
         cases = [
-            ({'calls': {0x0032A670: 0x0C000000, 0x00327FB0: 0x0C46B8E0}}, 'call site changed'),
-            ({'entries': ('2f360',)}, 'missing from regeneration entries'),
+            ({'calls': {0x0032A670: 0x0C000000, 0x00327FB0: 0x0C46B8E0, 0x00383418: 0x0C46BE1C, 0x0038347C: 0x0C46BE20}}, 'call site changed'),
+            ({'entries': ('2f360', '2f380', '30870')}, 'missing from regeneration entries'),
             ({'regenerated_checks': {0x80: 0x27BDFFE0, 0x2F360: 0x00A0102D}}, 'removed or changed'),
             ({'regenerated_checks': {**NEW, 0x2F364: 0x11111111}}, 'differs from original'),
             ({'regenerated_checks': {**NEW, 0x40000: 0}}, 'not confined'),
-            ({'cases': (0x011AE360,)}, 'Missing translated entry'),
+            ({'cases': (0x011AE360, 0x011AE380, 0x011AF870)}, 'Missing translated entry'),
         ]
         for options, message in cases:
             with self.subTest(message=message), tempfile.TemporaryDirectory() as temp:

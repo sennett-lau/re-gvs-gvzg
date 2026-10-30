@@ -16,9 +16,12 @@ PROFILE = 'original-online-browser-overlay-entries-v1'
 ARTIFACT_SHA = 'f06fd3dfb5022e46b8fab3705f814e5ad2dfc24ec9bd2bcc8687315531a07780'
 BASELINE_TABLE_SHA = 'fb1c2785d06b8b5f1b3cf31b42cb09e05ecd952536a43879638fddc26fdd1117'
 BASELINE_HEADER_SHA = 'ab64f120a13e98fec32ba09249db3b7f7d8bfd97a9a7abdaed8e4c0365912feb'
-# Original main-executable `jal` sites: 0x0032A670 -> 0x011AE360 (observed miss
-# in capture20) and 0x00327FB0 -> 0x011AE380. Both follow a function end.
-TARGETS = {0x011AE360: 0x0032A670, 0x011AE380: 0x00327FB0}
+# Original main-executable `jal` sites into browser functions without entries:
+# zlib inflateInit_ (observed miss in capture20) and inflate, then two small
+# functions called after registration (observed miss at 0x011AF870 in capture21).
+# Each follows a function end. Coverage is per image: the last two addresses
+# are entries only in dnas_net.bin, where they fall inside another function.
+TARGETS = {0x011AE360: 0x0032A670, 0x011AE380: 0x00327FB0, 0x011AF870: 0x00383418, 0x011AF880: 0x0038347C}
 
 
 def sha(path): return hashlib.sha256(Path(path).read_bytes()).hexdigest()
