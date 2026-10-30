@@ -64,11 +64,11 @@ class Client {
     const deadline=performance.now()+timeout;
     while(!(await predicate())) {await this.healthy();if(performance.now()>deadline)throw Error(this.label+': timed out '+description);await sleep(100);}
   }
-  async press(code,image='game',generation=1) {
+  async press(code,image='game',generation=1,hold=250) {
     const current=await this.healthy();
     if(current.state!=='running'||current.image!==image||current.generation!==generation)throw Error('Input image/generation changed');
     const frame=this.frame();mark('keydown',{client:this.label,code,image,generation,lastState:this.lastState});
-    await frame.evaluate(code=>dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true})),code);await sleep(250);
+    await frame.evaluate(code=>dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true})),code);await sleep(hold);
     if(!frame.isDetached())try{await frame.evaluate(code=>dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true})),code);}catch(error){if(!frame.isDetached())throw error;}
     mark('keyup',{client:this.label,code,image,generation});await sleep(450);
   }
@@ -178,10 +178,12 @@ class Client {
         write('operator-ack',{id:lastId});continue;
       }
       const client=clients.find(c=>c.label===command.client),current=client?await client.state():null;
-      if(command.action==='press'&&client&&['KeyX','KeyZ','Enter','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(command.code)&&
+      const hold=command.hold_ms===undefined?250:command.hold_ms;
+      if(command.action==='press'&&client&&['KeyX','KeyZ','KeyS','KeyA','Enter','Backspace','KeyQ','KeyW','Digit1','Digit2','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyI','KeyJ','KeyK','KeyL'].includes(command.code)&&
+         Number.isSafeInteger(hold)&&hold>=50&&hold<=3000&&
          command.image===current.image&&command.generation===current.generation&&
          (command.state_word===undefined||command.state_word===client.lastState?.state_word)) {
-        await client.capture('operator-'+lastId+'-before');await client.press(command.code,command.image,command.generation);await sleep(1500);
+        await client.capture('operator-'+lastId+'-before');await client.press(command.code,command.image,command.generation,hold);await sleep(1500);
         await client.capture('operator-'+lastId+'-after');
       }else mark('operator-rejected',{reason:'Unsupported input or client/image/generation/state mismatch'});
       write('operator-ack',{id:lastId});

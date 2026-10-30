@@ -30,10 +30,13 @@ export function installFrame(Module) {
   };
 
   // Ordinary pad input only. This host has no guest-state setters or mode hook.
-  const keyMap = {KeyX: 1 << 13, KeyZ: 1 << 14, Enter: 1 << 3,
-    ArrowUp: 1 << 4, ArrowRight: 1 << 5, ArrowDown: 1 << 6, ArrowLeft: 1 << 7};
+  // I/J/K/L tilt the left analog stick fully; the other keys are pad buttons.
+  const keyMap = {KeyX: 1 << 13, KeyZ: 1 << 14, KeyS: 1 << 12, KeyA: 1 << 15, Enter: 1 << 3, Backspace: 1 << 0,
+    KeyQ: 1 << 10, KeyW: 1 << 11, Digit1: 1 << 8, Digit2: 1 << 9,
+    ArrowUp: 1 << 4, ArrowRight: 1 << 5, ArrowDown: 1 << 6, ArrowLeft: 1 << 7, KeyI: 0, KeyJ: 0, KeyK: 0, KeyL: 0};
   const keys = new Set();
-  addEventListener('keydown', event => { if (keyMap[event.code]) { keys.add(event.code); event.preventDefault(); } });
+  const axis = (low, high) => keys.has(low) ? 0 : keys.has(high) ? 255 : 128;
+  addEventListener('keydown', event => { if (event.code in keyMap) { keys.add(event.code); event.preventDefault(); } });
   addEventListener('keyup', event => { keys.delete(event.code); });
   addEventListener('blur', () => keys.clear());
 
@@ -83,7 +86,7 @@ export function installFrame(Module) {
     }).catch(failure);
     inputTimer = setInterval(() => {
       const mask = [...keys].reduce((value, key) => value | keyMap[key], 0);
-      Module._ps2web_pad(0, mask, 128, 128, 128, 128);
+      Module._ps2web_pad(0, mask, axis('KeyJ', 'KeyL'), axis('KeyI', 'KeyK'), 128, 128);
     }, 16);
     sampleTimer = setInterval(() => send('sample', {sample: {image: Module.execImage,
       frames: Module._ps2web_frames(), audio: audio.state,
