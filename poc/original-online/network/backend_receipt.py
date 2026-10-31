@@ -270,7 +270,10 @@ def main():
         'lobby': 'enter-lobby' in events,
         'battle_info': bool(summary['battle_info']),
         'relay_joins': sum(1 for i in summary['relay'] if i['kind'] == 'relay-join'),
-        'battle_results': len(summary['battle_results']),
+        # The client answers the post-login result question with an empty battle
+        # code when it has no battle to report; only coded answers are results.
+        'battle_results': sum(1 for i in summary['battle_results'] if (i.get('result') or {}).get('battle_code')),
+        'empty_result_answers': sum(1 for i in summary['battle_results'] if not (i.get('result') or {}).get('battle_code')),
         'battle_record_rows_in_window': len(in_window),
         'battle_record_rows_with_result': sum(1 for r in in_window if r['result_bytes']),
         'lobby_return_after_battle': 'enter-after-room' in events,
