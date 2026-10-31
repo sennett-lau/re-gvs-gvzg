@@ -186,6 +186,8 @@ def main():
     parser.add_argument('--until', required=True)
     parser.add_argument('--run-id', required=True)
     parser.add_argument('--out', type=Path, required=True, help='new private directory')
+    parser.add_argument('--client', action='append', default=[], metavar='LABEL=USER',
+                        help='label a client by its pilot user ID, for example A=P899XG; repeatable')
     args = parser.parse_args()
     since = datetime.datetime.fromisoformat(args.since.replace('Z', '+00:00'))
     until = datetime.datetime.fromisoformat(args.until.replace('Z', '+00:00'))
@@ -277,11 +279,25 @@ def main():
         'gateway_connections_open_at_end': len({i['text'].split()[1] for i in summary['gateway'] if i['kind'] == 'gateway-open'}
                                                - {str(i['close']['conn']) for i in summary['gateway'] if i.get('close')}),
     }
+    battle_connections = attribute(timeline)
+    clients = {}
+    for spec in args.client:
+        label, user = spec.split('=', 1)
+        events = [{'utc': i['utc'], 'event': i['event'], 'listener': i.get('listener'), 'lobby': i['fields'].get('lobby')}
+                  for i in summary['lobby_events'] if i['fields'].get('user') == user]
+        relay = {addr: c for addr, c in battle_connections.items() if c.get('user') == user}
+        results = [i for i in summary['battle_results'] if i.get('user') == user]
+        clients[label] = {'user': user, 'lobby_events': events, 'battle_connections': relay,
+                          'battle_results': [{'utc': r['utc'], 'result': r.get('result')} for r in results],
+                          'battle_record_rows': [r for r in in_window if r['user_id'] == user]}
+        for item in timeline:
+            if item.get('fields', {}).get('user') == user or item.get('user') == user:
+                item['client'] = label
     receipt = {'run_id': args.run_id, 'written_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                'scope': 'passive local logs and read-only database; no network traffic; login keys redacted',
                'window': window, 'log_timezone': str(tz), 'sources': sources, 'checks': checks,
                'gateway_summary': gateway_summary(summary['gateway']),
-               'battle_connections': attribute(timeline),
+               'battle_connections': battle_connections, 'clients': clients,
                'battle_record_rows': in_window, 'users': user_rows, 'summary': summary, 'timeline': timeline}
     (args.out / 'receipt.json').write_text(json.dumps(receipt, indent=1, ensure_ascii=False) + '\n')
     print(json.dumps({'out': str(args.out / 'receipt.json'), 'checks': checks}, indent=2))

@@ -224,7 +224,9 @@ The receipt lists DNAS and login requests, lobby key-pairs, `[lobby-event]` line
 created or updated in the window, disconnects, gateway connection statistics and
 errors. A `checks` object summarizes them. `battle_connections` joins each relay
 address to its session and user (from `BattleInfo`), its device listener, and
-its gateway statistics.
+its gateway statistics. Repeat `--client LABEL=USER` (for example `A=P899XG`) to
+group each client's lobby events, battle connections, results and
+`battle_record` rows when several clients share one device.
 
 ### Restart and disconnect behavior
 
