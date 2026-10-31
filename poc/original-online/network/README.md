@@ -103,6 +103,13 @@ The staged upstream changes are recorded with before/after hashes:
   faction entry, battle start, battle exit, after-battle room entry, saved battle
   results and connection close. Each line names the peer address, user and session;
   none contains the login key.
+* A lobby connection that closes after a newer login of the same user keeps
+  that newer session. Upstream `OnClose` removes the user by ID, so an old
+  connection that closed late (EOF, the 2-minute receive timeout, or a lost
+  tunnel) removed the re-logged pilot from its lobby. That pilot was then never
+  matched: Lobby 02 logged `Failed to start battle`. The fix logs
+  `[lobby-event] stale-close`. `stale_close_test.go` reproduces both cases with
+  upstream test helpers; it fails without the fix, and the build runs it.
 * The separate capability-protected Go gateway provides TCP streams and DNS UDP
   datagrams only to configured loopback destinations. It logs one line when each
   WebSocket opens and one when it closes. The close line records the listener

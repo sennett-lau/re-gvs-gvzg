@@ -59,6 +59,17 @@ EVENT_EDITS = [
     ('\tr.Enter(&p.User)\n\tp.Room = r\n', '\teventLog(p, "enter-room", "room-id", r.ID)\n'),
     ('func (a *App) OnExitRoom(p *AppPeer) {\n\tif p.Room == nil {\n\t\treturn\n\t}\n', '\teventLog(p, "exit-room")\n'),
 ]
+# Reconnect fix: a connection that closes after a newer login of the same user
+# must not remove that newer session (upstream removes by user id).
+STALE_CLOSE = (
+    '\tif p.inBattleAfterRoom {\n\t\ta.OnExitBattleAfterRoom(p)\n\t}\n\ta.OnExitLobby(p)\n\tdelete(a.users, p.UserID)\n}\n',
+    '\tif p.inBattleAfterRoom {\n\t\ta.OnExitBattleAfterRoom(p)\n\t}\n'
+    '\tif current, ok := a.users[p.UserID]; ok && current != p {\n'
+    '\t\t// A newer login of this user owns the registration and lobby entry.\n'
+    '\t\t// Remove this peer only from a lobby that still refers to its own user.\n'
+    '\t\teventLog(p, "stale-close")\n'
+    '\t\tif p.Lobby != nil && p.Lobby.Users[p.UserID] == &p.User {\n\t\t\ta.OnExitLobby(p)\n\t\t}\n'
+    '\t\treturn\n\t}\n\ta.OnExitLobby(p)\n\tdelete(a.users, p.UserID)\n}\n')
 
 
 def digest(path):
@@ -162,17 +173,28 @@ def prepare(archive, work):
     path.write_text(text + EVENT_LOG)
     observability_edits = [{'file': relative, 'before': before[relative], 'after': digest(path),
         'reason': 'log-only [lobby-event] lines for backend receipts; no protocol or state change'}]
+    text = path.read_text()
+    if text.count(STALE_CLOSE[0]) != 1:
+        raise SystemExit('stale-close patch precondition failed')
+    after_events = digest(path)
+    path.write_text(text.replace(*STALE_CLOSE))
+    test = 'pkg/lobby/original_online_stale_close_test.go'
+    shutil.copyfile(HERE / 'stale_close_test.go', source / test)
+    robustness_edits = [{'file': relative, 'before': after_events, 'after': digest(path),
+        'reason': 'a close after a newer login of the same user keeps that newer session (upstream removes by user id)',
+        'regression_test': {'file': test, 'sha256': digest(source / test)}}]
     gateway = source / 'src/original-online-gateway'
     gateway.mkdir()
     shutil.copyfile(HERE / 'gateway.go', gateway / 'main.go')
     flags = ['-mod=readonly', '-trimpath', '-buildvcs=false']
     commands = [['go', 'build', *flags, '-o', str(work/'zdxsv'), './src/zdxsv'],
                 ['go', 'build', *flags, '-o', str(work/'gateway'), './src/original-online-gateway'],
-                ['go', 'vet', './pkg/lobby', './src/original-online-gateway']]
+                ['go', 'vet', './pkg/lobby', './src/original-online-gateway'],
+                ['go', 'test', '-count=1', '-run', 'TestStaleClose', './pkg/lobby']]
     manifest = {'timestamp': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 'upstream': UPSTREAM, 'upstream_revision': REVISION, 'archive_sha256': ARCHIVE_SHA256,
                 'upstream_files': before, 'listener_edits': edits, 'compatibility_edits': compatibility_edits,
-                'observability_edits': observability_edits,
+                'observability_edits': observability_edits, 'robustness_edits': robustness_edits,
                 'integration_sources': {p.name: digest(p) for p in HERE.glob('*') if p.is_file()},
                 'commands': commands, 'source': str(source), 'game_executed': False}
     # The SQLite driver (mattn/go-sqlite3) requires cgo; a CGO_ENABLED=0 build
