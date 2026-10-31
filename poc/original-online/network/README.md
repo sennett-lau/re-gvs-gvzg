@@ -263,9 +263,9 @@ group each client's lobby events, battle connections, results and
 
 ### Restart and disconnect behavior
 
-These results come from the backend logs, throwaway server instances and static
-analysis of the original client. How the original clients react to a backend
-restart or a closed opponent has not yet been observed in a game run.
+These results come from the backend logs, throwaway server instances, static
+analysis of the original client and the game runs named below. How the original
+clients react to a backend restart has not yet been observed in a game run.
 
 * **Restart.** On 2026-10-31, `stop` followed by `start` took 1-3 s. The
   database, capability token and device tunnels were unchanged. Lobby users,
@@ -292,7 +292,16 @@ restart or a closed opponent has not yet been observed in a game run.
   sends nothing to the remaining peer. The original client has no opponent-left
   message. It counts each peer's silence and, after 540 ticks, ends with its own
   "peer lost" error, keeps the result, and leaves the battle. Closing the
-  remaining peer's socket instead would produce a different client error.
+  remaining peer's socket instead would produce a different client error. In
+  capture33, capture34 and capture37 one client's browser context was closed 60 s
+  into a round. Each time, the other client closed its own relay connection
+  13.1-13.2 s later. It then logged in to the lobby again and posted a result with
+  battle error 8 ("peer lost") and a longest silence of 523-524 ticks.
+* **Rejoining after a drop.** In capture37 the dropped client was reopened from
+  the same card 30 s later. It logged in with the same pilot on a new session,
+  was matched again in Lobby 02 and played a second match. Both clients posted
+  that match's results with no battle error. Its earlier lobby connection had
+  closed when it entered the battle, so no session overlapped.
 * **Silent client.** The relay drops a peer after the read deadline above,
   10 s by default. A client that is still loading or waiting at the ready barrier
   sends nothing during that time.
