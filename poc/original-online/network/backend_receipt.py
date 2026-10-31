@@ -206,7 +206,7 @@ def main():
     entries.sort(key=lambda e: e['utc'])
     timeline, summary = [], {k: [] for k in ('dnas', 'login', 'lobby_events', 'battle_info', 'relay', 'battle_results',
                                              'disconnects', 'gateway', 'errors')}
-    for e in entries:
+    for index, e in enumerate(entries):
         text = redact(e['text'])
         kind = next((name for name, pattern in CLASSES if pattern.search(text)), None)
         if e['origin'] == 'msg_login.go' and text.isdigit():
@@ -217,7 +217,16 @@ def main():
             continue
         item = {'utc': e['utc'], 'source': e['source'], 'kind': kind, 'text': text[:400]}
         if kind == 'battle-result':
-            body = '\n'.join(redact(line) for line in e['continuation'])
+            # The server logs the user, name and JSON body as separate entries
+            # (the JSON continues on unprefixed lines) up to a '=====' line.
+            lines = list(e['continuation'])
+            for later in entries[index + 1:index + 12]:
+                if later['source'] != e['source']:
+                    continue
+                if later['text'].startswith('====='):
+                    break
+                lines += [later['text']] + later['continuation']
+            body = '\n'.join(redact(line) for line in lines)
             match = re.search(r'\{.*\}', body, re.S)
             ident = re.search(r'ID: (\S+)', body)
             item['user'] = ident.group(1) if ident else None
