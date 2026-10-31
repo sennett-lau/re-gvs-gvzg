@@ -1,0 +1,11 @@
+{
+  "root": ".",
+  "archive": "/private/zdxsv-source.tar.gz",
+  "base_port": 18800,
+  "origins": ["http://127.0.0.1:8647"],
+  "listeners": {"pc": 18822, "laptop": 18821},
+  "tunnels": {
+    "pc-ssh-alias": {"remote_port": 18820, "listener": "pc", "windows": true, "tailnet_name": "pc"},
+    "laptop-ssh-alias": {"remote_port": 18820, "listener": "laptop", "tailnet_name": "laptop"}
+  }
+}

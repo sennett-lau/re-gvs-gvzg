@@ -69,42 +69,131 @@ web host alone cannot provide its long-lived protocol sockets.
 
 `prepare_backend.py` builds inada-s/zdxsv revision
 `35ffbdad9257eca5043bb4977d26cc07468b5045` from the exact archive SHA256
-`51ca60ad9cbcf735e1d769dae1501be46494392eebaa8f4e195e8241d133a1eb`.
-Obtain the public archive without credentials, retain it privately, and use fresh
-output directories:
+`51ca60ad9cbcf735e1d769dae1501be46494392eebaa8f4e195e8241d133a1eb`, together with
+the gateway in `gateway.go`. Obtain the public archive without credentials and
+retain it privately. `backendctl.py` packages that build as a persistent private
+service. It reads one private JSON config; `backend.example.json` shows the fields.
+Relative paths in the config resolve against the config file's directory:
 
 ```sh
-python3 poc/original-online/network/prepare_backend.py \
-  --archive /private/zdxsv-source.tar.gz --work /private/backend-build
-python3 poc/original-online/network/run_backend.py \
-  --build /private/backend-build --state /private/backend-run \
-  --base-port 18800 --origin http://127.0.0.1:8000
+cp poc/original-online/network/backend.example.json /private/backend/config.json
+C="python3 poc/original-online/network/backendctl.py --config /private/backend/config.json"
+$C build --activate          # builds/<utc>/ from source; 'build' links the active one
+$C init                      # state/: new capability token (or --import-db/--import-gateway-config)
+$C start                     # supervisor; returns after all listeners are verified
+$C status                    # health; exit code 0 only when healthy
+$C stop
 ```
 
-The launcher creates a new SQLite database and private capability file, validates
-the built binaries, and verifies its own listeners against the expected loopback
-TCP/UDP set. It never reuses or deletes a prior database. Stop it with SIGTERM or
-Ctrl-C. Keep the capability file private; do not commit generated source trees,
-databases, keys, game assets, IRX inputs, cards, or captures.
+The build uses `-trimpath` and records the Go toolchain, module list, source and
+output hashes in `build-info.json`. Two builds of the same inputs in different
+directories gave identical executables. The SQLite driver requires cgo, so cgo
+stays at the Go default. With `CGO_ENABLED=0`, the server linked a stub driver and
+silently created no database.
 
 The staged upstream changes are recorded with before/after hashes:
 
 * Listener sites retain `127.0.0.1` instead of upstream `stripHost` widening.
 * Lobbies 3 and 4 use the ordinary text description handler. Their optional
   upstream description handlers inject executable R5900 code, which is not
-  translated by this static client profile.
+  translated by this static client profile. Upstream `TestLobbyExplainHacks`
+  asserts that injection and therefore fails on this build; the other lobby,
+  battle and server tests pass.
+* Log-only `[lobby-event]` lines record login, lobby and room entry and exit,
+  faction entry, battle start, battle exit, after-battle room entry, saved battle
+  results and connection close. Each line names the peer address, user and session;
+  none contains the login key.
 * The separate capability-protected Go gateway provides TCP streams and DNS UDP
-  datagrams only to configured loopback destinations.
+  datagrams only to configured loopback destinations. It logs one line when each
+  WebSocket opens and one when it closes. The close line records the listener
+  label, duration, close reason, byte and message counts per direction, and a
+  histogram of gaps between messages. It never logs payload bytes or the capability.
 
-The upstream module requires Go 1.25; a Go installation with toolchain selection
-can obtain that version. Its source and license remain in the private build.
+### Service layout
+
+| Path under the config root | Content |
+| --- | --- |
+| `builds/<utc>/` | executables, `build-info.json`, `build.log`, `source/` |
+| `state/` (0700) | `backend.db`, `token`, generated `gateway.json`, `provenance.jsonl` |
+| `logs/` | `backend.log`, `login.log`, `gateway.log`, `supervisor.log`, `initdb.log`, `tunnels.jsonl`, `rtt.jsonl` |
+| `run/` | `supervisor.pid`, `status.json`, tunnel control sockets |
+| `runs/<utc>/` | per-start `run.json`, verified listener inventory, `backend.db.before` |
+
+Logs are appended. Every start and stop writes a marker line naming the run. The
+database persists across restarts, so registered accounts, pilots and battle
+records survive. `start` refuses ports that are already in use and runs `initdb`
+only when no database exists, because upstream `initdb` deletes the database
+file. Readiness and `status` use the OS listener inventory and a read-only
+database query; they do not connect to a game port. `status --users` also reads
+the operator API `/lbs/status`, which sends nothing to game clients.
+
+### Source and license
+
+zdxsv is licensed under the GNU Affero General Public License version 3. Each
+build keeps `source/LICENSE`, a `NOTICE`, `patches.diff` and a deterministic
+archive of the complete patched source next to the executables. Provide that
+source to anyone who receives the executables or uses the service over a network.
 Protocol probe encoding is derived from upstream AGPL code and is marked as such.
+The upstream module requires Go 1.25; a Go installation with toolchain selection
+can obtain that version.
 
 Services at base port `B` are lobby `B`, STUN/RPC `B+1`, STUN test `B+2`, API `B+3`,
-login `B+4`, battle `B+10`, gateway `B+20`, DNAS `B+43`, and DNS `B+53`.
-The gateway is the browser's sole network endpoint. DNAS carries the original
-SSLv2-format hello/TLS1.0 bytes unchanged; its `/00000020/` path serves the login
-proxy. No external HTTPS fallback, GGPO relay, or operations service is configured.
+login `B+4`, battle `B+10`, gateway `B+20`, DNAS `B+43`, and DNS `B+53`. The
+config's `listeners` add labelled gateway ports; they must not collide with a
+service port. The gateway is the browser's sole network endpoint. DNAS carries the
+original SSLv2-format hello/TLS1.0 bytes unchanged; its `/00000020/` path serves
+the login proxy. No external HTTPS fallback, GGPO relay, or operations service is
+configured. `run_backend.py` remains the single-use launcher for throwaway probe
+instances: it always creates a new database in a new directory.
+
+### Other devices
+
+Every service, including the gateway, listens on loopback only. Another device
+reaches the gateway through an SSH reverse tunnel from the backend machine:
+
+```sh
+$C tunnel up <ssh-host>      # <ssh-host>: 127.0.0.1:<remote_port> -> 127.0.0.1:<listener port>
+$C tunnel check <ssh-host>
+$C rtt <ssh-host>            # gateway-only HTTP round trips; never during a capture
+$C tunnel down <ssh-host>
+```
+
+The remote end binds only that device's `127.0.0.1`. The device's browser uses
+`ws://127.0.0.1:<remote_port>/` as on the backend machine. Backend-advertised
+lobby and battle addresses stay logical destinations that the adapter resolves
+through the gateway. Give each device its own labelled listener so the gateway
+log attributes its connections. Security limits:
+
+* No service listens on a LAN or tailnet address. Only a process on a tunnelled
+  device can reach the gateway, and the tunnel exists only while SSH access to
+  that device is authorized.
+* Each connection still needs the capability token and an allowed Origin. The
+  gateway accepts only the `127.0.0.1` Host and reaches only configured loopback
+  services.
+* Traffic between machines is carried inside SSH. The gateway itself has no TLS
+  and is not suitable for direct exposure or public hosting.
+
+On 2026-10-31 the backend ran on a Mac, with tunnels to a Windows PC and to a
+second Mac on the same tailnet (both direct LAN paths). Gateway HTTP round trips
+on a reused connection had median times of 3.6 ms (PC) and 10.2 ms (second Mac).
+A battle between those two devices has not been tested yet.
+
+### Receipts
+
+`backend_receipt.py` writes a passive receipt for one run window. It reads the
+three logs and the database read-only, and it sends no traffic. It replaces every
+known login key with a short hash:
+
+```sh
+python3 poc/original-online/network/backend_receipt.py --logs /private/backend/logs \
+  --db /private/backend/state/backend.db --since 2026-10-31T00:30:00Z \
+  --until 2026-10-31T02:00:00Z --run-id <run> --out /private/receipts/<run>
+```
+
+The receipt lists DNAS and login requests, lobby key-pairs, `[lobby-event]` lines,
+`BattleInfo`, relay joins and leaves, `BattleResult` bodies, `battle_record` rows
+created or updated in the window, disconnects, gateway connection statistics and
+errors. A `checks` object summarizes them.
 
 ## Runtime composition
 
@@ -114,6 +203,12 @@ sources: `native_transport.cpp`, `transport_bridge.cpp`, and `sha256.cpp`.
 The returned manifest lists all source overrides, JS files and required runtime
 exports. The exec owner can compose it through the explicit `--network-prepare`
 option. Default builds and the utility document keep networking disabled.
+
+`prepare(tree, quiet_trace=True)` (CLI `--quiet-trace`) composes the long-run
+trace mode. The adapter then counts per-call API, submit, successful completion
+and completion-scheduling events instead of printing them. It prints one counters
+line per window of at least 10 s and one at reset. Lifecycle, DNS, stale-completion,
+unsupported-operation and error lines, including negative completions, still print.
 
 Install on the **main document thread**, before `callMain`:
 
