@@ -155,6 +155,15 @@ class Backend:
         print(json.dumps({'build': str(work), 'outputs': manifest['outputs'], 'go': manifest['go_version'],
                           'active': self.build.resolve() == work}, indent=2))
 
+    def cmd_activate(self, args):
+        work = (self.root / 'builds' / args.build).resolve()
+        if work.parent != (self.root / 'builds').resolve() or not (work / 'build-info.json').exists():
+            raise SystemExit('not a build under builds/: ' + args.build)
+        previous = self.build.resolve() if self.build.exists() else None
+        self.activate(work)
+        self.verified_build()
+        print(json.dumps({'previous': str(previous), 'active': str(work)}, indent=2))
+
     def activate(self, work):
         if self.supervisor_pid():
             raise SystemExit('stop the backend before activating another build')
@@ -382,6 +391,18 @@ class Backend:
                        '-R', f'127.0.0.1:{remote}:127.0.0.1:{local}', args.host]
             result = subprocess.run(command, cwd=self.run, capture_output=True, text=True)
             record.update(command=command, returncode=result.returncode, stderr=result.stderr.strip())
+        elif args.action in ('forward', 'cancel'):
+            # Add or remove one extra loopback forward on the running tunnel,
+            # for example a page server: --local 18647:8647 or --remote 8647:18647.
+            spec = args.local or args.remote
+            if not spec or bool(args.local) == bool(args.remote):
+                raise SystemExit('give exactly one of --local or --remote as PORT:PORT')
+            first, second = (int(port) for port in spec.split(':'))
+            flag = '-L' if args.local else '-R'
+            forward = f'127.0.0.1:{first}:127.0.0.1:{second}'
+            result = subprocess.run(['ssh', '-S', self.tunnel_socket(args.host), '-O', args.action, flag, forward, args.host],
+                                    cwd=self.run, capture_output=True, text=True)
+            record.update(forward=[flag, forward], returncode=result.returncode, stderr=result.stderr.strip())
         elif args.action == 'down':
             result = subprocess.run(['ssh', '-S', self.tunnel_socket(args.host), '-O', 'exit', args.host],
                                     cwd=self.run, capture_output=True, text=True)
@@ -432,6 +453,8 @@ def main():
     p = sub.add_parser('build', help='build the pinned server and gateway from source into builds/<utc>')
     p.add_argument('--archive', help='override the configured source archive')
     p.add_argument('--activate', action='store_true', help='make this the active build')
+    p = sub.add_parser('activate', help='make an existing builds/<utc> the active build (backend stopped)')
+    p.add_argument('build', help='directory name under builds/')
     p = sub.add_parser('init', help='create private state: capability token and optional imported database')
     p.add_argument('--import-db', help='copy an existing backend.db (accounts, pilots, records) into new state')
     p.add_argument('--import-gateway-config', help='reuse the capability token of an earlier gateway.json')
@@ -444,8 +467,10 @@ def main():
     p = sub.add_parser('status', help='health: processes, loopback listeners, database, tunnels')
     p.add_argument('--users', action='store_true', help='also read the lobby operator API /lbs/status')
     p = sub.add_parser('tunnel', help='SSH reverse tunnel from a configured device to the gateway')
-    p.add_argument('action', choices=['up', 'down', 'check'])
+    p.add_argument('action', choices=['up', 'down', 'check', 'forward', 'cancel'])
     p.add_argument('host')
+    p.add_argument('--local', help='forward/cancel: LOCAL:REMOTE, this machine 127.0.0.1:LOCAL -> device 127.0.0.1:REMOTE')
+    p.add_argument('--remote', help='forward/cancel: REMOTE:LOCAL, device 127.0.0.1:REMOTE -> this machine 127.0.0.1:LOCAL')
     p = sub.add_parser('rtt', help='time gateway HTTP round trips from a device through its tunnel')
     p.add_argument('host')
     p.add_argument('--count', type=int, default=20)

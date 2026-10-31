@@ -83,6 +83,7 @@ $C init                      # state/: new capability token (or --import-db/--im
 $C start                     # supervisor; returns after all listeners are verified
 $C status                    # health; exit code 0 only when healthy
 $C stop
+$C activate <utc>            # switch to another builds/<utc> while stopped
 ```
 
 The build uses `-trimpath` and records the Go toolchain, module list, source and
@@ -162,8 +163,16 @@ reaches the gateway through an SSH reverse tunnel from the backend machine:
 $C tunnel up <ssh-host>      # <ssh-host>: 127.0.0.1:<remote_port> -> 127.0.0.1:<listener port>
 $C tunnel check <ssh-host>
 $C rtt <ssh-host>            # gateway-only HTTP round trips; never during a capture
+$C tunnel forward <ssh-host> --local 18647:8647   # add a loopback forward to the running tunnel
+$C tunnel cancel <ssh-host> --local 18647:8647
 $C tunnel down <ssh-host>
 ```
+
+`tunnel forward` and `tunnel cancel` add or remove one more loopback-only
+forward on an open tunnel without interrupting it. `--local L:R` maps this
+machine's `127.0.0.1:L` to the device's `127.0.0.1:R`; `--remote R:L` maps the
+device's `127.0.0.1:R` to this machine's `127.0.0.1:L`. Chaining the two can
+serve one device's page server to another device through the backend machine.
 
 The remote end binds only that device's `127.0.0.1`. The device's browser uses
 `ws://127.0.0.1:<remote_port>/` as on the backend machine. Backend-advertised
