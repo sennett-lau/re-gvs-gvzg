@@ -13,6 +13,7 @@ import (
     "net"
     "net/http"
     "os"
+    "os/signal"
     "strings"
     "sync"
     "sync/atomic"
@@ -147,6 +148,9 @@ func main() {
     }
     var serial uint64
     var accepted sync.Map
+    // Open connections and their closers, so that a stop still logs every close.
+    var active sync.Map
+    var live sync.WaitGroup
     localAddr := func(r *http.Request) string {
         if addr, ok := r.Context().Value(http.LocalAddrContextKey).(net.Addr); ok { return addr.String() }
         return ""
@@ -177,6 +181,8 @@ func main() {
         },
         Handler: func(ws *websocket.Conn) {
             defer ws.Close()
+            live.Add(1)
+            defer live.Done()
             ws.MaxPayloadBytes = maxFrame + 4
             var mu sync.Mutex
             control := func(event, code string, id uint32, n int) error {
@@ -208,6 +214,8 @@ func main() {
             conn, err := net.DialTimeout(network, address, 5*time.Second)
             if err != nil { setReason("dial-" + errorCode(err)); control("error", errorCode(err), 0, 0); return }
             defer conn.Close()
+            active.Store(connID, func() { setReason("gateway-stop"); ws.Close(); conn.Close() })
+            defer active.Delete(connID)
             // The service logs this address as its peer, which joins the two logs.
             statsMu.Lock(); service = conn.LocalAddr().String(); statsMu.Unlock()
             log.Printf("conn %d dial listener=%s path=%s service=%s", connID, label, path, service)
@@ -265,6 +273,20 @@ func main() {
             }
         },
     }
+    // On SIGTERM or SIGINT, close the open connections and wait briefly for their
+    // close lines; a backend restart otherwise loses their statistics.
+    stop := make(chan os.Signal, 1)
+    signal.Notify(stop, syscall.SIGTERM, os.Interrupt)
+    go func() {
+        s := <-stop
+        open := 0
+        active.Range(func(_, closer interface{}) bool { closer.(func())(); open++; return true })
+        done := make(chan struct{})
+        go func() { live.Wait(); close(done) }()
+        select { case <-done: case <-time.After(2 * time.Second): }
+        log.Printf("original online byte gateway stopped by %v with %d open connections", s, open)
+        os.Exit(0)
+    }()
     mux.Handle("/tcp/", handler)
     mux.Handle("/udp/", handler)
     for label, addr := range conf.Listeners {

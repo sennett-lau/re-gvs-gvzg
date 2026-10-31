@@ -325,6 +325,15 @@ class Backend:
             status['error'] = str(error)
             print('error', error, flush=True)
         finally:
+            # The gateway stops first and logs every open connection while the
+            # services still run, so no service EOF reaches a browser during a stop.
+            gateway = processes.get('gateway')
+            if gateway and gateway.poll() is None:
+                gateway.terminate()
+                try:
+                    gateway.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    pass
             for p in processes.values():
                 if p.poll() is None:
                     p.terminate()

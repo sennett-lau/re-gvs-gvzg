@@ -128,7 +128,11 @@ The staged upstream changes are recorded with before/after hashes:
   label, duration, close reason, byte and message counts per direction, a
   histogram of gaps between messages, and the local address of its service
   connection. The service logs that address as its peer, which joins the two
-  logs. It never logs payload bytes or the capability.
+  logs. It never logs payload bytes or the capability. On SIGTERM or SIGINT it
+  closes every open connection with reason `gateway-stop`, waits up to 2 s for
+  their close lines and exits. The supervisor stops the gateway before the other
+  services, so no service EOF reaches a browser during a stop. The adapter
+  reports a closed WebSocket as a reset either way.
 
 ### Service layout
 
