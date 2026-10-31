@@ -62,6 +62,13 @@ if (process.env.PROBE_AUTOPILOT) {
     if (!Number.isSafeInteger(rounds) || rounds < 1 || rounds > 10 || !process.env.PROBE_CONTROL_FILE) throw Error('PROBE_HANDOFF_AFTER_ROUNDS must be 1..10 with PROBE_CONTROL_FILE');
     pilot.handoffAfter = rounds;
   }
+  // Failure-control aid: after this many lobby returns, stay on the lobby map without
+  // input and hand both clients to the operator loop (for example a backend restart).
+  if (process.env.PROBE_HANDOFF_AFTER_MATCHES) {
+    const matches = Number(process.env.PROBE_HANDOFF_AFTER_MATCHES);
+    if (!Number.isSafeInteger(matches) || matches < 1 || matches > 10 || !process.env.PROBE_CONTROL_FILE || pilot.handoffAfter) throw Error('PROBE_HANDOFF_AFTER_MATCHES must be 1..10 with PROBE_CONTROL_FILE and without PROBE_HANDOFF_AFTER_ROUNDS');
+    pilot.handoffAfterMatches = matches;
+  }
   if (process.env.PROBE_DROP) {
     const match = /^([AB]):(\d+)$/.exec(process.env.PROBE_DROP), rejoin = process.env.PROBE_REJOIN === '1';
     if (!match || Number(match[2]) > 600000 || (process.env.PROBE_REJOIN && !rejoin)) throw Error('PROBE_DROP must be A|B:<ms in battle> and PROBE_REJOIN 1 or absent');
@@ -209,6 +216,7 @@ async function runAutopilot(client,{battles=pilot.battles,dropAfterMs=null}={}) 
     if(progress.phase==='lobby'&&(memory.lobbyReturns||0)>=battles&&features.screen==='map'){await stage('done');return {rounds_started:memory.battlesStarted,rounds_ended:memory.battlesEnded,matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns,inputs};}
     const before=memory.lobbyReturns||0,action=autopilot.decide(light.scene,features,memory,role,pilot.profile,now,pilot.roundsPerMatch);
     if((memory.lobbyReturns||0)>before)await stage('lobby-return',{matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns});
+    if(pilot.handoffAfterMatches&&(memory.lobbyReturns||0)>=pilot.handoffAfterMatches){await stage('handoff');return {handoff:true,matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns,inputs};}
     if(action.kind==='press'){
       mark('autopilot-input',{client:client.label,instance:client.name,codes:action.codes,hold:action.hold,reason:action.reason,screen:features.screen??null,focus:features.focus??null,cone:features.cone??null,lit:features.targetLit??null});
       await client.chord(action.codes,action.hold);memory.lastAction=performance.now();inputs++;
