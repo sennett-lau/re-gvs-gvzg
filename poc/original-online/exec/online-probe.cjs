@@ -124,13 +124,29 @@ class Client {
     const deadline=performance.now()+timeout;
     while(!(await predicate())) {await this.healthy();if(performance.now()>deadline)throw Error(this.label+': timed out '+description);await sleep(100);}
   }
+  // Waits until the document has drawn `count` frames after `start`. A loaded host
+  // draws fewer game frames per wall-clock press and can drop a short press.
+  async framesSince(frame,start,count) {
+    const begin=performance.now();
+    while(start!==null&&!frame.isDetached()) {
+      let now;try{now=await frame.evaluate(()=>Module._ps2web_frames());}catch(error){if(frame.isDetached())break;throw error;}
+      if(now-start>=count)break;
+      if(performance.now()-begin>30000)throw Error(this.label+': game frames stopped during input');
+      await sleep(20);
+    }
+    return Math.round(performance.now()-begin);
+  }
   async press(code,image='game',generation=1,hold=250) {
     const current=await this.healthy();
     if(current.state!=='running'||current.image!==image||current.generation!==generation)throw Error('Input image/generation changed');
     const frame=this.frame();mark('keydown',{client:this.label,code,image,generation,lastState:this.lastState});
-    await frame.evaluate(code=>dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true})),code);await sleep(hold);
-    if(!frame.isDetached())try{await frame.evaluate(code=>dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true})),code);}catch(error){if(!frame.isDetached())throw error;}
+    const down=await frame.evaluate(code=>{dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true}));return window.Module?._ps2web_frames?Module._ps2web_frames():null;},code);await sleep(hold);
+    // Hold and release each for at least 80% of the frames the same time gives at 60 fps.
+    const holdExtra=await this.framesSince(frame,down,Math.floor(hold*0.048));let up=null;
+    if(!frame.isDetached())try{up=await frame.evaluate(code=>{dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true}));return window.Module?._ps2web_frames?Module._ps2web_frames():null;},code);}catch(error){if(!frame.isDetached())throw error;}
     mark('keyup',{client:this.label,code,image,generation});await sleep(450);
+    const gapExtra=await this.framesSince(frame,up,21);
+    if(holdExtra>50||gapExtra>50)mark('input-frame-wait',{client:this.label,code,hold_extra_ms:holdExtra,gap_extra_ms:gapExtra});
   }
   async chord(codes,hold) {
     const current=await this.healthy();
