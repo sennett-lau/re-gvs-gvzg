@@ -238,6 +238,27 @@ On 2026-10-31 the backend ran on a Mac, with tunnels to a Windows PC and to a
 second Mac on the same tailnet (both direct LAN paths). Gateway HTTP round trips
 on a reused connection had median times of 3.6 ms (PC) and 10.2 ms (second Mac).
 
+The same day, one client on the PC and one on the second Mac played a full
+match in both modes:
+
+* capture35 used the direct tailnet listeners.
+* capture36 used the SSH tunnels.
+
+In both captures each client logged in and was matched in Lobby 02. Each relay
+session ended through the original end path. Both clients then posted the
+match's result with no battle error, and `battle_record` stored both answers.
+Both modes gave the same match pacing:
+
+| | Direct listeners (capture35) | SSH tunnels (capture36) |
+|---|---|---|
+| Relay frames per second, each direction | 18.8-18.9 | 18.5-18.6 |
+| Longest gap between frames | 1.7-2.1 s | 1.7-2.0 s |
+| Gaps of 200 ms or longer, each direction | 1-3 | 1-3 |
+| Retransmissions on the connections | none (kernel smoothed RTT 22 ms and 9 ms) | 604 bytes on the PC's tunnel transport, none on the Mac's |
+
+These were LAN paths with little loss, so the head-of-line delay described above
+did not appear.
+
 ### Receipts
 
 `backend_receipt.py` writes a passive receipt for one run window. It reads the
@@ -265,7 +286,8 @@ group each client's lobby events, battle connections, results and
 
 These results come from the backend logs, throwaway server instances, static
 analysis of the original client and the game runs named below. How the original
-clients react to a backend restart has not yet been observed in a game run.
+clients react to a restart while they are connected has not yet been observed in
+a game run.
 
 * **Restart.** On 2026-10-31, `stop` followed by `start` took 1-3 s. The
   database, capability token and device tunnels were unchanged. Lobby users,
@@ -273,7 +295,10 @@ clients react to a backend restart has not yet been observed in a game run.
   are lost. Every lobby and relay connection closes. A result that arrives after a
   restart is still saved to `battle_record`, because the lookup uses the database.
   The returning client then receives the ordinary pilot list instead of its
-  after-battle entry.
+  after-battle entry. The backend was restarted between capture35 and capture36,
+  with no client connected. The database, token and record counts were the same
+  before and after. In capture36 the same cards then logged in with the same
+  pilots, were matched, and both posted their results.
 * **Session end and results.** Lobby 02 uses the default battle rule, which sets
   no fixed number of consecutive matches. Clients therefore keep playing in one
   relay session until a player chooses to end on the continue/end panel shown after
