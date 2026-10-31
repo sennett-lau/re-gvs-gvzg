@@ -96,6 +96,46 @@ def db_time(value):
     return datetime.datetime.fromisoformat(text)
 
 
+CLOSE = re.compile(r'^conn (\d+) close listener=(\S+) path=(\S+) duration_ms=(\d+) reason=(\S+) '
+                   r'up\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\] '
+                   r'down\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\]')
+GAP_BUCKETS = ['<20ms', '20-50', '50-100', '100-200', '200-500', '500-1000', '>=1000ms']
+
+
+def gateway_close(text):
+    m = CLOSE.match(text)
+    if not m:
+        return None
+    g = m.groups()
+    side = lambda b, f, gap, hist: {'bytes': int(b), 'frames': int(f), 'max_gap_ms': int(gap),
+                                    'gaps': dict(zip(GAP_BUCKETS, map(int, hist.split())))}
+    return {'conn': int(g[0]), 'listener': g[1], 'path': g[2], 'duration_ms': int(g[3]), 'reason': g[4],
+            'up': side(*g[5:9]), 'down': side(*g[9:13])}
+
+
+def gateway_summary(items):
+    """Group closed gateway connections by path and listener."""
+    groups = {}
+    for item in items:
+        c = item.get('close')
+        if not c:
+            continue
+        key = c['path'] + ' @' + c['listener']
+        g = groups.setdefault(key, {'connections': 0, 'reasons': {}, 'max_duration_ms': 0,
+                                    'up': {'bytes': 0, 'frames': 0, 'max_gap_ms': 0, 'gaps': dict.fromkeys(GAP_BUCKETS, 0)},
+                                    'down': {'bytes': 0, 'frames': 0, 'max_gap_ms': 0, 'gaps': dict.fromkeys(GAP_BUCKETS, 0)}})
+        g['connections'] += 1
+        g['reasons'][c['reason']] = g['reasons'].get(c['reason'], 0) + 1
+        g['max_duration_ms'] = max(g['max_duration_ms'], c['duration_ms'])
+        for d in ('up', 'down'):
+            g[d]['bytes'] += c[d]['bytes']
+            g[d]['frames'] += c[d]['frames']
+            g[d]['max_gap_ms'] = max(g[d]['max_gap_ms'], c[d]['max_gap_ms'])
+            for b in GAP_BUCKETS:
+                g[d]['gaps'][b] += c[d]['gaps'][b]
+    return groups
+
+
 def fields(text):
     """Parse 'key value' pairs after a [lobby-event] name, or key=value tokens."""
     if text.startswith('[lobby-event]'):
@@ -168,6 +208,8 @@ def main():
             summary['disconnects'].append(item)
         elif kind.startswith('gateway'):
             item['fields'] = fields(text)
+            if kind == 'gateway-close':
+                item['close'] = gateway_close(text)
             summary['gateway'].append(item)
         if e['level'] in 'EF' or kind == 'error':
             summary['errors'].append(item)
@@ -197,10 +239,14 @@ def main():
         'battle_record_rows_with_result': sum(1 for r in in_window if r['result_bytes']),
         'lobby_return_after_battle': 'enter-after-room' in events,
         'lobby_disconnects': sum(1 for i in summary['disconnects'] if i['kind'] == 'lobby-event'),
+        'gateway_connections_closed': sum(1 for i in summary['gateway'] if i.get('close')),
+        'gateway_connections_open_at_end': len({i['text'].split()[1] for i in summary['gateway'] if i['kind'] == 'gateway-open'}
+                                               - {str(i['close']['conn']) for i in summary['gateway'] if i.get('close')}),
     }
     receipt = {'run_id': args.run_id, 'written_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                'scope': 'passive local logs and read-only database; no network traffic; login keys redacted',
                'window': window, 'log_timezone': str(tz), 'sources': sources, 'checks': checks,
+               'gateway_summary': gateway_summary(summary['gateway']),
                'battle_record_rows': in_window, 'users': user_rows, 'summary': summary, 'timeline': timeline}
     (args.out / 'receipt.json').write_text(json.dumps(receipt, indent=1, ensure_ascii=False) + '\n')
     print(json.dumps({'out': str(args.out / 'receipt.json'), 'checks': checks}, indent=2))
