@@ -130,4 +130,25 @@ class ProfileTest(unittest.TestCase):
                 with self.assertRaises(ValueError): build.manifest_sources(tree, {'compiled_sources': [invalid]})
 
 
+    def test_original_online_bundle_fills_committed_preparers_and_requires_private_inputs(self):
+        source = HERE.parents[2]
+        private = {name: Path('/private/' + name) for name in build.ORIGINAL_ONLINE_PRIVATE}
+        options = {'image': 'game', **private, 'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True}
+        resolved, record = build.original_online(options, source)
+        for name, relative in build.ORIGINAL_ONLINE_PREPARERS.items():
+            self.assertEqual(resolved[name], (source / relative).resolve())
+            self.assertEqual(record['components'][name]['sha256'], build.digest(source / relative))
+        self.assertTrue(resolved['device_segment'] and resolved['thread_return_exit'])
+        self.assertEqual({name: resolved[name] for name in private}, private)
+        self.assertEqual(record['name'], 'original-online-v1')
+        self.assertEqual(record['diagnostics'], {'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True})
+        with self.assertRaisesRegex(ValueError, 'game-only'): build.original_online({**options, 'image': 'utility'}, source)
+        with self.assertRaisesRegex(ValueError, 'core_entry_profile'):
+            build.original_online({**options, 'core_entry_profile': None}, source)
+        for name in ['network_prepare', 'device_segment', 'thread_return_exit']:
+            with self.assertRaisesRegex(ValueError, 'defines these options: ' + name):
+                build.original_online({**options, name: Path('/explicit') if name.endswith('prepare') else True}, source)
+        with tempfile.TemporaryDirectory() as temp:
+            with self.assertRaisesRegex(ValueError, 'Missing committed bundle preparer'): build.original_online(options, Path(temp))
+
 if __name__ == '__main__': unittest.main()

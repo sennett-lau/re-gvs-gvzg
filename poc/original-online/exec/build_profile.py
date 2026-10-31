@@ -67,6 +67,92 @@ def observer_budget(image, directory, manifest, limit):
     return setting
 
 
+QUIET_EDITS = [
+    # Post-menu SIF metadata records are counted, not printed. Boot-scope
+    # custom-service records, state/mode records and cap reporting remain.
+    (b'#include <cstdio>\n', b'#include <cstdio>\n#include <cstring>\n'),
+    (b'inline std::uint32_t last_mode = ~0u;\n', b'''inline std::uint32_t last_mode = ~0u;
+inline unsigned quiet_suppressed = 0;
+inline bool quiet_event(const char *event) {
+    for (const char *name : {"bind", "bind_return", "call", "call_return", "rpc_end"})
+        if (!std::strcmp(event, name)) return true;
+    return false;
+}
+'''),
+    (b'    if (!active && !allow_boot) return;\n',
+     b'    if (!active && !allow_boot) return;\n    if (active && quiet_event(event)) { ++quiet_suppressed; return; }\n'),
+    (b'\\"end_hits\\":%u,\\"background_calls\\":%u,', b'\\"end_hits\\":%u,\\"quiet_suppressed\\":%u,\\"background_calls\\":%u,'),
+    (b'bind_hits, call_hits, end_hits, background_calls,', b'bind_hits, call_hits, end_hits, quiet_suppressed, background_calls,'),
+    # The module flag also logs every IOP DMA start; the quiet profile leaves it off.
+    (b'    ps2::iop::kernel::g_trace_modules = true;\n', b'    // Quiet profile: the runtime module/IOP DMA log flag stays off.\n'),
+    (b'",\\"mode\\":7,\\"observer_version\\":3"', b'",\\"mode\\":7,\\"observer_version\\":3,\\"observer_profile\\":\\"quiet\\""'),
+]
+
+
+def observer_quiet(image, directory, manifest, enabled):
+    """Lower the copied observer's log volume for long runs, when requested."""
+    if not enabled: return None
+    if image != 'game': raise ValueError('Quiet observer is game-only')
+    header = directory / 'observer.hpp'
+    original = header.read_bytes()
+    expected = manifest.get('observer_sha256')
+    if hashlib.sha256(original).hexdigest() != expected:
+        raise ValueError('Prepared observer fingerprint mismatch')
+    updated = original
+    for anchor, replacement in QUIET_EDITS:
+        if updated.count(anchor) != 1: raise ValueError('Quiet observer anchor changed: ' + anchor.decode()[:60])
+        updated = updated.replace(anchor, replacement)
+    header.write_bytes(updated)
+    setting = {'profile': 'quiet', 'input_sha256': expected, 'output_sha256': digest(header),
+               'suppressed_post_menu_events': ['bind', 'bind_return', 'call', 'call_return', 'rpc_end'],
+               'module_trace_flag': 'not set at menu entry',
+               'retained': ['boot custom-service records', 'menu/mode/state records', 'counters', 'trace_cap and dropped reporting'],
+               'scope': 'copied observer logging only; guest memory, registers and scheduling are unchanged'}
+    manifest['observer_sha256'] = setting['output_sha256']
+    manifest['quiet_override'] = setting
+    (directory / 'observer-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    return setting
+
+
+# Reviewed corrections that let two original mode-7 clients reach a battle.
+# Committed preparers resolve under the source root; the three generated entry
+# bundles are private and must be supplied. Diagnostics stay separately opt-in.
+ORIGINAL_ONLINE_BUNDLE = 'original-online-v1'
+ORIGINAL_ONLINE_PREPARERS = {
+    'device_prepare': 'poc/original-online/native-network-device/prepare.py',
+    'network_prepare': 'poc/original-online/network/prepare_runtime.py',
+    'cdvd_identity_prepare': 'poc/original-online/native-network-device/cdvd_identity.py',
+    'disc_model_prepare': 'poc/original-online/disc-model/prepare.py',
+}
+ORIGINAL_ONLINE_SWITCHES = ['device_segment', 'thread_return_exit']
+ORIGINAL_ONLINE_PRIVATE = ['overlay_profile', 'browser_entry_profile', 'core_entry_profile']
+
+
+def original_online(options, source_root):
+    """Fill the bundle's options; reject partial or conflicting selections."""
+    if options['image'] != 'game': raise ValueError('The original Online bundle is game-only')
+    conflicts = [name for name in [*ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES] if options.get(name)]
+    if conflicts: raise ValueError('The original Online bundle defines these options: ' + ', '.join(conflicts))
+    missing = [name for name in ORIGINAL_ONLINE_PRIVATE if not options.get(name)]
+    if missing: raise ValueError('The original Online bundle requires private inputs: ' + ', '.join(missing))
+    resolved = dict(options)
+    components = {}
+    for name, relative in ORIGINAL_ONLINE_PREPARERS.items():
+        path = (source_root / relative).resolve()
+        if not path.is_file(): raise ValueError('Missing committed bundle preparer: ' + relative)
+        resolved[name] = path
+        components[name] = {'path': str(path), 'sha256': digest(path)}
+    for name in ORIGINAL_ONLINE_SWITCHES: resolved[name] = True
+    for name in ORIGINAL_ONLINE_PRIVATE:
+        path = options[name] / 'manifest.json'
+        components[name] = {'path': str(options[name]), 'manifest_sha256': digest(path) if path.is_file() else None}
+    record = {'name': ORIGINAL_ONLINE_BUNDLE, 'components': components, 'switches': ORIGINAL_ONLINE_SWITCHES,
+              'diagnostics': {'wait_snapshot': bool(options.get('wait_snapshot')),
+                              'observer_trace_budget': options.get('observer_trace_budget'),
+                              'quiet_logs': bool(options.get('quiet_logs'))}}
+    return resolved, record
+
+
 def module(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
     result = importlib.util.module_from_spec(spec)
@@ -167,9 +253,10 @@ def compose_disc_model(image, source, path):
     return manifest, inputs
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False, browser_path=None, core_entry_path=None):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False, browser_path=None, core_entry_path=None, quiet_logs=False, bundle=None):
     if image != 'game' and trace_budget is not None: raise ValueError('Observer budget is game-only')
     if image != 'game' and wait_snapshot: raise ValueError('Wait snapshot is game-only')
+    if image != 'game' and quiet_logs: raise ValueError('Quiet logs are game-only')
     if image != 'game' and thread_return_exit: raise ValueError('Thread-return exit is game-only')
     if browser_path and (image != 'game' or not overlay_path): raise ValueError('Browser entry profile is game-only and requires the overlay profile')
     if core_entry_path and image != 'game': raise ValueError('Core entry profile is game-only')
@@ -214,7 +301,8 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     if network_path:
         network_hash = digest(network_path)
         network = module('exec_network_preparation', network_path)
-        network_manifest = network.prepare(source)
+        # Quiet logs also count the adapter's per-call trace lines instead of printing them.
+        network_manifest = network.prepare(source, quiet_trace=True) if quiet_logs else network.prepare(source)
         if digest(network_path) != network_hash: raise ValueError('Network preparer changed during composition')
     discovery = module('exec_module_discovery', HERE / 'discovery_prepare.py')
     discovery_manifest = discovery.prepare(source, source_root / 'poc/original-online/module_names.hpp')
@@ -368,6 +456,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         observation = work / 'observation'
         observer = online.prepare(base / 'overrides', observation)
         observer_budget(image, observation, observer, trace_budget)
+        observer_quiet(image, observation, observer, quiet_logs)
         observer_headers = {str(observation / 'observer.hpp'): digest(observation / 'observer.hpp')}
         sources += [observation / name for name in online.POINTS]
     includes = [HERE, source / 'runtime/include', source / 'runtime/src', source / 'runtime/src/iop', generated,
@@ -430,6 +519,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         'commands': commands, 'shell_sha256': digest(prepared / 'frame.html'),
         'limits': ['Incremental link from fingerprinted retained objects', 'No actual image round-trip proof from preparation/build'],
     }
+    if bundle: manifest['bundle'] = bundle
     (work / 'build-plan.json').write_text(json.dumps(manifest, indent=2) + '\n')
     return manifest
 
@@ -452,11 +542,20 @@ def main():
     parser.add_argument('--cdvd-identity-prepare', type=Path, help='Explicit game-only cdvdman ordinal80/82 candidate from the device owner; off by default')
     parser.add_argument('--disc-model-prepare', type=Path, help='Explicit game-only reference-emulator command75 HLE; modeled output, off by default')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
+    parser.add_argument('--original-online', action='store_true', help='Game-only bundle of the reviewed original Online corrections; requires the three private entry bundles')
+    parser.add_argument('--quiet-logs', action='store_true', help='Explicit game-only long-run logging: the observer and network adapter count per-call records instead of printing them; off by default')
     args = parser.parse_args()
+    bundle = None
+    if args.original_online:
+        options = {name: getattr(args, name) for name in ['image', *ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES, *ORIGINAL_ONLINE_PRIVATE,
+                                                          'wait_snapshot', 'observer_trace_budget', 'quiet_logs']}
+        options = {name: value.resolve() if isinstance(value, Path) else value for name, value in options.items()}
+        resolved, bundle = original_online(options, args.source_root.resolve())
+        for name in [*ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES]: setattr(args, name, resolved[name])
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit, args.browser_entry_profile.resolve() if args.browser_entry_profile else None, args.core_entry_profile.resolve() if args.core_entry_profile else None)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit, args.browser_entry_profile.resolve() if args.browser_entry_profile else None, args.core_entry_profile.resolve() if args.core_entry_profile else None, args.quiet_logs, bundle)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
