@@ -150,7 +150,8 @@ def original_online(options, source_root):
               'diagnostics': {'wait_snapshot': bool(options.get('wait_snapshot')),
                               'observer_trace_budget': options.get('observer_trace_budget'),
                               'quiet_logs': bool(options.get('quiet_logs')),
-                              'idle_diagnostic': bool(options.get('idle_diagnostic'))}}
+                              'idle_diagnostic': bool(options.get('idle_diagnostic')),
+                              'sif_latency_us': options.get('sif_latency_us')}}
     return resolved, record
 
 
@@ -254,10 +255,11 @@ def compose_disc_model(image, source, path):
     return manifest, inputs
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False, browser_path=None, core_entry_path=None, quiet_logs=False, bundle=None, idle_diagnostic=False):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False, browser_path=None, core_entry_path=None, quiet_logs=False, bundle=None, idle_diagnostic=False, sif_latency_us=None):
     if image != 'game' and trace_budget is not None: raise ValueError('Observer budget is game-only')
     if image != 'game' and wait_snapshot: raise ValueError('Wait snapshot is game-only')
     if image != 'game' and quiet_logs: raise ValueError('Quiet logs are game-only')
+    if sif_latency_us is not None and image != 'game': raise ValueError('SIF delivery latency is game-only')
     if idle_diagnostic and (image != 'game' or not wait_snapshot or not network_path):
         raise ValueError('Idle diagnostic is game-only and requires the wait snapshot and the network adapter')
     if image != 'game' and thread_return_exit: raise ValueError('Thread-return exit is game-only')
@@ -309,6 +311,12 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         options = {**({'quiet_trace': True} if quiet_logs else {}), **({'idle_diagnostic': True} if idle_diagnostic else {})}
         network_manifest = network.prepare(source, **options)
         if digest(network_path) != network_hash: raise ValueError('Network preparer changed during composition')
+    sif_latency_manifest, sif_latency_inputs = None, {}
+    if sif_latency_us is not None:
+        # B34 candidate: IOP->EE SIF packets reach EE RAM no earlier than queue time + N us.
+        latency_path = source_root / 'poc/original-online/network/sif_latency_prepare.py'
+        sif_latency_inputs = {str(latency_path): digest(latency_path)}
+        sif_latency_manifest = module('exec_sif_latency', latency_path).prepare(source, sif_latency_us)
     discovery = module('exec_module_discovery', HERE / 'discovery_prepare.py')
     discovery_manifest = discovery.prepare(source, source_root / 'poc/original-online/module_names.hpp')
     cdvd_identity_manifest, cdvd_identity_inputs = compose_cdvd_identity(image, source, cdvd_identity_path)
@@ -520,6 +528,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         'browser_overlay_inputs_sha256': {str(browser_path / name): value for name, value in browser_manifest['files_sha256'].items()} if browser_manifest else {},
         'overlay_inputs_sha256': {str(overlay_path / name): value for name, value in overlay_manifest['files_sha256'].items()} if overlay_manifest else {},
         'network_preparation_sha256': network_hash if network_path else None,
+        'sif_latency': sif_latency_manifest, 'sif_latency_inputs_sha256': sif_latency_inputs,
         'network': network_manifest, 'network_js_sha256': network_js_hashes,
         'commands': commands, 'shell_sha256': digest(prepared / 'frame.html'),
         'limits': ['Incremental link from fingerprinted retained objects', 'No actual image round-trip proof from preparation/build'],
@@ -548,20 +557,21 @@ def main():
     parser.add_argument('--disc-model-prepare', type=Path, help='Explicit game-only reference-emulator command75 HLE; modeled output, off by default')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
     parser.add_argument('--original-online', action='store_true', help='Game-only bundle of the reviewed original Online corrections; requires the three private entry bundles')
-    parser.add_argument('--idle-diagnostic', action='store_true', help='Explicit game-only B34 diagnostic: wait-snapshot episodes when the network adapter reports a socket idle after a TLS handshake; requires --wait-snapshot')
+    parser.add_argument('--idle-diagnostic', action='store_true', help='Explicit game-only B34 diagnostic: wait-snapshot episodes when the network adapter reports a port-443 connection that sent nothing for 10 s; requires --wait-snapshot')
+    parser.add_argument('--sif-latency-us', type=int, help='Explicit game-only B34 candidate: deliver IOP->EE SIF packets N us after queueing (network-owned preparer); off by default')
     parser.add_argument('--quiet-logs', action='store_true', help='Explicit game-only long-run logging: the observer and network adapter count per-call records instead of printing them; off by default')
     args = parser.parse_args()
     bundle = None
     if args.original_online:
         options = {name: getattr(args, name) for name in ['image', *ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES, *ORIGINAL_ONLINE_PRIVATE,
-                                                          'wait_snapshot', 'observer_trace_budget', 'quiet_logs', 'idle_diagnostic']}
+                                                          'wait_snapshot', 'observer_trace_budget', 'quiet_logs', 'idle_diagnostic', 'sif_latency_us']}
         options = {name: value.resolve() if isinstance(value, Path) else value for name, value in options.items()}
         resolved, bundle = original_online(options, args.source_root.resolve())
         for name in [*ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES]: setattr(args, name, resolved[name])
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit, args.browser_entry_profile.resolve() if args.browser_entry_profile else None, args.core_entry_profile.resolve() if args.core_entry_profile else None, args.quiet_logs, bundle, args.idle_diagnostic)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit, args.browser_entry_profile.resolve() if args.browser_entry_profile else None, args.core_entry_profile.resolve() if args.core_entry_profile else None, args.quiet_logs, bundle, args.idle_diagnostic, args.sif_latency_us)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -581,7 +591,7 @@ def main():
         for command in manifest['commands']:
             manifest['active_command'] = command
             subprocess.run(command, env=env, check=True)
-        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'observer_headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256', 'cdvd_identity_inputs_sha256', 'disc_model_inputs_sha256', 'wait_snapshot_inputs_sha256', 'browser_overlay_inputs_sha256', 'core_entry_inputs_sha256']:
+        for category in ['sources_sha256', 'retained_objects_sha256', 'headers_sha256', 'observer_headers_sha256', 'repository_inputs_sha256', 'exec_inputs_sha256', 'network_js_sha256', 'overlay_inputs_sha256', 'cdvd_identity_inputs_sha256', 'disc_model_inputs_sha256', 'wait_snapshot_inputs_sha256', 'browser_overlay_inputs_sha256', 'core_entry_inputs_sha256', 'sif_latency_inputs_sha256']:
             verify_hashes(manifest[category])
         manifest['status'] = 'built-not-runtime-tested'
         manifest['outputs_sha256'] = {path.relative_to(work / 'web').as_posix(): digest(path) for path in (work / 'web').rglob('*') if path.is_file()}

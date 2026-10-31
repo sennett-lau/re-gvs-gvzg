@@ -133,7 +133,7 @@ class ProfileTest(unittest.TestCase):
     def test_original_online_bundle_fills_committed_preparers_and_requires_private_inputs(self):
         source = HERE.parents[2]
         private = {name: Path('/private/' + name) for name in build.ORIGINAL_ONLINE_PRIVATE}
-        options = {'image': 'game', **private, 'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True}
+        options = {'image': 'game', **private, 'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True, 'sif_latency_us': None}
         resolved, record = build.original_online(options, source)
         for name, relative in build.ORIGINAL_ONLINE_PREPARERS.items():
             self.assertEqual(resolved[name], (source / relative).resolve())
@@ -141,7 +141,7 @@ class ProfileTest(unittest.TestCase):
         self.assertTrue(resolved['device_segment'] and resolved['thread_return_exit'])
         self.assertEqual({name: resolved[name] for name in private}, private)
         self.assertEqual(record['name'], 'original-online-v1')
-        self.assertEqual(record['diagnostics'], {'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True, 'idle_diagnostic': False})
+        self.assertEqual(record['diagnostics'], {'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True, 'idle_diagnostic': False, 'sif_latency_us': None})
         with self.assertRaisesRegex(ValueError, 'game-only'): build.original_online({**options, 'image': 'utility'}, source)
         with self.assertRaisesRegex(ValueError, 'core_entry_profile'):
             build.original_online({**options, 'core_entry_profile': None}, source)

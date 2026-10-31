@@ -69,6 +69,11 @@ if (process.env.PROBE_AUTOPILOT) {
     if (!Number.isSafeInteger(matches) || matches < 1 || matches > 10 || !process.env.PROBE_CONTROL_FILE || pilot.handoffAfter) throw Error('PROBE_HANDOFF_AFTER_MATCHES must be 1..10 with PROBE_CONTROL_FILE and without PROBE_HANDOFF_AFTER_ROUNDS');
     pilot.handoffAfterMatches = matches;
   }
+  // Login trial: finish as soon as the client first reaches the lobby map.
+  if (process.env.PROBE_STOP_AT_MAP) {
+    if (process.env.PROBE_STOP_AT_MAP !== '1' || process.env.PROBE_DROP || pilot.handoffAfter || pilot.handoffAfterMatches) throw Error('PROBE_STOP_AT_MAP must be 1 and alone');
+    pilot.stopAtMap = true;
+  }
   if (process.env.PROBE_DROP) {
     const match = /^([AB]):(\d+)$/.exec(process.env.PROBE_DROP), rejoin = process.env.PROBE_REJOIN === '1';
     if (!match || Number(match[2]) > 600000 || (process.env.PROBE_REJOIN && !rejoin)) throw Error('PROBE_DROP must be A|B:<ms in battle> and PROBE_REJOIN 1 or absent');
@@ -213,6 +218,7 @@ async function runAutopilot(client,{battles=pilot.battles,dropAfterMs=null}={}) 
       await stage('drop');mark('client-drop',{client:client.label,instance:client.name,after_battle_ms:Math.round(now-memory.phaseSince)});
       client.closed=true;await client.context.close();return {dropped:true,battles_started:memory.battlesStarted,inputs};
     }
+    if(pilot.stopAtMap&&progress.phase==='lobby'&&features.screen==='map'){await stage('map-reached');return {stopped_at_map:true,inputs};}
     if(progress.phase==='lobby'&&(memory.lobbyReturns||0)>=battles&&features.screen==='map'){await stage('done');return {rounds_started:memory.battlesStarted,rounds_ended:memory.battlesEnded,matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns,inputs};}
     const before=memory.lobbyReturns||0,action=autopilot.decide(light.scene,features,memory,role,pilot.profile,now,pilot.roundsPerMatch);
     if((memory.lobbyReturns||0)>before)await stage('lobby-return',{matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns});
