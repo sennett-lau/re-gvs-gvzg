@@ -5,6 +5,7 @@
 #include "sha256.hpp"
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <cstdio>
 #include <cstring>
 #include <deque>
@@ -86,7 +87,37 @@ void put16(std::uint32_t p, std::uint16_t n) { std::memcpy(ram_ptr(p),&n,2); }
     std::fprintf(stderr,"[original-online-network] unsupported %s detail=%u base=%08x guest_cycles=%llu\n",what,detail,base,(unsigned long long)kernel::now());
     throw std::runtime_error(std::string("original Online transport boundary: ")+what);
 }
+#ifdef ORIGINAL_ONLINE_QUIET_TRACE
+constexpr bool quiet_trace = true;
+#else
+constexpr bool quiet_trace = false;
+#endif
+// Quiet mode counts the per-call events below instead of printing them, and
+// prints one counters line per window. Errors and lifecycle events still print.
+struct Counter { std::uint64_t calls=0, bytes=0; };
+std::map<std::string,Counter> counters;
+std::chrono::steady_clock::time_point counter_window;
+void flush_counters() {
+    if(counters.empty())return;
+    const auto ms=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-counter_window).count();
+    std::string line;
+    for(const auto& [event,c]:counters)line+=" "+event+"="+std::to_string(c.calls)+(c.bytes?"/"+std::to_string(c.bytes)+"B":"");
+    std::fprintf(stderr,"[original-online-network] counters window_ms=%lld%s generation=%u guest_cycles=%llu\n",(long long)ms,line.c_str(),generation,(unsigned long long)kernel::now());
+    counters.clear();
+}
+bool counted(const char* event, std::uint32_t value) {
+    const bool completion=!std::strcmp(event,"send-complete") || !std::strcmp(event,"receive-complete");
+    if(completion && static_cast<std::int32_t>(value)<0)return false;
+    if(!completion && std::strcmp(event,"api") && std::strcmp(event,"send-submitted") && std::strcmp(event,"receive-submitted")
+       && std::strcmp(event,"original-completion-scheduled"))return false;
+    const auto now=std::chrono::steady_clock::now();
+    if(counters.empty())counter_window=now;
+    auto& c=counters[event];++c.calls;if(completion)c.bytes+=value;
+    if(now-counter_window>=std::chrono::seconds(10))flush_counters();
+    return true;
+}
 void trace(const char* event, int handle, std::uint32_t value=0) {
+    if(quiet_trace && counted(event,value))return;
     std::fprintf(stderr,"[original-online-network] %s handle=%d value=%u generation=%u guest_cycles=%llu\n",event,handle,value,generation,(unsigned long long)kernel::now());
 }
 bool ret(Cpu& c,int value) { c.r[2]=static_cast<std::uint32_t>(value); c.pc=c.r[31];c.npc=c.pc+4;c.r[0]=0;return true; }
@@ -141,6 +172,7 @@ int native_error(const host::Result& result) {
 }
 
 void reset() {
+    flush_counters();
     host::reset();base=0;++generation;next_poll=0;sockets.clear();retired_threads.clear();dns_requests.clear();dns_helpers.clear();completion_helpers.clear();trampolines.clear();verified_modules.clear();control_stub=0;rst_stub=0;
 }
 
