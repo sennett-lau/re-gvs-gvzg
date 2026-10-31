@@ -2,7 +2,7 @@
 const fs = require('node:fs'), path = require('node:path');
 class StateRetention {
   constructor(directory,label,limit=96) {
-    if(!/^[A-B]$/.test(label)||!Number.isSafeInteger(limit)||limit<1||limit>256)throw Error('Invalid state retention bounds');
+    if(!/^[AB][2-9]?$/.test(label)||!Number.isSafeInteger(limit)||limit<1||limit>256)throw Error('Invalid state retention bounds');
     this.directory=directory;this.label=label;this.limit=limit;this.count=0;this.key=null;this.followup=false;this.limited=false;
   }
   retain(png,json,snapshot) {

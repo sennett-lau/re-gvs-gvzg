@@ -31,6 +31,8 @@ test('next periodic sample preserves content that appears after the state transi
 });
 test('retention rejects invalid bounds and never overwrites previous evidence',()=>{
   assert.throws(()=>new StateRetention('/tmp','../A'));assert.throws(()=>new StateRetention('/tmp','A',0));
+  // A reopened client keeps its role and gets its own file prefix.
+  assert.doesNotThrow(()=>new StateRetention('/tmp','B2'));for(const label of ['B1','C','B10','AB'])assert.throws(()=>new StateRetention('/tmp',label));
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'exec-retention-'));
   try{const png=path.join(dir,'live.png'),json=path.join(dir,'live.json');fs.writeFileSync(png,'a');fs.writeFileSync(json,'{}');
     fs.writeFileSync(path.join(dir,'A-state-001.png'),'prior');
