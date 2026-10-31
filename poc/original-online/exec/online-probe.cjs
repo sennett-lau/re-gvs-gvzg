@@ -5,8 +5,12 @@ const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {parseConfig} = require('./private-config.cjs');
 const {StateRetention} = require('./probe-retention.cjs');
 const scene = require('../../../apps/game/assets/scene-snapshot.js');
+const autopilot = require('./autopilot.cjs');
 const base = new URL(process.argv[2]), out = path.resolve(process.argv[3]);
 const count = Number(process.env.PROBE_CLIENTS || 1), operatorMs = Number(process.env.PROBE_OPERATOR_MS || 600000);
+// Client labels; a cross-device run starts one labelled client per machine (for example only B).
+const labels = (process.env.PROBE_LABELS || 'AB'.slice(0, count)).split('');
+if (labels.length !== count || new Set(labels).size !== count || labels.some(label => !['A', 'B'].includes(label))) throw Error('PROBE_LABELS must name PROBE_CLIENTS distinct clients from A and B');
 const watch = process.env.PROBE_WATCH || null;
 const retainStates = process.env.PROBE_RETAIN_STATES === '1';
 // Explicit: keep running after the observer's trace cap; the loss stays recorded.
@@ -35,6 +39,36 @@ if (process.env.PROBE_CARD_FIXTURE_B) {
   fixtures.B = {path:process.env.PROBE_CARD_FIXTURE_B,sha256:process.env.PROBE_CARD_SHA256_B};
 }
 const fixtureFor = label => fixtures[label] || fixtures.A;
+// Unattended route: after the saved-connection menu, screenshot-led ordinary
+// input continues through login, lobby, battle, results and lobby return.
+let pilot = null;
+if (process.env.PROBE_AUTOPILOT) {
+  const bytes = fs.readFileSync(process.env.PROBE_AUTOPILOT);
+  if (!savedRoute) throw Error('PROBE_AUTOPILOT requires PROBE_ROUTE=saved-connection');
+  if (digest(bytes) !== process.env.PROBE_AUTOPILOT_SHA256) throw Error('Exact autopilot profile fingerprint required');
+  // PROBE_BATTLES counts matches (battle groups); each ends after PROBE_ROUNDS_PER_MATCH rounds.
+  const profile = JSON.parse(bytes), battles = Number(process.env.PROBE_BATTLES || 1), runMs = Number(process.env.PROBE_RUN_MS || 3600000);
+  const roundsPerMatch = Number(process.env.PROBE_ROUNDS_PER_MATCH || 1);
+  if (profile.schema !== 'original-online-autopilot-vision-v1') throw Error('Unsupported autopilot profile');
+  if (!Number.isSafeInteger(roundsPerMatch) || roundsPerMatch < 1 || roundsPerMatch > 10) throw Error('PROBE_ROUNDS_PER_MATCH must be 1..10');
+  if (!Number.isSafeInteger(battles) || battles < 1 || battles > 10 || !Number.isSafeInteger(runMs) || runMs < 60000 || runMs > 14400000) throw Error('Invalid autopilot bounds');
+  pilot = {profile, profile_sha256: digest(bytes), battles, runMs, roles: {A: {faction: 'left'}, B: {faction: 'right'}}, roundsPerMatch, drop: null};
+  // Failure control: close one client's browser context during its first battle,
+  // optionally reopen it from the same card for one more battle.
+  // Discovery aid: after this many finished rounds, stop autopilot input and hand both
+  // clients to the bounded screenshot-led operator loop (PROBE_CONTROL_FILE).
+  if (process.env.PROBE_HANDOFF_AFTER_ROUNDS) {
+    const rounds = Number(process.env.PROBE_HANDOFF_AFTER_ROUNDS);
+    if (!Number.isSafeInteger(rounds) || rounds < 1 || rounds > 10 || !process.env.PROBE_CONTROL_FILE) throw Error('PROBE_HANDOFF_AFTER_ROUNDS must be 1..10 with PROBE_CONTROL_FILE');
+    pilot.handoffAfter = rounds;
+  }
+  if (process.env.PROBE_DROP) {
+    const match = /^([AB]):(\d+)$/.exec(process.env.PROBE_DROP), rejoin = process.env.PROBE_REJOIN === '1';
+    if (!match || Number(match[2]) > 600000 || (process.env.PROBE_REJOIN && !rejoin)) throw Error('PROBE_DROP must be A|B:<ms in battle> and PROBE_REJOIN 1 or absent');
+    if (!labels.includes(match[1]) || labels.length !== 2) throw Error('PROBE_DROP needs both clients in this probe');
+    pilot.drop = {client: match[1], after_battle_ms: Number(match[2]), rejoin};
+  }
+}
 const config = parseConfig(fs.readFileSync(process.env.PROBE_NETWORK_CONFIG,'utf8'));
 const gateway = new URL(config.gatewayURL);
 if (gateway.protocol !== 'ws:' || gateway.hostname !== '127.0.0.1' || gateway.pathname !== '/' || gateway.search || gateway.hash ||
@@ -43,13 +77,24 @@ fs.mkdirSync(out,{recursive:true});
 const scrub = text => String(text).split(config.token).join('[private-token]');
 const write = (name,value) => fs.writeFileSync(path.join(out,name+'.json'),scrub(JSON.stringify(value,null,2))+'\n');
 const started=performance.now(), clients=[], sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const mark=(event,detail={})=>fs.appendFileSync(path.join(out,'timeline.jsonl'),scrub(JSON.stringify({utc:new Date().toISOString(),elapsed_ms:performance.now()-started,event,...detail}))+'\n');
+// Buffered append streams: a synchronous write per console line can starve the
+// event loop on a busy host and delay every later browser round trip.
+// A bounded queue: past 32 MiB of unwritten data a line is counted, not queued.
+const streams=new Map(),droppedLines=new Map();
+const append=(name,line)=>{
+  if(!streams.has(name))streams.set(name,fs.createWriteStream(path.join(out,name),{flags:'a'}));
+  const stream=streams.get(name);
+  if(stream.writableLength>(32<<20)){droppedLines.set(name,(droppedLines.get(name)||0)+1);return;}
+  stream.write(line+'\n');
+};
+const appendJson=(name,value)=>append(name,scrub(JSON.stringify(value)));
+const mark=(event,detail={})=>append('timeline.jsonl',scrub(JSON.stringify({utc:new Date().toISOString(),elapsed_ms:performance.now()-started,event,...detail})));
 let browser;
 
 class Client {
   constructor(label,context,page) {this.label=label;this.context=context;this.page=page;this.errors=[];this.blocked=[];this.traceLost=false;this.lastState=null;this.sockets=[];this.retention=retainStates?new StateRetention(out,label):null;}
-  async state() {return this.page.evaluate(()=>({clientId:window.originalExec?.clientId,image:window.originalExec?.session?.image,
-    generation:window.originalExec?.session?.generation,state:window.originalExec?.session?.state,events:window.originalExec?.events||[]}));}
+  async state() {return this.page.evaluate(compact=>{const events=window.originalExec?.events||[];return {clientId:window.originalExec?.clientId,image:window.originalExec?.session?.image,
+    generation:window.originalExec?.session?.generation,state:window.originalExec?.session?.state,eventCount:events.length,events:compact?events.slice(-8):events};},!!pilot);}
   frame() {const frame=this.page.frames().find(f=>/\/(game|utility)\/index\.html/.test(f.url()));if(!frame)throw Error('No executable document');return frame;}
   async snapshot() {
     const current=await this.state();let sample=null;
@@ -74,6 +119,20 @@ class Client {
     await frame.evaluate(code=>dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true})),code);await sleep(hold);
     if(!frame.isDetached())try{await frame.evaluate(code=>dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true})),code);}catch(error){if(!frame.isDetached())throw error;}
     mark('keyup',{client:this.label,code,image,generation});await sleep(450);
+  }
+  async chord(codes,hold) {
+    const current=await this.healthy();
+    if(current.state!=='running'||current.image!=='game'||current.generation!==1)throw Error('Input image/generation changed');
+    const frame=this.frame();
+    await frame.evaluate(codes=>{for(const code of codes)dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true}));},codes);await sleep(hold);
+    if(!frame.isDetached())try{await frame.evaluate(codes=>{for(const code of codes)dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true}));},codes);}catch(error){if(!frame.isDetached())throw error;}
+  }
+  async canvas() {const png=await this.frame().locator('#canvas').screenshot({timeout:30000});return {png,image:autopilot.vision.decodePNG(png)};}
+  async light() {
+    // Read-only: scene record, frame/audio counters and the in-document pacing summary.
+    const sample=await this.frame().evaluate(()=>({frames:Module._ps2web_frames(),ring:Array.from(new Uint32Array(Module.HEAPU8.buffer,Module._ps2web_audio_ring(),4)),
+      scene:Module._ps2web_experiment_stat?Module._ps2web_experiment_stat(19):null,battleClock:Module._ps2web_experiment_stat?Module._ps2web_experiment_stat(5):null}));
+    sample.scene=sample.scene===null?null:scene.decode(sample.scene);return sample;
   }
   async capture(name) {
     const captureStartedUtc=new Date().toISOString(),stem=this.label+'-'+name,png=path.join(out,stem+'.png');
@@ -105,25 +164,62 @@ class Client {
   }
 }
 
-(async()=>{
-  const response=await fetch(new URL('build-info.json',base));if(!response.ok)throw Error('Build provenance missing');
-  const buildText=await response.text(), build=JSON.parse(buildText);
-  if(!build.modules?.game?.network_enabled||build.modules.utility.network_enabled)throw Error('Expected game-only native network adapter');
-  fs.writeFileSync(path.join(out,'build-info.json'),buildText);
-  write('run',{started_utc:new Date().toISOString(),scope:'Original mode7 with independent contexts and private byte transport',
-    clients:count,route:savedRoute?'saved-connection':'settings-menu',fixture_sha256:expected,fixtures_sha256:Object.fromEntries(Object.entries(fixtures).map(([k,v])=>[k,v.sha256])),trace_cap_continue:traceContinue,fixture_bytes:fixture.length,build_info_sha256:digest(buildText),harness_sha256:digest(fs.readFileSync(__filename)),
-    muted:true,audioSuspendedForTiming:false,gateway_origin:gateway.origin,operatorMs,watch,retainStates,
-    stateRetention:retainStates?{limit:96,retention_sha256:digest(fs.readFileSync(require.resolve('./probe-retention.cjs'))),
-      sampling:'Periodic screenshots followed by a read-only snapshot; intermediate transitions may be missed, timestamps are retained.'}:null,
-    argv:process.argv.slice(2),network_success:false,battle_success:false});
-  browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,headless:false,args:['--mute-audio','--autoplay-policy=no-user-gesture-required',
-    '--no-first-run','--disable-background-networking','--disable-background-timer-throttling','--disable-renderer-backgrounding','--disable-backgrounding-occluded-windows']});
-  for(let i=0;i<count;i++) {
+async function runAutopilot(client,{battles=pilot.battles,dropAfterMs=null}={}) {
+  const role=pilot.roles[client.label], memory={};let stages=0;
+  const stage=(name,detail={})=>{mark('stage',{client:client.label,stage:name,...detail});return client.capture('stage-'+String(++stages).padStart(3,'0')+'-'+name);};
+  // Original saved connection: notice (cursor starts on back), loaded settings, DNAS and login.
+  await client.press('KeyX');await client.prompt(517,'notice');await client.press('ArrowUp');await client.press('KeyX');
+  await client.prompt(518,'settings-loaded');await client.press('KeyX');await stage('dnas-started');
+  await client.until(async()=>(await client.light()).scene?.state===1,'original login',300000);await stage('logged-in');
+  const deadline=performance.now()+pilot.runMs;let lastLive=0,lastScreen=null,lastChange=performance.now(),inputs=0,screens=0;
+  while(true) {
+    await client.healthy();const now=performance.now();if(now>deadline)throw Error(client.label+': autopilot run bound expired');
+    const light=await client.light();const progress=autopilot.progress(light.scene,memory,now);
+    for(const event of progress.events)await stage(event.to,{from:event.from,battles_started:memory.battlesStarted||0,battles_ended:memory.battlesEnded||0});
+    if(pilot.handoffAfter&&(memory.battlesEnded||0)>=pilot.handoffAfter){await stage('handoff');return {handoff:true,battles_started:memory.battlesStarted,battles_ended:memory.battlesEnded,inputs};}
+    const shot=['lobby','post-round'].includes(progress.phase)?await client.canvas():null,features=shot?autopilot.vision.features(shot.image,pilot.profile):{};
+    if(features.screen!==lastScreen){
+      // Keep the canvas image behind each classification change for later review.
+      const name=shot?client.label+'-screen-'+String(++screens).padStart(3,'0')+'-'+(features.screen??'unclassified')+'.png':null;if(name)fs.writeFileSync(path.join(out,name),shot.png);
+      mark('screen',{client:client.label,screen:features.screen??null,focus:features.focus??null,distance:features.match?.distance??null,nearest:features.match?.nearest??null,file:name});lastScreen=features.screen;lastChange=now;}
+    if(dropAfterMs!==null&&progress.phase==='battle'&&now-memory.phaseSince>=dropAfterMs){
+      // Abrupt close of this client's whole browser context, as when a player closes the window.
+      await stage('drop');mark('client-drop',{client:client.label,after_battle_ms:Math.round(now-memory.phaseSince)});
+      client.closed=true;await client.context.close();return {dropped:true,battles_started:memory.battlesStarted,inputs};
+    }
+    if(progress.phase==='lobby'&&(memory.lobbyReturns||0)>=battles&&features.screen==='map'){await stage('done');return {rounds_started:memory.battlesStarted,rounds_ended:memory.battlesEnded,matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns,inputs};}
+    const before=memory.lobbyReturns||0,action=autopilot.decide(light.scene,features,memory,role,pilot.profile,now,pilot.roundsPerMatch);
+    if((memory.lobbyReturns||0)>before)await stage('lobby-return',{matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns});
+    if(action.kind==='press'){
+      mark('autopilot-input',{client:client.label,codes:action.codes,hold:action.hold,reason:action.reason,screen:features.screen??null,focus:features.focus??null,cone:features.cone??null,lit:features.targetLit??null});
+      await client.chord(action.codes,action.hold);memory.lastAction=performance.now();inputs++;
+    }
+    if(now-lastLive>=10000){lastLive=now;await client.capture('live');
+      const pacing=await client.frame().evaluate(()=>window.originalExecPacing?.take()??null);
+      appendJson('pacing.jsonl',{client:client.label,phase:progress.phase,screen:features.screen??null,frames:light.frames,ring:light.ring,battle_clock:light.battleClock,pacing});}
+    // A lobby screen that never changes (other than waiting for a partner) is a stall.
+    if(progress.phase==='lobby'&&features.screen!=='waiting'&&now-lastChange>600000)throw Error(client.label+': lobby screen unchanged for 10 minutes ('+features.screen+')');
+    await sleep(progress.phase==='battle'?100:500);
+  }
+}
+
+async function openClient(label) {
     const context=await browser.newContext({viewport:{width:1280,height:1000},serviceWorkers:'block'}),page=await context.newPage();
-    const client=new Client(String.fromCharCode(65+i),context,page);clients.push(client);page.setDefaultTimeout(120000);
+    const client=new Client(label,context,page);page.setDefaultTimeout(120000);
     await context.route('**/*',route=>{const url=new URL(route.request().url());if(url.origin===base.origin)return route.continue();client.blocked.push(url.origin);return route.abort();});
     await context.addInitScript(({config,watch})=>{
       window.originalExecNetworkConfig=config;window.testAudioContexts=[];
+      if(/\/game\/index\.html$/.test(location.pathname)){
+        // Read-only frame pacing: emulated-frame counter sampled at each animation frame.
+        const edges=[8,12,15,18,22,30,50,100],p={hist:new Array(edges.length+1).fill(0),steps:[0,0,0,0],rafs:0,since:performance.now(),frames:null,at:null,max:0};
+        window.originalExecPacing={take(){const r={utc:new Date().toISOString(),window_ms:performance.now()-p.since,rafs:p.rafs,frames:p.frames,edges,interval_hist:[...p.hist],increments_per_raf:[...p.steps],max_gap_ms:p.max};
+          p.hist.fill(0);p.steps.fill(0);p.rafs=0;p.max=0;p.since=performance.now();return r;}};
+        const tick=t=>{let f=null;try{f=window.Module?._ps2web_frames?window.Module._ps2web_frames():null;}catch{}
+          if(f!==null){p.rafs++;if(p.frames!==null){const d=f-p.frames;p.steps[Math.min(3,Math.max(0,d))]++;
+            if(d>0){if(p.at!==null){if(t-p.at>p.max)p.max=t-p.at;const ms=(t-p.at)/d;let i=0;while(i<edges.length&&ms>=edges[i])i++;p.hist[i]+=d;}p.at=t;}}p.frames=f;}
+          requestAnimationFrame(tick);};
+        requestAnimationFrame(tick);
+      }
       if(watch) addEventListener('message',event=>{
         if(event.source===parent&&event.origin===location.origin&&event.data?.originalExec===1&&
            event.data.type==='start'&&window.Module?.execImage==='game') {
@@ -141,7 +237,13 @@ class Client {
     },{config,watch});
     page.on('pageerror',error=>{client.errors.push(scrub(error));mark('pageerror',{client:client.label,error:scrub(error)});});
     page.on('console',message=>{
-      const text=scrub(message.text());fs.appendFileSync(path.join(out,client.label+'-console.jsonl'),JSON.stringify({utc:new Date().toISOString(),text})+'\n');
+      const text=scrub(message.text()),now=new Date();append(client.label+'-console.jsonl',JSON.stringify({utc:now.toISOString(),text}));
+      if(text.startsWith('[exec-host] ')){
+        // The host page stamps each record; a growing gap means this process is behind its browser events.
+        try{const lag=(now-new Date(JSON.parse(text.slice(12)).utc))/1000;client.consoleLag=lag;
+          if(lag>15&&!client.backlogMarked){client.backlogMarked=true;mark('probe-backlog',{client:client.label,lag_s:lag});}
+          if(lag>60)client.errors.push('Probe host overloaded: browser events processed '+Math.round(lag)+' s late');}catch{}
+      }
       if(text.startsWith('[original-online] ')) {
         try{const record=JSON.parse(text.slice(18));if((record.event==='trace_cap'||record.dropped>0||record.boot_dropped>0)&&!client.traceLost){client.traceLost=true;if(traceContinue)mark('trace-cap-continue',{client:client.label,record});}
           if(record.state!==undefined&&record.substate!==undefined)client.lastState=record;
@@ -157,11 +259,59 @@ class Client {
       socket.on('close',()=>{item.closed=true;item.closed_utc=new Date().toISOString();});
       socket.on('socketerror',error=>{item.error=scrub(error);mark('websocket-error',{client:client.label,url:item.url,error:item.error});});
     });
-    await page.bringToFront();await client.enterSettingsMenu();
-  }
+    await page.bringToFront();await client.enterSettingsMenu();return client;
+}
+
+(async()=>{
+  const response=await fetch(new URL('build-info.json',base));if(!response.ok)throw Error('Build provenance missing');
+  const buildText=await response.text(), build=JSON.parse(buildText);
+  if(!build.modules?.game?.network_enabled||build.modules.utility.network_enabled)throw Error('Expected game-only native network adapter');
+  fs.writeFileSync(path.join(out,'build-info.json'),buildText);
+  write('run',{started_utc:new Date().toISOString(),scope:'Original mode7 with independent contexts and private byte transport',
+    clients:count,labels,route:savedRoute?'saved-connection':'settings-menu',fixture_sha256:expected,fixtures_sha256:Object.fromEntries(Object.entries(fixtures).map(([k,v])=>[k,v.sha256])),trace_cap_continue:traceContinue,fixture_bytes:fixture.length,build_info_sha256:digest(buildText),harness_sha256:digest(fs.readFileSync(__filename)),
+    muted:true,audioSuspendedForTiming:false,gateway_origin:gateway.origin,operatorMs,watch,retainStates,
+    stateRetention:retainStates?{limit:96,retention_sha256:digest(fs.readFileSync(require.resolve('./probe-retention.cjs'))),
+      sampling:'Periodic screenshots followed by a read-only snapshot; intermediate transitions may be missed, timestamps are retained.'}:null,
+    argv:process.argv.slice(2),network_success:false,battle_success:false,
+    autopilot:pilot?{profile_sha256:pilot.profile_sha256,battles:pilot.battles,run_ms:pilot.runMs,roles:pilot.roles,autopilot_sha256:digest(fs.readFileSync(require.resolve('./autopilot.cjs'))),vision_sha256:digest(fs.readFileSync(require.resolve('./probe-vision.cjs')))}:null});
+  browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,headless:false,args:['--mute-audio','--autoplay-policy=no-user-gesture-required',
+    '--no-first-run','--disable-background-networking','--disable-background-timer-throttling','--disable-renderer-backgrounding','--disable-backgrounding-occluded-windows']});
+  for(const label of labels)clients.push(await openClient(label));
   const initial=await Promise.all(clients.map(c=>c.snapshot()));
   if(new Set(initial.map(s=>s.clientId)).size!==count)throw Error('Independent card namespaces are not distinct');
   write('independent-start',initial);mark('operator-ready',{clients:count});
+  if(pilot) {
+    let summaries;
+    if(pilot.drop) {
+      const victim=clients.find(c=>c.label===pilot.drop.client);
+      const runs=clients.map(c=>c===victim?runAutopilot(c,{dropAfterMs:pilot.drop.after_battle_ms}):runAutopilot(c,{battles:pilot.drop.rejoin?2:1}));
+      const dropped=await runs[clients.indexOf(victim)];let rejoined=null;
+      if(pilot.drop.rejoin) {
+        // Fresh document from the same fingerprinted card; the backend sees an ordinary new login.
+        await sleep(30000);mark('client-rejoin',{client:victim.label});
+        const fresh=await openClient(victim.label);clients[clients.indexOf(victim)]=fresh;
+        rejoined=await runAutopilot(fresh,{battles:1});
+      }
+      const others=await Promise.all(runs.filter((r,i)=>clients[i].label!==victim.label));
+      summaries=clients.map(c=>c.label===victim.label?{dropped,rejoined}:others.shift());
+    } else summaries=await Promise.all(clients.map(c=>runAutopilot(c)));
+    if(summaries.some(s=>s?.handoff))mark('operator-handoff',{summaries});
+    else {
+    for(const client of clients) {
+      if(client.closed)continue; // a dropped client without rejoin has no document left
+      await client.capture('final');
+      const encoded=await client.frame().evaluate(()=>{const data=Module.FS.readFile('/memcard/Mcd001.ps2');let text='';
+        for(let i=0;i<data.length;i+=0x8000)text+=String.fromCharCode.apply(null,data.subarray(i,i+0x8000));return btoa(text);});
+      const bytes=Buffer.from(encoded,'base64'),name=client.label+'-card-final.ps2';fs.writeFileSync(path.join(out,name),bytes);
+      mark('card-export',{client:client.label,file:name,bytes:bytes.length,sha256:digest(bytes),scope:'running MEMFS card, not a durable checkpoint'});
+    }
+    write('result',{capture_complete:true,browser:browser.version(),network_success:false,battle_success:false,
+      autopilot:Object.fromEntries(clients.map((c,i)=>[c.label,summaries[i]])),
+      acceptance:'Requires review of original guest state, both independent clients and correlated backend evidence (BattleResult, battle record); screens and inputs alone are insufficient.',
+      clients:await Promise.all(clients.filter(c=>!c.closed).map(c=>c.snapshot()))});
+    return;
+    }
+  }
   const deadline=performance.now()+operatorMs;let lastId=0,finished=false;
   while(performance.now()<deadline) {
     for(const client of clients){await client.healthy();await client.capture('live');}
@@ -203,4 +353,6 @@ class Client {
   mark('failure',{error:scrub(error.stack||error)});const snapshots=[];
   for(const client of clients)try{await client.capture('failure');snapshots.push(await client.snapshot());}catch{}
   write('failure',{error:scrub(error.stack||error),clients:snapshots,network_success:false,battle_success:false});process.exitCode=1;
-}).finally(async()=>{if(browser)await browser.close();});
+}).finally(async()=>{if(browser)await browser.close();
+  if(droppedLines.size)fs.writeFileSync(path.join(out,'dropped-log-lines.json'),JSON.stringify(Object.fromEntries(droppedLines),null,2)+'\n');
+  await Promise.all([...streams.values()].map(s=>new Promise(resolve=>s.end(resolve))));});
