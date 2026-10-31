@@ -485,8 +485,8 @@ synchronous RPC therefore never gives the EE to a lower-priority thread. The
 original browser's priority-63 HTTP worker only runs while its higher-priority
 threads wait for such replies. `sif_latency_prepare.py <copied tree> --latency-us N`
 edits only a copied `runtime/src/iop/sif.cpp`. It has no default value. Every
-IOP-to-EE packet then reaches EE RAM N us after it was queued, in the original
-order. The retry uses `hw::kEventIop`, which the runtime declares but never uses;
+IOP-to-EE packet then reaches EE RAM no earlier than N us after it was queued, in
+the original order. The retry uses `hw::kEventIop`, which the runtime declares but never uses;
 the preparer refuses a tree that uses it. The save-state format is unchanged.
 Packets restored from a state are due at once.
 
@@ -517,7 +517,11 @@ matched the adapter's idle reports for every client.
   DNAS request.
 * The clients' own timings showed the same load time before DNAS in both builds.
 
-Battle-time effects of the latency are not yet established.
+In capture56 the PC played one full match with the same 100 us build. The relay
+saw 19.3 frames per second in each direction, longest gaps of 1.7-2.0 s, and
+results with no battle error. This matched capture39 and capture41 without the
+latency. The clients reported the same battle load time, frame pacing and audio
+consumption.
 
 `threaded_bridge_probe.cpp` with `threaded_bridge_pre.js` is a small real Emscripten
 `-pthread -sPROXY_TO_PTHREAD=1 -sPTHREAD_POOL_SIZE=1 -sENVIRONMENT=node`
