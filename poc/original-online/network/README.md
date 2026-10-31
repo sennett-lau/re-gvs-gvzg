@@ -435,6 +435,26 @@ The complete contract runs with small runtime allocations both above and below
 the module base. Unrelated lower addresses, neighboring stub instructions and
 the exact control stub in an unrelated thread cannot commit the connected state.
 
+`run_sif_latency_tests.py --work /private/sif-latency-evidence` checks an opt-in
+candidate for the DNAS stall in which the browser's request never leaves (B34).
+In the vendored runtime, an HLE RPC server replies inside the EE's SIF command. A
+synchronous RPC therefore never gives the EE to a lower-priority thread. The
+original browser's priority-63 HTTP worker only runs while its higher-priority
+threads wait for such replies. `sif_latency_prepare.py <copied tree> --latency-us N`
+edits only a copied `runtime/src/iop/sif.cpp`. It has no default value. Every
+IOP-to-EE packet then reaches EE RAM N us after it was queued, in the original
+order. The retry uses `hw::kEventIop`, which the runtime declares but never uses;
+the preparer refuses a tree that uses it. The save-state format is unchanged.
+Packets restored from a state are due at once.
+
+The check links the real `sif.cpp`, vendor and prepared at 50 and 100 us, and
+drives EE commands through `sif::set_dma`. Each saved state is byte-identical to
+the vendor state. A model with the vendor EE kernel gives the worker no EE time
+when replies arrive with no latency, 6 ms/s at 50 us and 12 ms/s at 100 us; it
+assumes two synchronous RPCs per frame. The delay also applies to CD, file and
+asynchronous replies. Whether it removes the stall in a game run is not yet
+established.
+
 `threaded_bridge_probe.cpp` with `threaded_bridge_pre.js` is a small real Emscripten
 `-pthread -sPROXY_TO_PTHREAD=1 -sPTHREAD_POOL_SIZE=1 -sENVIRONMENT=node`
 test. Build it with `transport_bridge.cpp`, `--pre-js threaded_bridge_pre.js`,
