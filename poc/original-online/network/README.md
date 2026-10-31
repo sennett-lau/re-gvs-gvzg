@@ -241,6 +241,18 @@ restart or a closed opponent has not yet been observed in a game run.
   restart is still saved to `battle_record`, because the lookup uses the database.
   The returning client then receives the ordinary pilot list instead of its
   after-battle entry.
+* **Session end and results.** Lobby 02 uses the default battle rule, which sets
+  no fixed number of consecutive matches. Clients therefore keep playing in one
+  relay session until a player chooses to end on the continue/end panel shown after
+  each match, or nobody answers that panel for 30 s. The first result-screen
+  keepalive then closes each relay connection. Each client logs in to the lobby
+  again on its battle session and answers the result question. It then enters the
+  after-battle room and can leave it for the lobby map. Capture29 on 2026-10-31
+  followed this path, and `battle_record` stored both answers with the correct
+  battle code and sides. The client sends the same layout that the server parses.
+  It zeroes match, win, loss and kill counters unless the session has four
+  players, so a one-against-one session reports zeros. A session that ends because
+  the browsers close sends no result.
 * **Same pilot logs in again.** Covered by the stale-close fix above. Without it,
   the old connection's late close removed the new session.
 * **Opponent leaves during a battle.** The relay frees the leaving peer's slot and
