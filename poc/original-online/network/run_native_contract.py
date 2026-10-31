@@ -19,6 +19,7 @@ def main():
     parser.add_argument('--avetcp',type=Path,required=True)
     parser.add_argument('--work',type=Path,required=True)
     parser.add_argument('--quiet-trace',action='store_true',help='compose the opt-in counted trace mode')
+    parser.add_argument('--idle-diagnostic',action='store_true',help='compose the opt-in HTTPS idle report')
     args=parser.parse_args();args.work.mkdir(parents=True,exist_ok=False)
     raw=args.avetcp.read_bytes()
     if hashlib.sha256(raw).hexdigest()!=EXPECTED:raise ValueError('Original AVETCP fingerprint mismatch')
@@ -56,11 +57,11 @@ def main():
     private_image=args.work/'relocated-original.bin';private_image.write_bytes(image)
     tree=args.work/'upstream';(tree/'runtime/src').mkdir(parents=True)
     shutil.copytree(ROOT/'vendor/ps2-web-recomp/runtime/src/iop',tree/'runtime/src/iop')
-    spec=importlib.util.spec_from_file_location('network_prepare',HERE/'prepare_runtime.py');prep=importlib.util.module_from_spec(spec);spec.loader.exec_module(prep);prep.prepare(tree,args.quiet_trace)
+    spec=importlib.util.spec_from_file_location('network_prepare',HERE/'prepare_runtime.py');prep=importlib.util.module_from_spec(spec);spec.loader.exec_module(prep);prep.prepare(tree,args.quiet_trace,args.idle_diagnostic)
     command=['c++','-std=c++20','-Wall','-Wextra','-Werror','-I'+str(tree/'runtime/src/iop'),str(HERE/'native_contract_probe.cpp'),str(tree/'runtime/src/iop/cpu.cpp'),str(tree/'runtime/src/iop/native_transport.cpp'),str(tree/'runtime/src/iop/sha256.cpp'),'-o',str(args.work/'probe')]
-    run=[str(args.work/'probe'),str(private_image),str(args.avetcp)]
+    run=[str(args.work/'probe'),str(private_image),str(args.avetcp)]+(['--idle-check'] if args.idle_diagnostic else [])
     logs=['build.log','run.log','run-low-stubs.log']
-    report={'started_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'avetcp_sha256':EXPECTED,'image_sha256':hashlib.sha256(image).hexdigest(),'game_executed':False,'quiet_trace':args.quiet_trace,'host_transport':'deterministic substitute','scheduler':'deterministic substitute','original_instruction_execution':True,'commands':[command,run,run+['--low-stubs']],'logs':logs,'sources_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in HERE.iterdir() if p.is_file()}}
+    report={'started_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'avetcp_sha256':EXPECTED,'image_sha256':hashlib.sha256(image).hexdigest(),'game_executed':False,'quiet_trace':args.quiet_trace,'idle_diagnostic':args.idle_diagnostic,'host_transport':'deterministic substitute','scheduler':'deterministic substitute','original_instruction_execution':True,'commands':[command,run,run+['--low-stubs']],'logs':logs,'sources_sha256':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in HERE.iterdir() if p.is_file()}}
     try:
         for i,cmd in enumerate(report['commands']):
             proc=subprocess.run(cmd,text=True,capture_output=True,timeout=45)

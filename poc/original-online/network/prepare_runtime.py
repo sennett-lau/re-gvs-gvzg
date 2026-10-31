@@ -17,7 +17,7 @@ def replace_once(text, old, new):
         raise ValueError('Runtime integration anchor mismatch: ' + old)
     return text.replace(old, new)
 
-def prepare(tree, quiet_trace=False):
+def prepare(tree, quiet_trace=False, idle_diagnostic=False):
     tree = Path(tree)
     iop = tree / 'runtime/src/iop'
     if (iop / 'native_transport.cpp').exists():
@@ -50,13 +50,17 @@ def prepare(tree, quiet_trace=False):
         path.write_text(text)
     for name in SOURCES:
         shutil.copy2(HERE / name, iop / name)
+    source = iop / 'native_transport.cpp'
     if quiet_trace:
         # Opt-in long-run profile: per-call traces become periodic counters.
-        source = iop / 'native_transport.cpp'
         source.write_text('#define ORIGINAL_ONLINE_QUIET_TRACE 1\n' + source.read_text())
+    if idle_diagnostic:
+        # Opt-in: report an HTTPS connection with no upstream send for 10 s.
+        source.write_text('#define ORIGINAL_ONLINE_IDLE_DIAGNOSTIC 1\n' + source.read_text())
     manifest = {
         'profile': 'experimental-original-avetcp-primitives-v1',
         'quiet_trace': quiet_trace,
+        'idle_diagnostic': idle_diagnostic,
         'upstream_sha256': before,
         'files_sha256': {str(p.relative_to(tree)): digest(p) for p in [*paths, *(iop/n for n in SOURCES)]},
         'compiled_sources': ['runtime/src/iop/' + n for n in ['cpu.cpp', 'kernel.cpp', 'native_transport.cpp', 'transport_bridge.cpp','sha256.cpp']],
@@ -77,5 +81,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tree', type=Path)
     parser.add_argument('--quiet-trace', action='store_true', help='count per-call traces instead of printing them')
+    parser.add_argument('--idle-diagnostic', action='store_true', help='report an HTTPS connection idle upstream for 10 s')
     args = parser.parse_args()
-    print(json.dumps(prepare(args.tree, args.quiet_trace), indent=2))
+    print(json.dumps(prepare(args.tree, args.quiet_trace, args.idle_diagnostic), indent=2))

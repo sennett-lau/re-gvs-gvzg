@@ -2,6 +2,8 @@
 // deterministic host transport and scheduler substitutes. This is not a game run.
 #include "native_transport.hpp"
 #include "transport_bridge.h"
+#include <chrono>
+#include <thread>
 #include "kernel.hpp"
 #include "sha256.hpp"
 #include <cassert>
@@ -105,8 +107,12 @@ static void run_helper(int tid){
  test::current=tid;test::switched=false;g_cpu=test::threads.at(tid).context;
  std::int64_t budget=10000;execute(g_cpu,budget);assert(test::switched);test::current=1;
 }
+extern "C" unsigned original_online_idle_events();
 int main(int argc,char** argv){
- assert(argc==3 || (argc==4 && std::string(argv[3])=="--low-stubs"));test::low_stubs=argc==4;
+ // Optional flags: --low-stubs, --idle-check (adapter composed with the idle diagnostic).
+ bool idle_check=false;
+ for(int i=3;i<argc;++i){const std::string flag=argv[i];if(flag=="--low-stubs")test::low_stubs=true;else if(flag=="--idle-check")idle_check=true;else assert(false);}
+ assert(argc>=3);
  std::ifstream file(argv[1],std::ios::binary);std::vector<std::uint8_t> image((std::istreambuf_iterator<char>(file)),{});assert(image.size()>0x18860);std::memcpy(ram_ptr(test::base),image.data(),image.size());
  test::threads[1].id=1;test::threads[1].priority=32;
  set_ram32(test::exit_pc,(kHleOpcode<<26)|2);
@@ -170,7 +176,14 @@ int main(int argc,char** argv){
  test::tick();run_helper(helper());assert(test::get16(test::slot+314)==0xffff && test::get16(test::slot+312)==1 && *ram_ptr(test::slot+322)==19);
  assert(test::get16(test::base+0x17ea2)==0xfffa);test::stream_status=0;test::tick();
  // Reconnect the retained descriptor through the verified active-open boundary.
+ if(idle_check)test::put16(test::slot+326,0xbb01); // port 443 in network byte order
  test::put16(test::slot+314,2);c=call(0xb3d4,test::slot,0,0,0,test::base+0xcf5c);assert(native::intercept(c));test::ready(test::last_ticket,0,92);test::tick();run_helper(helper());assert(test::get16(test::slot+314)==4);test::tick();
+ if(idle_check){
+  // A connected HTTPS handle with no upstream send is reported once, after 10 s of host time.
+  assert(original_online_idle_events()==0);
+  std::this_thread::sleep_for(std::chrono::milliseconds(10200));test::tick();assert(original_online_idle_events()==1);
+  test::tick();assert(original_online_idle_events()==1);
+ }
  // Full close waits for queued receive completion before releasing descriptor.
  c=call(0xdcd8,0,desc,3,0,test::base+0x10a44);assert(native::intercept(c));auto final_read=test::last_ticket;
  test::guard_depth=1;test::switched=false;g_cpu=call(0xd39c,0,0,0,0,test::exit_pc);{std::int64_t budget=10000;execute(g_cpu,budget);}assert(test::switched && g_cpu.r[2]==0 && test::get16(test::slot+314)==6 && (*ram_ptr(test::slot+319)&128));test::guard_depth=0;

@@ -35,6 +35,9 @@ struct Socket {
     Pending context;
     std::uint32_t shutdown_ticket=0;
     bool shutdown_started=false,eof_queued=false,drop_queued=false,cleanup_queued=false;
+    // Idle diagnostic: destination port, upstream sends and the last one.
+    std::uint16_t port=0;std::uint32_t sends=0,sent_bytes=0;bool idle_reported=false;
+    std::chrono::steady_clock::time_point last_send{};
 };
 std::map<int,Socket> sockets;
 struct CompletionGuard { int handle;std::uint32_t serial,entry,epoch;Completion event;bool entered=false; };
@@ -92,6 +95,15 @@ constexpr bool quiet_trace = true;
 #else
 constexpr bool quiet_trace = false;
 #endif
+#ifdef ORIGINAL_ONLINE_IDLE_DIAGNOSTIC
+constexpr bool idle_diagnostic = true;
+#else
+constexpr bool idle_diagnostic = false;
+#endif
+// An HTTPS (DNAS/login) connection whose original client has sent nothing for
+// this long while connected is reported once. Server replies take milliseconds.
+constexpr auto idle_after = std::chrono::seconds(10);
+unsigned idle_events = 0;
 // Quiet mode counts the per-call events below instead of printing them, and
 // prints one counters line per window. Errors and lifecycle events still print.
 struct Counter { std::uint64_t calls=0, bytes=0; };
@@ -289,7 +301,8 @@ bool intercept(Cpu& c) {
             std::snprintf(address,sizeof(address),"%u.%u.%u.%u",ip[0],ip[1],ip[2],ip[3]);
             const auto* port=ram_ptr(slot+326);
             // Zero host timeout: the original state2 guest timer remains active.
-            s.open=host::open(address,std::strlen(address),(port[0]<<8)|port[1],0);
+            s.port=static_cast<std::uint16_t>((port[0]<<8)|port[1]);
+            s.open=host::open(address,std::strlen(address),s.port,0);
             if(!s.open)unsupported("host open submission",host::last_error());
             sockets.emplace(h,std::move(s));trace("active-open-submitted",h);return ret(c,0);
         }
@@ -355,7 +368,8 @@ bool intercept(Cpu& c) {
         if(!s.host)unsupported("send before host handshake");
         p.length=total;p.epoch=++s.send_epoch;p.ticket=host::write(s.host,data.data(),total);
         if(!p.ticket)unsupported("host send submission",host::last_error());
-        set_ram32(s.slot+208,p.callback);s.send=p;trace("send-submitted",h,total);return ret(c,0);
+        set_ram32(s.slot+208,p.callback);s.send=p;++s.sends;s.sent_bytes+=total;s.last_send=std::chrono::steady_clock::now();
+        trace("send-submitted",h,total);return ret(c,0);
     }
     if(offset==0xdcd8){
         if(c.r[31]!=base+0x10a44)unsupported("receive variant");
@@ -411,13 +425,22 @@ void pump() {
         trace("original-dns-callback-scheduled",id,d.phase);
     }
     for(auto& [h,s]:sockets){
+        if(idle_diagnostic && s.host && s.port==443 && !s.send.ticket && !s.shutdown_started && !s.idle_reported){
+            const auto idle=std::chrono::steady_clock::now()-s.last_send;
+            if(idle>=idle_after){
+                s.idle_reported=true;++idle_events;
+                std::fprintf(stderr,"[original-online-network] idle-after-handshake handle=%d port=%u sends=%u sent_bytes=%u idle_ms=%lld recv_pending=%d event=%u generation=%u guest_cycles=%llu\n",
+                    h,s.port,s.sends,s.sent_bytes,(long long)std::chrono::duration_cast<std::chrono::milliseconds>(idle).count(),
+                    s.recv.ticket!=0,idle_events,generation,(unsigned long long)kernel::now());
+            }
+        }
         host::Result r{};std::vector<std::uint8_t> bytes(32767);
         if(s.open && host::poll(s.open,&r,nullptr,0)==1){
             s.open=0;
             if(!r.ok){
                 if(r.host_error!=2)unsupported("unmapped host connect failure",r.host_error);
                 control(s,3,1);s.drop_queued=true;trace("original-connect-drop-queued",h,r.host_error);
-            }else{s.host=r.handle;control(s,1);trace("host-handshake-complete",h);}
+            }else{s.host=r.handle;s.last_send=std::chrono::steady_clock::now();control(s,1);trace("host-handshake-complete",h);}
         }
         if(s.host){
             const auto state=host::stream_state(s.host);
@@ -472,3 +495,7 @@ void pump() {
     }
 }
 }
+
+// Opt-in diagnostics (the exec wait snapshot) read this through a weak
+// reference. It stays zero unless the idle diagnostic is composed.
+extern "C" unsigned original_online_idle_events() { return ps2::iop::original_online::idle_events; }
