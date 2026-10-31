@@ -305,10 +305,29 @@ def main():
         for item in timeline:
             if item.get('fields', {}).get('user') == user or item.get('user') == user:
                 item['client'] = label
+    # Tunnel transport TCP samples (backendctl tunnel stats), if recorded.
+    tunnels = {}
+    samples = args.logs / 'tunnel-tcp.jsonl'
+    if samples.exists():
+        for line in samples.read_text().splitlines():
+            sample = json.loads(line)
+            when = datetime.datetime.fromisoformat(sample['utc'].replace('Z', '+00:00'))
+            if since <= when <= until and sample.get('retransmitted') is not None:
+                tunnels.setdefault(sample['host'], []).append(sample)
+    tunnel_summary = {}
+    for host, rows in tunnels.items():
+        first, last = rows[0], rows[-1]
+        rtts = [r['rtt_avg_ms'] for r in rows if r.get('rtt_avg_ms') is not None]
+        same = first.get('connection') == last.get('connection')
+        tunnel_summary[host] = {'samples': len(rows), 'same_connection': same,
+            'retransmitted_bytes': last['retransmitted'] - first['retransmitted'] if same else None,
+            'duplicate_bytes_received': last['rx_dupe'] - first['rx_dupe'] if same else None,
+            'bytes_out': last['bytes_out'] - first['bytes_out'] if same else None,
+            'rtt_avg_ms_min': min(rtts) if rtts else None, 'rtt_avg_ms_max': max(rtts) if rtts else None}
     receipt = {'run_id': args.run_id, 'written_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                'scope': 'passive local logs and read-only database; no network traffic; login keys redacted',
                'window': window, 'log_timezone': str(tz), 'sources': sources, 'checks': checks,
-               'gateway_summary': gateway_summary(summary['gateway']),
+               'gateway_summary': gateway_summary(summary['gateway']), 'tunnel_tcp': tunnel_summary,
                'battle_connections': battle_connections, 'clients': clients,
                'battle_record_rows': in_window, 'users': user_rows, 'summary': summary, 'timeline': timeline}
     (args.out / 'receipt.json').write_text(json.dumps(receipt, indent=1, ensure_ascii=False) + '\n')

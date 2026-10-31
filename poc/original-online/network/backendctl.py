@@ -378,6 +378,24 @@ class Backend:
                                 cwd=self.run, capture_output=True, text=True)
         return {'up': result.returncode == 0, 'detail': (result.stderr or result.stdout).strip()}
 
+    def tunnel_stats(self, host):
+        """Passive TCP statistics of the tunnel's SSH transport connection (macOS nettop)."""
+        check = self.tunnel_check(host)
+        match = re.search(r'pid=(\d+)', check['detail'])
+        if not match or not shutil.which('nettop'):
+            return {'up': check['up']}
+        result = subprocess.run(['nettop', '-m', 'tcp', '-L', '1', '-n', '-p', match[1], '-J',
+                                 'bytes_in,bytes_out,rx_dupe,rx_ooo,re-tx,rtt_avg,rtt_var'],
+                                capture_output=True, text=True, timeout=20)
+        for line in result.stdout.splitlines():
+            if line.startswith('tcp') and ':22,' in line:
+                v = line.split(',')
+                number = lambda text: float(text.split()[0]) if text.strip() else None
+                return {'up': True, 'connection': v[0], 'bytes_in': int(v[1]), 'bytes_out': int(v[2]),
+                        'rx_dupe': int(v[3]), 'rx_ooo': int(v[4]), 'retransmitted': int(v[5]),
+                        'rtt_avg_ms': number(v[6]), 'rtt_var_ms': number(v[7])}
+        return {'up': check['up'], 'error': 'transport connection not found'}
+
     def cmd_tunnel(self, args):
         if args.host not in self.tunnels:
             raise SystemExit('host is not configured under tunnels: ' + args.host)
@@ -416,6 +434,14 @@ class Backend:
             result = subprocess.run(['ssh', '-S', self.tunnel_socket(args.host), '-O', 'exit', args.host],
                                     cwd=self.run, capture_output=True, text=True)
             record.update(returncode=result.returncode, stderr=result.stderr.strip())
+        if args.action == 'stats':
+            # Sampled during runs; appended to its own log, never sends traffic.
+            record.update(self.tunnel_stats(args.host))
+            self.logs.mkdir(parents=True, exist_ok=True)
+            with (self.logs / 'tunnel-tcp.jsonl').open('a') as f:
+                f.write(json.dumps(record) + '\n')
+            print(json.dumps(record))
+            return 0
         record['check'] = self.tunnel_check(args.host)
         self.logs.mkdir(parents=True, exist_ok=True)
         with (self.logs / 'tunnels.jsonl').open('a') as f:
@@ -476,7 +502,7 @@ def main():
     p = sub.add_parser('status', help='health: processes, loopback listeners, database, tunnels')
     p.add_argument('--users', action='store_true', help='also read the lobby operator API /lbs/status')
     p = sub.add_parser('tunnel', help='SSH reverse tunnel from a configured device to the gateway')
-    p.add_argument('action', choices=['up', 'down', 'check', 'forward', 'cancel'])
+    p.add_argument('action', choices=['up', 'down', 'check', 'forward', 'cancel', 'stats'])
     p.add_argument('host')
     p.add_argument('--local', help='forward/cancel: LOCAL:REMOTE, this machine 127.0.0.1:LOCAL -> device 127.0.0.1:REMOTE')
     p.add_argument('--remote', help='forward/cancel: REMOTE:LOCAL, device 127.0.0.1:REMOTE -> this machine 127.0.0.1:LOCAL')

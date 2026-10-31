@@ -178,6 +178,7 @@ $C tunnel check <ssh-host>
 $C rtt <ssh-host>            # gateway-only HTTP round trips; never during a capture
 $C tunnel forward <ssh-host> --local 18647:8647   # add a loopback forward to the running tunnel
 $C tunnel cancel <ssh-host> --local 18647:8647
+$C tunnel stats <ssh-host>   # passive TCP statistics of the tunnel's SSH transport
 $C tunnel down <ssh-host>
 ```
 
@@ -207,6 +208,20 @@ second Mac on the same tailnet (both direct LAN paths). Gateway HTTP round trips
 on a reused connection had median times of 3.6 ms (PC) and 10.2 ms (second Mac).
 A battle between those two devices has not been tested yet.
 
+A tunnel carries every connection of its device in one SSH TCP stream, and the
+battle relay runs in lockstep, so packet loss on that stream delays every battle
+frame of every client on the device until TCP retransmits. In capture31 both
+clients ran on the second Mac, which used Wi-Fi on a different routed subnet.
+Each client's frames took a median of 17 ms to reach the other client, but the
+90th percentile was 785 ms and the 99th 1161 ms. That was in every minute of the
+run, and the game clock advanced about five times slower than in capture28.
+capture28 and capture29 used the same tunnel; there the 90th percentile was
+17 ms. By the end of capture31, this Mac had retransmitted 6.3% of the bytes it
+had sent on that transport since the tunnel opened. `tunnel stats` records
+retransmitted and duplicate bytes and the smoothed RTT of the transport (macOS
+`nettop`, no traffic sent). Receipts report their change over the run window
+when samples exist.
+
 ### Receipts
 
 `backend_receipt.py` writes a passive receipt for one run window. It reads the
@@ -224,7 +239,8 @@ The receipt lists DNAS and login requests, lobby key-pairs, `[lobby-event]` line
 created or updated in the window, disconnects, gateway connection statistics and
 errors. A `checks` object summarizes them. `battle_connections` joins each relay
 address to its session and user (from `BattleInfo`), its device listener, and
-its gateway statistics. Repeat `--client LABEL=USER` (for example `A=P899XG`) to
+its gateway statistics, and `tunnel_tcp` reports each tunnel's retransmitted and
+duplicate bytes and RTT range over the window. Repeat `--client LABEL=USER` (for example `A=P899XG`) to
 group each client's lobby events, battle connections, results and
 `battle_record` rows when several clients share one device.
 
