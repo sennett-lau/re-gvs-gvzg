@@ -5,8 +5,13 @@ import { NativeByteStream, NativeDatagramSocket, TransportError } from './transp
 export class OriginalOnlineAdapter {
   constructor({ gatewayURL, token, endpoints, now = () => performance.now() }) {
     const parsed = new URL(gatewayURL);
-    if (parsed.protocol !== 'ws:' || parsed.hostname !== '127.0.0.1' || parsed.pathname !== '/')
-      throw new Error('private gateway must be ws://127.0.0.1:PORT/');
+    // Loopback (local backend or SSH tunnel) or a private tailnet address in 100.64.0.0/10.
+    const octets = parsed.hostname.split('.').map(Number);
+    const tailnet = octets.length === 4 && octets.every(n => Number.isInteger(n) && n >= 0 && n <= 255) &&
+      octets[0] === 100 && octets[1] >= 64 && octets[1] <= 127;
+    if (parsed.protocol !== 'ws:' || !(parsed.hostname === '127.0.0.1' || tailnet) || parsed.pathname !== '/' ||
+        parsed.search || parsed.hash || parsed.username || parsed.password)
+      throw new Error('private gateway must be ws://127.0.0.1:PORT/ or ws://<tailnet 100.64.0.0/10 address>:PORT/');
     this.gatewayURL = gatewayURL; this.token = token; this.endpoints = endpoints; this.now = now;
     this.generation = 1; this.nextTicket = 1; this.nextHandle = 1;
     this.requests = new Map(); this.streams = new Map();

@@ -169,8 +169,28 @@ instances: it always creates a new database in a new directory.
 
 ### Other devices
 
-Every service, including the gateway, listens on loopback only. Another device
-reaches the gateway through an SSH reverse tunnel from the backend machine:
+Another device reaches the gateway in one of two ways. Both are private.
+Every service other than the gateway still listens only on loopback.
+
+**Direct tailnet listeners (default for play between devices).** The config's
+`tailnet_listeners` maps a label to a port and the tailnet addresses of the peers
+allowed to use it. The gateway binds that port only to this machine's tailnet
+address. It is never bound to `0.0.0.0` or a LAN address. Connections from
+any address not in the list are closed at accept. Both the listener address
+and the peer addresses must be in Tailscale's shared range (CGNAT, the /10 that
+starts at 100.64). The device's
+browser uses `ws://<this machine's tailnet address>:<port>/`. The Host header
+must equal that listener address. The capability token and the allowed Origins
+are still required. The gateway still reaches only the configured loopback
+services. Each game connection is its own TCP flow over the tailnet, so a lost
+packet delays only that flow. When each WebSocket closes, the gateway logs the
+kernel's TCP statistics for it: smoothed RTT and variance, retransmitted bytes
+and packets, out-of-order bytes (macOS only).
+
+**SSH reverse tunnel (fallback).** `tunnel up` binds only the device's own
+`127.0.0.1`. That device then uses `ws://127.0.0.1:<remote_port>/`, as on the
+backend machine. Give each device its own labelled loopback listener so that
+the gateway log attributes its connections:
 
 ```sh
 $C tunnel up <ssh-host>      # <ssh-host>: 127.0.0.1:<remote_port> -> 127.0.0.1:<listener port>
@@ -188,39 +208,35 @@ machine's `127.0.0.1:L` to the device's `127.0.0.1:R`; `--remote R:L` maps the
 device's `127.0.0.1:R` to this machine's `127.0.0.1:L`. Chaining the two can
 serve one device's page server to another device through the backend machine.
 
-The remote end binds only that device's `127.0.0.1`. The device's browser uses
-`ws://127.0.0.1:<remote_port>/` as on the backend machine. Backend-advertised
-lobby and battle addresses stay logical destinations that the adapter resolves
-through the gateway. Give each device its own labelled listener so the gateway
-log attributes its connections. Security limits:
+Backend-advertised lobby and battle addresses remain logical destinations. The
+adapter resolves them through the gateway in both modes. Security limits:
 
-* No service listens on a LAN or tailnet address. Only a process on a tunnelled
-  device can reach the gateway, and the tunnel exists only while SSH access to
-  that device is authorized.
-* Each connection still needs the capability token and an allowed Origin. The
-  gateway accepts only the `127.0.0.1` Host and reaches only configured loopback
-  services.
-* Traffic between machines is carried inside SSH. The gateway itself has no TLS
-  and is not suitable for direct exposure or public hosting.
+* No service listens on a LAN address, and nothing is reachable from outside the
+  tailnet. Tailnet listeners accept only listed peer addresses, which WireGuard
+  authenticates per device key. A tunnel exists only while SSH access to that
+  device is authorized.
+* The gateway has no TLS of its own. Traffic between machines is encrypted by
+  WireGuard or SSH. The gateway is not suitable for public hosting.
+
+**Deployment requirement: no shared TCP stream for lockstep traffic.** The
+battle relay runs in lockstep, so every client waits for every other client's
+frames. An SSH tunnel carries every connection of its device in one TCP stream.
+Any packet lost on that stream therefore delays every battle frame of every
+client on the device until TCP retransmits. In capture31 both clients ran on a
+Mac that used Wi-Fi on a different routed subnet. Each client's frames took a
+median of 17 ms to reach the other client, but the 90th percentile was 785 ms
+and the 99th 1161 ms. That was in every minute of the run, and the game clock
+advanced about five times slower than in capture28. capture28 and capture29 used
+the same tunnel; there the 90th percentile was 17 ms. By the end of capture31,
+the backend machine had retransmitted 6.3% of the bytes it had sent on that
+tunnel's transport since the tunnel opened. Use direct tailnet listeners for
+play between devices, and prefer wired links. `tunnel stats` records the
+transport's retransmitted and duplicate bytes and its smoothed RTT (macOS
+`nettop`, no traffic sent).
 
 On 2026-10-31 the backend ran on a Mac, with tunnels to a Windows PC and to a
 second Mac on the same tailnet (both direct LAN paths). Gateway HTTP round trips
 on a reused connection had median times of 3.6 ms (PC) and 10.2 ms (second Mac).
-A battle between those two devices has not been tested yet.
-
-A tunnel carries every connection of its device in one SSH TCP stream, and the
-battle relay runs in lockstep, so packet loss on that stream delays every battle
-frame of every client on the device until TCP retransmits. In capture31 both
-clients ran on the second Mac, which used Wi-Fi on a different routed subnet.
-Each client's frames took a median of 17 ms to reach the other client, but the
-90th percentile was 785 ms and the 99th 1161 ms. That was in every minute of the
-run, and the game clock advanced about five times slower than in capture28.
-capture28 and capture29 used the same tunnel; there the 90th percentile was
-17 ms. By the end of capture31, this Mac had retransmitted 6.3% of the bytes it
-had sent on that transport since the tunnel opened. `tunnel stats` records
-retransmitted and duplicate bytes and the smoothed RTT of the transport (macOS
-`nettop`, no traffic sent). Receipts report their change over the run window
-when samples exist.
 
 ### Receipts
 
@@ -239,8 +255,9 @@ The receipt lists DNAS and login requests, lobby key-pairs, `[lobby-event]` line
 created or updated in the window, disconnects, gateway connection statistics and
 errors. A `checks` object summarizes them. `battle_connections` joins each relay
 address to its session and user (from `BattleInfo`), its device listener, and
-its gateway statistics, and `tunnel_tcp` reports each tunnel's retransmitted and
-duplicate bytes and RTT range over the window. Repeat `--client LABEL=USER` (for example `A=P899XG`) to
+its gateway statistics. `tunnel_tcp` reports each tunnel's retransmitted and
+duplicate bytes and RTT range over the window. A direct connection's kernel TCP
+statistics appear with its gateway statistics. Repeat `--client LABEL=USER` (for example `A=P899XG`) to
 group each client's lobby events, battle connections, results and
 `battle_record` rows when several clients share one device.
 

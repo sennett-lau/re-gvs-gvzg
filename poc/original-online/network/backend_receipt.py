@@ -100,7 +100,7 @@ def db_time(value):
 
 CLOSE = re.compile(r'^conn (\d+) close listener=(\S+) path=(\S+) duration_ms=(\d+) reason=(\S+) '
                    r'up\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\] '
-                   r'down\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\](?: service=(\S+))?')
+                   r'down\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\](?: service=(\S+))?(?: tcp\[([^\]]*)\])?')
 GAP_BUCKETS = ['<20ms', '20-50', '50-100', '100-200', '200-500', '500-1000', '>=1000ms']
 
 
@@ -112,7 +112,9 @@ def gateway_close(text):
     side = lambda b, f, gap, hist: {'bytes': int(b), 'frames': int(f), 'max_gap_ms': int(gap),
                                     'gaps': dict(zip(GAP_BUCKETS, map(int, hist.split())))}
     return {'conn': int(g[0]), 'listener': g[1], 'path': g[2], 'duration_ms': int(g[3]), 'reason': g[4],
-            'up': side(*g[5:9]), 'down': side(*g[9:13]), 'service': g[13]}
+            'up': side(*g[5:9]), 'down': side(*g[9:13]), 'service': g[13],
+            # Kernel TCP statistics of a direct (tailnet) connection, when logged.
+            'tcp': {k: int(v) for k, v in (pair.split('=') for pair in g[14].split())} if g[14] else None}
 
 
 def gateway_summary(items):
@@ -127,6 +129,13 @@ def gateway_summary(items):
                                     'up': {'bytes': 0, 'frames': 0, 'max_gap_ms': 0, 'gaps': dict.fromkeys(GAP_BUCKETS, 0)},
                                     'down': {'bytes': 0, 'frames': 0, 'max_gap_ms': 0, 'gaps': dict.fromkeys(GAP_BUCKETS, 0)}})
         g['connections'] += 1
+        if c.get('tcp'):
+            t = g.setdefault('tcp', {'connections': 0, 'retx_bytes': 0, 'retx_packets': 0, 'max_srtt_ms': 0, 'max_rttvar_ms': 0})
+            t['connections'] += 1
+            t['retx_bytes'] += c['tcp'].get('retx_bytes', 0)
+            t['retx_packets'] += c['tcp'].get('retx_packets', 0)
+            t['max_srtt_ms'] = max(t['max_srtt_ms'], c['tcp'].get('srtt_ms', 0))
+            t['max_rttvar_ms'] = max(t['max_rttvar_ms'], c['tcp'].get('rttvar_ms', 0))
         g['reasons'][c['reason']] = g['reasons'].get(c['reason'], 0) + 1
         g['max_duration_ms'] = max(g['max_duration_ms'], c['duration_ms'])
         for d in ('up', 'down'):

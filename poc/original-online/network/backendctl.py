@@ -10,6 +10,7 @@ import argparse
 import datetime
 import hashlib
 import importlib.util
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -68,6 +69,21 @@ class Backend:
         self.listeners = {label: int(port) for label, port in self.conf.get('listeners', {}).items()}
         if label_clash := set(self.listeners.values()) & set(self.ports.values()):
             raise SystemExit('listener port collides with a service port: ' + str(label_clash))
+        # Direct listeners on this machine's tailnet address, each with its allowed peers.
+        self.tailnet = {label: {'port': int(t['port']), 'peers': list(t['peers'])}
+                        for label, t in self.conf.get('tailnet_listeners', {}).items()}
+        self.tailnet_address = None
+        if self.tailnet:
+            self.tailnet_address = self.conf.get('tailnet_address') or subprocess.run(
+                ['tailscale', 'ip', '-4'], capture_output=True, text=True).stdout.split('\n')[0].strip()
+            for value in [self.tailnet_address] + [p for t in self.tailnet.values() for p in t['peers']]:
+                if not ipaddress.ip_address(value) in ipaddress.ip_network('100.64.0.0/10'):
+                    raise SystemExit('tailnet address outside 100.64.0.0/10: ' + value)
+            ports = [t['port'] for t in self.tailnet.values()]
+            if set(ports) & (set(self.ports.values()) | set(self.listeners.values())) or len(set(ports)) != len(ports):
+                raise SystemExit('tailnet listener port collides with another port')
+            if set(self.tailnet) & set(self.listeners):
+                raise SystemExit('duplicate listener label')
         self.tunnels = self.conf.get('tunnels', {})
         for host, tunnel in self.tunnels.items():
             if tunnel.get('listener', 'default') not in ('default', *self.listeners):
@@ -81,6 +97,7 @@ class Backend:
     def expected_listeners(self):
         tcp = {('TCP', self.ports[n]) for n in ('lobby', 'stun', 'api', 'login', 'battle', 'gateway', 'dnas')}
         tcp |= {('TCP', port) for port in self.listeners.values()}
+        tcp |= {('TCP', t['port']) for t in self.tailnet.values()}
         return tcp | {('UDP', self.ports[n]) for n in ('dns', 'stun', 'stun_test', 'battle')}
 
     def environment(self):
@@ -105,6 +122,8 @@ class Backend:
         token = (self.state / 'token').read_text().strip()
         return {'listen': self.address('gateway'), 'token': token,
                 'listeners': {label: '127.0.0.1:' + str(port) for label, port in self.listeners.items()},
+                'tailnet_listeners': {label: {'listen': f'{self.tailnet_address}:{t["port"]}', 'peers': t['peers']}
+                                      for label, t in self.tailnet.items()},
                 'origins': self.conf.get('origins', []), 'udp': {'dns': self.address('dns')},
                 'endpoints': {n: self.address(n) for n in ('lobby', 'battle', 'dnas', 'login')}}
 
@@ -123,13 +142,17 @@ class Backend:
         result = subprocess.run(['lsof', '-nP', '-a', '-p', ','.join(map(str, pids)), '-i'],
                                 capture_output=True, text=True)
         listeners = set()
+        tailnet_ports = {t['port'] for t in self.tailnet.values()}
         for line in result.stdout.splitlines()[1:]:
             if 'LISTEN' in line or ' UDP ' in line:
-                if '127.0.0.1:' not in line or '*:' in line:
-                    raise RuntimeError('non-loopback listener: ' + line)
-                match = re.search(r'(TCP|UDP) 127[.]0[.]0[.]1:(\d+)', line)
-                if match:
-                    listeners.add((match[1], int(match[2])))
+                match = re.search(r'(TCP|UDP) ([0-9.]+|\*):(\d+)', line)
+                if not match:
+                    continue
+                proto, host, port = match[1], match[2], int(match[3])
+                # Loopback everywhere; the tailnet address only on configured TCP ports.
+                if not (host == '127.0.0.1' or (proto == 'TCP' and host == self.tailnet_address and port in tailnet_ports)):
+                    raise RuntimeError('listener outside the allowed addresses: ' + line)
+                listeners.add((proto, port))
         return listeners, result.stdout
 
     def port_holders(self):

@@ -4,6 +4,10 @@
   "base_port": 18800,
   "origins": ["http://127.0.0.1:8647"],
   "listeners": {"pc": 18822, "laptop": 18821},
+  "tailnet_listeners": {
+    "pc-direct": {"port": 18830, "peers": ["<pc tailnet address>"]},
+    "laptop-direct": {"port": 18831, "peers": ["<laptop tailnet address>"]}
+  },
   "tunnels": {
     "pc-ssh-alias": {"remote_port": 18820, "listener": "pc", "windows": true, "tailnet_name": "pc"},
     "laptop-ssh-alias": {"remote_port": 18820, "listener": "laptop", "tailnet_name": "laptop"}

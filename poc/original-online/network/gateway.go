@@ -29,10 +29,49 @@ type config struct {
     // Optional additional loopback listeners by label, for example one per
     // device tunnel, so the passive connection log can attribute traffic.
     Listeners map[string]string `json:"listeners"`
+    // Optional listeners on this machine's tailnet address for other devices.
+    // Only the listed tailnet peers may connect; each game connection is then
+    // its own TCP flow instead of a channel in one shared SSH stream.
+    TailnetListeners map[string]tailnetListener `json:"tailnet_listeners"`
     Token string `json:"token"`
     Origins []string `json:"origins"`
     Endpoints map[string]string `json:"endpoints"`
     UDP map[string]string `json:"udp"`
+}
+
+type tailnetListener struct {
+    Listen string `json:"listen"`
+    Peers []string `json:"peers"`
+}
+
+// Tailscale assigns addresses from the shared CGNAT range 100.64.0.0/10.
+var tailnetRange = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
+
+func tailnetIP(text string) bool {
+    ip := net.ParseIP(text)
+    return ip != nil && ip.To4() != nil && tailnetRange.Contains(ip)
+}
+
+// peerListener closes connections from any address other than the allowed peers.
+type peerListener struct {
+    net.Listener
+    label string
+    peers map[string]bool
+    accepted *sync.Map
+}
+
+func (l peerListener) Accept() (net.Conn, error) {
+    for {
+        conn, err := l.Listener.Accept()
+        if err != nil { return nil, err }
+        host, _, _ := net.SplitHostPort(conn.RemoteAddr().String())
+        if l.peers[host] {
+            l.accepted.Store(conn.RemoteAddr().String(), conn)
+            return conn, nil
+        }
+        log.Printf("listener %s rejected peer %s", l.label, host)
+        conn.Close()
+    }
 }
 
 func loopbackAddress(addr string) bool {
@@ -88,6 +127,12 @@ func main() {
     for label, addr := range conf.Listeners {
         if label == "" || strings.ContainsAny(label, " =") || !loopbackAddress(addr) || addr == conf.Listen { log.Fatal("invalid listener") }
     }
+    for label, t := range conf.TailnetListeners {
+        host, port, err := net.SplitHostPort(t.Listen)
+        if label == "" || strings.ContainsAny(label, " =") || err != nil || port == "" || port == "0" || !tailnetIP(host) || len(t.Peers) == 0 { log.Fatal("invalid tailnet listener") }
+        if _, clash := conf.Listeners[label]; clash { log.Fatal("duplicate listener label") }
+        for _, peer := range t.Peers { if !tailnetIP(peer) { log.Fatal("tailnet peer outside 100.64.0.0/10") } }
+    }
     for name, addr := range conf.UDP {
         if name == "" || strings.ContainsAny(name, "/?#") || !loopbackAddress(addr) { log.Fatal("invalid UDP endpoint") }
     }
@@ -101,15 +146,25 @@ func main() {
         return "", "", false
     }
     var serial uint64
+    var accepted sync.Map
+    localAddr := func(r *http.Request) string {
+        if addr, ok := r.Context().Value(http.LocalAddrContextKey).(net.Addr); ok { return addr.String() }
+        return ""
+    }
     listenerLabel := func(r *http.Request) string {
-        if addr, ok := r.Context().Value(http.LocalAddrContextKey).(net.Addr); ok {
-            for label, listen := range conf.Listeners { if listen == addr.String() { return label } }
-        }
+        local := localAddr(r)
+        for label, listen := range conf.Listeners { if listen == local { return label } }
+        for label, t := range conf.TailnetListeners { if t.Listen == local { return label } }
         return "default"
     }
     handler := websocket.Server{
         Handshake: func(c *websocket.Config, r *http.Request) error {
-            if !strings.HasPrefix(r.Host, "127.0.0.1:") || r.URL.RawQuery != "" { return fmt.Errorf("invalid host or query") }
+            // Loopback listeners accept only a 127.0.0.1 Host; a tailnet listener only its own address.
+            local := localAddr(r)
+            host, _, _ := net.SplitHostPort(local)
+            if loopbackAddress(local) && !strings.HasPrefix(r.Host, "127.0.0.1:") || !loopbackAddress(local) && (!tailnetIP(host) || r.Host != local) || r.URL.RawQuery != "" {
+                return fmt.Errorf("invalid host or query")
+            }
             if _, _, ok := target(r.URL.Path); !ok { return fmt.Errorf("unknown endpoint") }
             // Browsers always supply Origin; token-protected local native tests may omit it.
             if origin := r.Header.Get("Origin"); origin != "" {
@@ -143,7 +198,12 @@ func main() {
             defer func() {
                 statsMu.Lock(); defer statsMu.Unlock()
                 if reason == "" { reason = "gateway-control" }
-                log.Printf("conn %d close listener=%s path=%s duration_ms=%d reason=%s up[%v] down[%v] service=%s", connID, label, path, time.Since(opened).Milliseconds(), reason, &up, &down, service)
+                // A direct tailnet connection also reports the kernel's TCP statistics.
+                tcp := ""
+                if raw, ok := accepted.LoadAndDelete(ws.Request().RemoteAddr); ok {
+                    if c, ok := raw.(*net.TCPConn); ok { if info := tcpInfo(c); info != "" { tcp = " tcp[" + info + "]" } }
+                }
+                log.Printf("conn %d close listener=%s path=%s duration_ms=%d reason=%s up[%v] down[%v] service=%s%s", connID, label, path, time.Since(opened).Milliseconds(), reason, &up, &down, service, tcp)
             }()
             conn, err := net.DialTimeout(network, address, 5*time.Second)
             if err != nil { setReason("dial-" + errorCode(err)); control("error", errorCode(err), 0, 0); return }
@@ -211,6 +271,15 @@ func main() {
         server := &http.Server{Addr: addr, Handler: mux, ReadHeaderTimeout: 5*time.Second}
         log.Printf("original online byte gateway listener %s on %s", label, addr)
         go func() { log.Fatal(server.ListenAndServe()) }()
+    }
+    for label, t := range conf.TailnetListeners {
+        listener, err := net.Listen("tcp4", t.Listen)
+        if err != nil { log.Fatal(err) }
+        peers := map[string]bool{}
+        for _, peer := range t.Peers { peers[peer] = true }
+        server := &http.Server{Handler: mux, ReadHeaderTimeout: 5*time.Second}
+        log.Printf("original online byte gateway tailnet listener %s on %s peers %v", label, t.Listen, t.Peers)
+        go func() { log.Fatal(server.Serve(peerListener{listener, label, peers, &accepted})) }()
     }
     server := &http.Server{Addr: conf.Listen, Handler: mux, ReadHeaderTimeout: 5*time.Second}
     log.Printf("original online byte gateway listening on %s", conf.Listen)

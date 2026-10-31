@@ -217,6 +217,8 @@ def prepare(archive, work):
     gateway = source / 'src/original-online-gateway'
     gateway.mkdir()
     shutil.copyfile(HERE / 'gateway.go', gateway / 'main.go')
+    for name in ('gateway_tcpinfo_darwin.go', 'gateway_tcpinfo_other.go'):
+        shutil.copyfile(HERE / name, gateway / name)
     flags = ['-mod=readonly', '-trimpath', '-buildvcs=false']
     commands = [['go', 'build', *flags, '-o', str(work/'zdxsv'), './src/zdxsv'],
                 ['go', 'build', *flags, '-o', str(work/'gateway'), './src/original-online-gateway'],
