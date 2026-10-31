@@ -302,11 +302,13 @@ def main():
                                                - {str(i['close']['conn']) for i in summary['gateway'] if i.get('close')}),
     }
     # A completed DNAS exchange takes under 1 s. A connection open for 10 s or more is
-    # the stalled DNAS request (B34): the client sent no bytes ("no-handshake") or only
-    # its TLS handshake ("no-request"), and the service closed it after its own timeout.
+    # the stalled DNAS request (B34), closed by the service after its own timeout. The
+    # client sent no bytes ("no-handshake"), only its first handshake message
+    # ("handshake-incomplete"), or a completed handshake without a request ("no-request").
     stalled = [{'utc': i['utc'], 'conn': c['conn'], 'listener': c['listener'], 'duration_ms': c['duration_ms'],
                 'reason': c['reason'], 'client_bytes': c['up']['bytes'], 'client_frames': c['up']['frames'],
-                'kind': 'no-handshake' if c['up']['bytes'] == 0 else 'no-request', 'service': c['service']}
+                'kind': 'no-handshake' if c['up']['bytes'] == 0 else 'handshake-incomplete' if c['up']['frames'] == 1 else 'no-request',
+                'service': c['service']}
                for i in summary['gateway'] for c in [i.get('close')]
                if c and c['path'] == '/tcp/dnas' and c['duration_ms'] >= DNAS_STALL_MS]
     checks['dnas_stalled'] = len(stalled)
