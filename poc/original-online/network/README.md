@@ -280,7 +280,11 @@ The receipt lists DNAS and login requests, lobby key-pairs, `[lobby-event]` line
 created or updated in the window, disconnects, gateway connection statistics and
 errors. A `checks` object summarizes them. `battle_connections` joins each relay
 address to its session and user (from `BattleInfo`), its device listener, and
-its gateway statistics. `tunnel_tcp` reports each tunnel's retransmitted and
+its gateway statistics. `dnas_stalled` lists DNAS connections that stayed open for
+10 s or more. A completed DNAS exchange takes under 1 s. In a stalled one the client
+sent no bytes (`no-handshake`) or only its TLS handshake (`no-request`) before the
+service closed it. This is how the stalled DNAS request (B34) appears on the
+backend. `tunnel_tcp` reports each tunnel's retransmitted and
 duplicate bytes and RTT range over the window. A direct connection's kernel TCP
 statistics appear with its gateway statistics. Repeat `--client LABEL=USER` (for example `A=P899XG`) to
 group each client's lobby events, battle connections, results and

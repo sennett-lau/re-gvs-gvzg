@@ -102,6 +102,7 @@ CLOSE = re.compile(r'^conn (\d+) close listener=(\S+) path=(\S+) duration_ms=(\d
                    r'up\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\] '
                    r'down\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\](?: service=(\S+))?(?: tcp\[([^\]]*)\])?')
 GAP_BUCKETS = ['<20ms', '20-50', '50-100', '100-200', '200-500', '500-1000', '>=1000ms']
+DNAS_STALL_MS = 10000
 
 
 def gateway_close(text):
@@ -300,6 +301,15 @@ def main():
         'gateway_connections_open_at_end': len({i['text'].split()[1] for i in summary['gateway'] if i['kind'] == 'gateway-open'}
                                                - {str(i['close']['conn']) for i in summary['gateway'] if i.get('close')}),
     }
+    # A completed DNAS exchange takes under 1 s. A connection open for 10 s or more is
+    # the stalled DNAS request (B34): the client sent no bytes ("no-handshake") or only
+    # its TLS handshake ("no-request"), and the service closed it after its own timeout.
+    stalled = [{'utc': i['utc'], 'conn': c['conn'], 'listener': c['listener'], 'duration_ms': c['duration_ms'],
+                'reason': c['reason'], 'client_bytes': c['up']['bytes'], 'client_frames': c['up']['frames'],
+                'kind': 'no-handshake' if c['up']['bytes'] == 0 else 'no-request', 'service': c['service']}
+               for i in summary['gateway'] for c in [i.get('close')]
+               if c and c['path'] == '/tcp/dnas' and c['duration_ms'] >= DNAS_STALL_MS]
+    checks['dnas_stalled'] = len(stalled)
     battle_connections = attribute(timeline)
     clients = {}
     for spec in args.client:
@@ -336,7 +346,7 @@ def main():
     receipt = {'run_id': args.run_id, 'written_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                'scope': 'passive local logs and read-only database; no network traffic; login keys redacted',
                'window': window, 'log_timezone': str(tz), 'sources': sources, 'checks': checks,
-               'gateway_summary': gateway_summary(summary['gateway']), 'tunnel_tcp': tunnel_summary,
+               'gateway_summary': gateway_summary(summary['gateway']), 'dnas_stalled': stalled, 'tunnel_tcp': tunnel_summary,
                'battle_connections': battle_connections, 'clients': clients,
                'battle_record_rows': in_window, 'users': user_rows, 'summary': summary, 'timeline': timeline}
     (args.out / 'receipt.json').write_text(json.dumps(receipt, indent=1, ensure_ascii=False) + '\n')
