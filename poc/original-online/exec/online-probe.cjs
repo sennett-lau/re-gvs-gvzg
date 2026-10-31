@@ -92,7 +92,7 @@ const mark=(event,detail={})=>append('timeline.jsonl',scrub(JSON.stringify({utc:
 let browser;
 
 class Client {
-  constructor(label,context,page) {this.label=label;this.context=context;this.page=page;this.errors=[];this.blocked=[];this.traceLost=false;this.lastState=null;this.sockets=[];this.retention=retainStates?new StateRetention(out,label):null;}
+  constructor(label,context,page,name=label) {this.label=label;this.name=name;this.context=context;this.page=page;this.errors=[];this.blocked=[];this.traceLost=false;this.lastState=null;this.sockets=[];this.retention=retainStates?new StateRetention(out,name):null;}
   async state() {return this.page.evaluate(compact=>{const events=window.originalExec?.events||[];return {clientId:window.originalExec?.clientId,image:window.originalExec?.session?.image,
     generation:window.originalExec?.session?.generation,state:window.originalExec?.session?.state,eventCount:events.length,events:compact?events.slice(-8):events};},!!pilot);}
   frame() {const frame=this.page.frames().find(f=>/\/(game|utility)\/index\.html/.test(f.url()));if(!frame)throw Error('No executable document');return frame;}
@@ -135,7 +135,7 @@ class Client {
     sample.scene=sample.scene===null?null:scene.decode(sample.scene);return sample;
   }
   async capture(name) {
-    const captureStartedUtc=new Date().toISOString(),stem=this.label+'-'+name,png=path.join(out,stem+'.png');
+    const captureStartedUtc=new Date().toISOString(),stem=this.name+'-'+name,png=path.join(out,stem+'.png');
     await this.page.screenshot({path:png});const screenshotCompletedUtc=new Date().toISOString();
     const snapshot={...(await this.snapshot()),captureStartedUtc,screenshotCompletedUtc,snapshotCompletedUtc:new Date().toISOString()};
     write(stem,snapshot);
@@ -166,7 +166,7 @@ class Client {
 
 async function runAutopilot(client,{battles=pilot.battles,dropAfterMs=null}={}) {
   const role=pilot.roles[client.label], memory={};let stages=0;
-  const stage=(name,detail={})=>{mark('stage',{client:client.label,stage:name,...detail});return client.capture('stage-'+String(++stages).padStart(3,'0')+'-'+name);};
+  const stage=(name,detail={})=>{mark('stage',{client:client.label,instance:client.name,stage:name,...detail});return client.capture('stage-'+String(++stages).padStart(3,'0')+'-'+name);};
   // Original saved connection: notice (cursor starts on back), loaded settings, DNAS and login.
   // A prompt's state word can appear a moment before its dialog takes input, so each
   // prompt is pressed again (bounded) while its original state word stays unchanged.
@@ -182,7 +182,7 @@ async function runAutopilot(client,{battles=pilot.battles,dropAfterMs=null}={}) 
     const ready=word in prompts&&s.activity===0&&s.timer4<=0&&s.timer6<=0&&now-since>=300;
     if(ready&&(presses===0||now-since>=6000*presses)){
       if(++total>15)throw Error(client.label+': original pre-login prompts did not accept input');
-      if(presses>0)mark('prompt-retry',{client:client.label,prompt:prompts[word],state_word:word,attempt:presses+1});
+      if(presses>0)mark('prompt-retry',{client:client.label,instance:client.name,prompt:prompts[word],state_word:word,attempt:presses+1});
       if(word===517&&presses===0)await client.press('ArrowUp');
       await client.press('KeyX');presses++;confirmed=word===518||(confirmed&&word!==524803);
     }
@@ -199,32 +199,33 @@ async function runAutopilot(client,{battles=pilot.battles,dropAfterMs=null}={}) 
     const shot=['lobby','post-round'].includes(progress.phase)?await client.canvas():null,features=shot?autopilot.vision.features(shot.image,pilot.profile):{};
     if(features.screen!==lastScreen){
       // Keep the canvas image behind each classification change for later review.
-      const name=shot?client.label+'-screen-'+String(++screens).padStart(3,'0')+'-'+(features.screen??'unclassified')+'.png':null;if(name)fs.writeFileSync(path.join(out,name),shot.png);
-      mark('screen',{client:client.label,screen:features.screen??null,focus:features.focus??null,distance:features.match?.distance??null,nearest:features.match?.nearest??null,file:name});lastScreen=features.screen;lastChange=now;}
+      const name=shot?client.name+'-screen-'+String(++screens).padStart(3,'0')+'-'+(features.screen??'unclassified')+'.png':null;if(name)fs.writeFileSync(path.join(out,name),shot.png);
+      mark('screen',{client:client.label,instance:client.name,screen:features.screen??null,focus:features.focus??null,distance:features.match?.distance??null,nearest:features.match?.nearest??null,file:name});lastScreen=features.screen;lastChange=now;}
     if(dropAfterMs!==null&&progress.phase==='battle'&&now-memory.phaseSince>=dropAfterMs){
       // Abrupt close of this client's whole browser context, as when a player closes the window.
-      await stage('drop');mark('client-drop',{client:client.label,after_battle_ms:Math.round(now-memory.phaseSince)});
+      await stage('drop');mark('client-drop',{client:client.label,instance:client.name,after_battle_ms:Math.round(now-memory.phaseSince)});
       client.closed=true;await client.context.close();return {dropped:true,battles_started:memory.battlesStarted,inputs};
     }
     if(progress.phase==='lobby'&&(memory.lobbyReturns||0)>=battles&&features.screen==='map'){await stage('done');return {rounds_started:memory.battlesStarted,rounds_ended:memory.battlesEnded,matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns,inputs};}
     const before=memory.lobbyReturns||0,action=autopilot.decide(light.scene,features,memory,role,pilot.profile,now,pilot.roundsPerMatch);
     if((memory.lobbyReturns||0)>before)await stage('lobby-return',{matches_ended:memory.matchesEnded,lobby_returns:memory.lobbyReturns});
     if(action.kind==='press'){
-      mark('autopilot-input',{client:client.label,codes:action.codes,hold:action.hold,reason:action.reason,screen:features.screen??null,focus:features.focus??null,cone:features.cone??null,lit:features.targetLit??null});
+      mark('autopilot-input',{client:client.label,instance:client.name,codes:action.codes,hold:action.hold,reason:action.reason,screen:features.screen??null,focus:features.focus??null,cone:features.cone??null,lit:features.targetLit??null});
       await client.chord(action.codes,action.hold);memory.lastAction=performance.now();inputs++;
     }
     if(now-lastLive>=10000){lastLive=now;await client.capture('live');
       const pacing=await client.frame().evaluate(()=>window.originalExecPacing?.take()??null);
-      appendJson('pacing.jsonl',{client:client.label,phase:progress.phase,screen:features.screen??null,frames:light.frames,ring:light.ring,battle_clock:light.battleClock,pacing});}
+      appendJson('pacing.jsonl',{client:client.label,instance:client.name,phase:progress.phase,screen:features.screen??null,frames:light.frames,ring:light.ring,battle_clock:light.battleClock,pacing});}
     // A lobby screen that never changes (other than waiting for a partner) is a stall.
     if(progress.phase==='lobby'&&features.screen!=='waiting'&&now-lastChange>600000)throw Error(client.label+': lobby screen unchanged for 10 minutes ('+features.screen+')');
     await sleep(progress.phase==='battle'?100:500);
   }
 }
 
-async function openClient(label) {
+// A reopened client keeps its role label but writes under its own file prefix (B2, ...).
+async function openClient(label,name=label) {
     const context=await browser.newContext({viewport:{width:1280,height:1000},serviceWorkers:'block'}),page=await context.newPage();
-    const client=new Client(label,context,page);page.setDefaultTimeout(120000);
+    const client=new Client(label,context,page,name);page.setDefaultTimeout(120000);
     await context.route('**/*',route=>{const url=new URL(route.request().url());if(url.origin===base.origin)return route.continue();client.blocked.push(url.origin);return route.abort();});
     await context.addInitScript(({config,watch})=>{
       window.originalExecNetworkConfig=config;window.testAudioContexts=[];
@@ -254,17 +255,17 @@ async function openClient(label) {
         return Reflect.construct(target,args);}});
       window.RTCPeerConnection=class{constructor(){throw Error('Original-mode7 probe blocks WebRTC')}};
     },{config,watch});
-    page.on('pageerror',error=>{client.errors.push(scrub(error));mark('pageerror',{client:client.label,error:scrub(error)});});
+    page.on('pageerror',error=>{client.errors.push(scrub(error));mark('pageerror',{client:client.label,instance:client.name,error:scrub(error)});});
     page.on('console',message=>{
-      const text=scrub(message.text()),now=new Date();append(client.label+'-console.jsonl',JSON.stringify({utc:now.toISOString(),text}));
+      const text=scrub(message.text()),now=new Date();append(client.name+'-console.jsonl',JSON.stringify({utc:now.toISOString(),text}));
       if(text.startsWith('[exec-host] ')){
         // The host page stamps each record; a growing gap means this process is behind its browser events.
         try{const lag=(now-new Date(JSON.parse(text.slice(12)).utc))/1000;client.consoleLag=lag;
-          if(lag>15&&!client.backlogMarked){client.backlogMarked=true;mark('probe-backlog',{client:client.label,lag_s:lag});}
+          if(lag>15&&!client.backlogMarked){client.backlogMarked=true;mark('probe-backlog',{client:client.label,instance:client.name,lag_s:lag});}
           if(lag>60)client.errors.push('Probe host overloaded: browser events processed '+Math.round(lag)+' s late');}catch{}
       }
       if(text.startsWith('[original-online] ')) {
-        try{const record=JSON.parse(text.slice(18));if((record.event==='trace_cap'||record.dropped>0||record.boot_dropped>0)&&!client.traceLost){client.traceLost=true;if(traceContinue)mark('trace-cap-continue',{client:client.label,record});}
+        try{const record=JSON.parse(text.slice(18));if((record.event==='trace_cap'||record.dropped>0||record.boot_dropped>0)&&!client.traceLost){client.traceLost=true;if(traceContinue)mark('trace-cap-continue',{client:client.label,instance:client.name,record});}
           if(record.state!==undefined&&record.substate!==undefined)client.lastState=record;
         }catch(error){client.errors.push('Original observer record parse failed: '+String(error));}
       }
@@ -273,10 +274,10 @@ async function openClient(label) {
       const item={url:socket.url(),created_utc:new Date().toISOString(),sent:0,received:0,sentBytes:0,receivedBytes:0,closed:false};client.sockets.push(item);
       for(const [event,key] of [['framesent','sent'],['framereceived','received']])socket.on(event,({payload})=>{
         const bytes=typeof payload==='string'?Buffer.from(payload):payload;item[key]++;item[key+'Bytes']+=bytes.length;
-        mark('websocket-frame',{client:client.label,url:item.url,direction:key,bytes:bytes.length,sha256:digest(bytes)});
+        mark('websocket-frame',{client:client.label,instance:client.name,url:item.url,direction:key,bytes:bytes.length,sha256:digest(bytes)});
       });
       socket.on('close',()=>{item.closed=true;item.closed_utc=new Date().toISOString();});
-      socket.on('socketerror',error=>{item.error=scrub(error);mark('websocket-error',{client:client.label,url:item.url,error:item.error});});
+      socket.on('socketerror',error=>{item.error=scrub(error);mark('websocket-error',{client:client.label,instance:client.name,url:item.url,error:item.error});});
     });
     await page.bringToFront();await client.enterSettingsMenu();return client;
 }
@@ -308,7 +309,7 @@ async function openClient(label) {
       if(pilot.drop.rejoin) {
         // Fresh document from the same fingerprinted card; the backend sees an ordinary new login.
         await sleep(30000);mark('client-rejoin',{client:victim.label});
-        const fresh=await openClient(victim.label);clients[clients.indexOf(victim)]=fresh;
+        const fresh=await openClient(victim.label,victim.label+'2');clients[clients.indexOf(victim)]=fresh;
         rejoined=await runAutopilot(fresh,{battles:1});
       }
       const others=await Promise.all(runs.filter((r,i)=>clients[i].label!==victim.label));
@@ -321,8 +322,8 @@ async function openClient(label) {
       await client.capture('final');
       const encoded=await client.frame().evaluate(()=>{const data=Module.FS.readFile('/memcard/Mcd001.ps2');let text='';
         for(let i=0;i<data.length;i+=0x8000)text+=String.fromCharCode.apply(null,data.subarray(i,i+0x8000));return btoa(text);});
-      const bytes=Buffer.from(encoded,'base64'),name=client.label+'-card-final.ps2';fs.writeFileSync(path.join(out,name),bytes);
-      mark('card-export',{client:client.label,file:name,bytes:bytes.length,sha256:digest(bytes),scope:'running MEMFS card, not a durable checkpoint'});
+      const bytes=Buffer.from(encoded,'base64'),name=client.name+'-card-final.ps2';fs.writeFileSync(path.join(out,name),bytes);
+      mark('card-export',{client:client.label,instance:client.name,file:name,bytes:bytes.length,sha256:digest(bytes),scope:'running MEMFS card, not a durable checkpoint'});
     }
     write('result',{capture_complete:true,browser:browser.version(),network_success:false,battle_success:false,
       autopilot:Object.fromEntries(clients.map((c,i)=>[c.label,summaries[i]])),
@@ -346,7 +347,7 @@ async function openClient(label) {
           const encoded=await client.frame().evaluate(()=>{const data=Module.FS.readFile('/memcard/Mcd001.ps2');let text='';
             for(let i=0;i<data.length;i+=0x8000)text+=String.fromCharCode.apply(null,data.subarray(i,i+0x8000));return btoa(text);});
           const bytes=Buffer.from(encoded,'base64'),name=client.label+'-card-'+lastId+'.ps2';fs.writeFileSync(path.join(out,name),bytes);
-          mark('card-export',{client:client.label,file:name,bytes:bytes.length,sha256:digest(bytes),scope:'running MEMFS card, not a durable checkpoint'});
+          mark('card-export',{client:client.label,instance:client.name,file:name,bytes:bytes.length,sha256:digest(bytes),scope:'running MEMFS card, not a durable checkpoint'});
         }else mark('operator-rejected',{reason:'Card export requires a running client'});
         write('operator-ack',{id:lastId});continue;
       }

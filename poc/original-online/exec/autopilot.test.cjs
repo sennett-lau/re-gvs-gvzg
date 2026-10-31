@@ -31,6 +31,17 @@ test('room and faction input follow the visible focus', () => {
   assert.deepEqual(stable({screen: 'faction', focus: 'right'}, {}, {faction: 'left'}).codes, ['ArrowLeft']);
 });
 
+test('after the faction choice the partner box is left alone for a bounded time', () => {
+  const memory = {};
+  assert.deepEqual(stable({screen: 'faction', focus: 'left'}, memory).codes, ['KeyX']);
+  assert.equal(memory.waitingSince, 100000);
+  assert.equal(stable({screen: 'room', focus: 'lower'}, memory, {faction: 'left'}, 150000).kind, 'wait');
+  assert.equal(stable({screen: 'waiting'}, memory, {faction: 'left'}, 200000).kind, 'wait');
+  assert.deepEqual(stable({screen: 'room', focus: 'lower'}, memory, {faction: 'left'}, 300000).codes, ['KeyX']);
+  autopilot.progress({mode: 7, state: 2, substate: 1}, memory, 300001);
+  assert.equal(memory.waitingSince, null);
+});
+
 test('map pointer moves toward the target, then selects the lit node', () => {
   const memory = {};
   let action = stable({screen: 'map', cone: {left: 0.403, top: 0.396}, targetLit: 0}, memory);

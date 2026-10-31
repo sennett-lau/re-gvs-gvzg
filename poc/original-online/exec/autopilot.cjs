@@ -19,6 +19,9 @@ function decideLobby(features, memory, role, profile, now) {
   }
   if (screen === 'map' && memory.afterRoom) { memory.afterRoom = false; memory.lobbyReturns = (memory.lobbyReturns || 0) + 1; }
   if (screen === 'top' || screen === 'id-select') return since >= 4000 ? press('KeyX', 150, screen + ': ordinary confirm') : WAIT;
+  // After the faction choice the original partner box (待機 / 戻る) looks like the room;
+  // leave it alone while waiting for a partner (bounded, then the room policy resumes).
+  if (memory.waitingSince && ['room', 'after-room', 'waiting'].includes(screen) && now - memory.waitingSince < 180000) return WAIT;
   if (screen === 'room' || screen === 'after-room') { // the two share one layout
     if (since < 2500) return WAIT;
     if (features.focus === 'upper') return press('ArrowDown', 150, 'room: move to partner auto-select');
@@ -27,7 +30,7 @@ function decideLobby(features, memory, role, profile, now) {
   }
   if (screen === 'faction') {
     if (since < 2500 || !features.focus) return WAIT;
-    if (features.focus === role.faction) return press('KeyX', 150, 'faction: confirm ' + role.faction);
+    if (features.focus === role.faction) { memory.waitingSince = now; return press('KeyX', 150, 'faction: confirm ' + role.faction); }
     return press(role.faction === 'left' ? 'ArrowLeft' : 'ArrowRight', 150, 'faction: focus ' + role.faction);
   }
   // Screenshots can trail the guest; let the pointer settle before measuring it.
@@ -125,7 +128,7 @@ function progress(scene, memory, now) {
     if (phase === 'lobby' && memory.roundsThisMatch) {
       memory.matchesEnded = (memory.matchesEnded || 0) + 1; memory.roundsThisMatch = 0; memory.postRound = false; memory.afterRoom = true;
     }
-    memory.phase = phase; memory.phaseSince = now; memory.choice = null;
+    memory.phase = phase; memory.phaseSince = now; memory.choice = null; memory.waitingSince = null;
   }
   return {phase, events};
 }
