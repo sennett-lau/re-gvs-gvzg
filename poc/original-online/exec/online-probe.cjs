@@ -2,7 +2,7 @@
 // cards/documents/WASM memories; this does not create a mode4 lockstep session.
 const fs = require('node:fs'), path = require('node:path'), {createHash} = require('node:crypto');
 const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const {parseConfig} = require('./private-config.cjs');
+const {parseConfig, privateHost} = require('./private-config.cjs');
 const {StateRetention} = require('./probe-retention.cjs');
 const scene = require('../../../apps/game/assets/scene-snapshot.js');
 const autopilot = require('./autopilot.cjs');
@@ -71,8 +71,8 @@ if (process.env.PROBE_AUTOPILOT) {
 }
 const config = parseConfig(fs.readFileSync(process.env.PROBE_NETWORK_CONFIG,'utf8'));
 const gateway = new URL(config.gatewayURL);
-if (gateway.protocol !== 'ws:' || gateway.hostname !== '127.0.0.1' || gateway.pathname !== '/' || gateway.search || gateway.hash ||
-    typeof config.token !== 'string' || !config.token || !config.endpoints) throw Error('Private loopback configuration required');
+if (gateway.protocol !== 'ws:' || !privateHost(gateway.hostname) || gateway.pathname !== '/' || gateway.search || gateway.hash ||
+    typeof config.token !== 'string' || !config.token || !config.endpoints) throw Error('Private loopback or tailnet configuration required');
 fs.mkdirSync(out,{recursive:true});
 const scrub = text => String(text).split(config.token).join('[private-token]');
 const write = (name,value) => fs.writeFileSync(path.join(out,name+'.json'),scrub(JSON.stringify(value,null,2))+'\n');
@@ -168,8 +168,27 @@ async function runAutopilot(client,{battles=pilot.battles,dropAfterMs=null}={}) 
   const role=pilot.roles[client.label], memory={};let stages=0;
   const stage=(name,detail={})=>{mark('stage',{client:client.label,stage:name,...detail});return client.capture('stage-'+String(++stages).padStart(3,'0')+'-'+name);};
   // Original saved connection: notice (cursor starts on back), loaded settings, DNAS and login.
-  await client.press('KeyX');await client.prompt(517,'notice');await client.press('ArrowUp');await client.press('KeyX');
-  await client.prompt(518,'settings-loaded');await client.press('KeyX');await stage('dnas-started');
+  // A prompt's state word can appear a moment before its dialog takes input, so each
+  // prompt is pressed again (bounded) while its original state word stays unchanged.
+  // On the two-item notice only the first press of a visit moves up; a later ○ that
+  // lands on 戻る returns to the menu, which starts the sequence again.
+  const prompts={524803:'saved-connection',517:'notice',518:'settings-loaded'};
+  let word=null,since=0,presses=0,total=0,confirmed=false;
+  for(const deadline=performance.now()+240000;;) {
+    await client.healthy();if(performance.now()>deadline)throw Error(client.label+': original pre-login prompts did not advance');
+    const s=client.lastState,now=performance.now();
+    if(s?.state_word!==word){word=s?.state_word;since=now;presses=0;}
+    if(confirmed&&!(word in prompts)&&word!==771)break;
+    const ready=word in prompts&&s.activity===0&&s.timer4<=0&&s.timer6<=0&&now-since>=300;
+    if(ready&&(presses===0||now-since>=6000*presses)){
+      if(++total>15)throw Error(client.label+': original pre-login prompts did not accept input');
+      if(presses>0)mark('prompt-retry',{client:client.label,prompt:prompts[word],state_word:word,attempt:presses+1});
+      if(word===517&&presses===0)await client.press('ArrowUp');
+      await client.press('KeyX');presses++;confirmed=word===518||(confirmed&&word!==524803);
+    }
+    await sleep(200);
+  }
+  await stage('dnas-started');
   await client.until(async()=>(await client.light()).scene?.state===1,'original login',300000);await stage('logged-in');
   const deadline=performance.now()+pilot.runMs;let lastLive=0,lastScreen=null,lastChange=performance.now(),inputs=0,screens=0;
   while(true) {
