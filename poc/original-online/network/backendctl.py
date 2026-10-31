@@ -385,6 +385,12 @@ class Backend:
         record = {'utc': utc(), 'host': args.host, 'action': args.action, 'remote': f'127.0.0.1:{remote}',
                   'local': f'127.0.0.1:{local}', 'listener': tunnel.get('listener', 'default')}
         if args.action == 'up':
+            # A master that died without cleanup leaves its socket behind; a new
+            # master would then run without one and could not be checked or stopped.
+            sock = self.run / self.tunnel_socket(args.host)
+            if sock.exists() and not self.tunnel_check(args.host)['up']:
+                sock.unlink()
+                record['removed_stale_socket'] = True
             # The remote end binds only that device's loopback address.
             command = ['ssh', '-M', '-S', self.tunnel_socket(args.host), '-fN', '-o', 'BatchMode=yes',
                        '-o', 'ExitOnForwardFailure=yes', '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=4',
