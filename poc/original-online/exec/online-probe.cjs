@@ -217,7 +217,8 @@ async function runAutopilot(client,{battles=pilot.battles,dropAfterMs=null}={}) 
     await sleep(200);
   }
   await stage('dnas-started');
-  await client.until(async()=>(await client.light()).scene?.state===1,'original login',300000);await stage('logged-in');
+  // Online mode 7, state 1 is the lobby. A failed login returns to the main menu (mode 2, state 1).
+  await client.until(async()=>{const s=(await client.light()).scene;return s?.mode===7&&s.state===1;},'original login',300000);await stage('logged-in');
   const deadline=performance.now()+pilot.runMs;let lastLive=0,lastScreen=null,lastChange=performance.now(),inputs=0,screens=0;
   while(true) {
     await client.healthy();const now=performance.now();if(now>deadline)throw Error(client.label+': autopilot run bound expired');
