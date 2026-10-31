@@ -136,18 +136,21 @@ func main() {
             label := listenerLabel(ws.Request())
             var up, down direction
             var statsMu sync.Mutex
-            reason := ""
+            reason, service := "", "-"
             // The first cause wins; closing one side later fails the other.
             setReason := func(r string) { statsMu.Lock(); if reason == "" { reason = r }; statsMu.Unlock() }
             log.Printf("conn %d open listener=%s path=%s", connID, label, path)
             defer func() {
                 statsMu.Lock(); defer statsMu.Unlock()
                 if reason == "" { reason = "gateway-control" }
-                log.Printf("conn %d close listener=%s path=%s duration_ms=%d reason=%s up[%v] down[%v]", connID, label, path, time.Since(opened).Milliseconds(), reason, &up, &down)
+                log.Printf("conn %d close listener=%s path=%s duration_ms=%d reason=%s up[%v] down[%v] service=%s", connID, label, path, time.Since(opened).Milliseconds(), reason, &up, &down, service)
             }()
             conn, err := net.DialTimeout(network, address, 5*time.Second)
             if err != nil { setReason("dial-" + errorCode(err)); control("error", errorCode(err), 0, 0); return }
             defer conn.Close()
+            // The service logs this address as its peer, which joins the two logs.
+            statsMu.Lock(); service = conn.LocalAddr().String(); statsMu.Unlock()
+            log.Printf("conn %d dial listener=%s path=%s service=%s", connID, label, path, service)
             if err := control("open", "", 0, 0); err != nil { return }
             // Preserve TCP order and partial reads; never parse or synthesize game packets.
             go func() {

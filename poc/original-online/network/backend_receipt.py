@@ -26,6 +26,7 @@ CLASSES = [
     ('relay-start', re.compile(r'^\[TCP\] (\S+) Serve Start')),
     ('relay-end', re.compile(r'^\[TCP\] (\S+) Serve End')),
     ('relay-join', re.compile(r'^join success (\S+)')),
+    ('relay-session', re.compile(r'^\[TCP\] SessionID (\d*)')),
     # The relay logs 'room nil' for each peer's first frame, before its join.
     ('relay-prejoin', re.compile(r'^room nil')),
     ('relay-join-failed', re.compile(r'^failed to join room|^BattleInfo not found|^User not found in BattleInfo')),
@@ -35,6 +36,7 @@ CLASSES = [
     ('battle-timeout', re.compile(r'^Battle user timeout')),
     ('gateway-open', re.compile(r'^conn (\d+) open listener=(\S+) path=(\S+)')),
     ('gateway-close', re.compile(r'^conn (\d+) close ')),
+    ('gateway-dial', re.compile(r'^conn (\d+) dial listener=(\S+) path=(\S+) service=(\S+)')),
 ]
 
 
@@ -98,7 +100,7 @@ def db_time(value):
 
 CLOSE = re.compile(r'^conn (\d+) close listener=(\S+) path=(\S+) duration_ms=(\d+) reason=(\S+) '
                    r'up\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\] '
-                   r'down\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\]')
+                   r'down\[bytes=(\d+) frames=(\d+) max_gap_ms=(\d+) gaps=\[([\d ]+)\]\](?: service=(\S+))?')
 GAP_BUCKETS = ['<20ms', '20-50', '50-100', '100-200', '200-500', '500-1000', '>=1000ms']
 
 
@@ -110,7 +112,7 @@ def gateway_close(text):
     side = lambda b, f, gap, hist: {'bytes': int(b), 'frames': int(f), 'max_gap_ms': int(gap),
                                     'gaps': dict(zip(GAP_BUCKETS, map(int, hist.split())))}
     return {'conn': int(g[0]), 'listener': g[1], 'path': g[2], 'duration_ms': int(g[3]), 'reason': g[4],
-            'up': side(*g[5:9]), 'down': side(*g[9:13])}
+            'up': side(*g[5:9]), 'down': side(*g[9:13]), 'service': g[13]}
 
 
 def gateway_summary(items):
@@ -134,6 +136,38 @@ def gateway_summary(items):
             for b in GAP_BUCKETS:
                 g[d]['gaps'][b] += c[d]['gaps'][b]
     return groups
+
+
+def attribute(timeline):
+    """Join gateway connections (device listener) to service peer addresses,
+    relay addresses to sessions, and sessions to users from BattleInfo."""
+    service = {}
+    for item in timeline:
+        if item['kind'] == 'gateway-dial':
+            conn, listener, path, addr = re.match(r'^conn (\d+) dial listener=(\S+) path=(\S+) service=(\S+)', item['text']).groups()
+            service[addr] = {'conn': int(conn), 'listener': listener, 'path': path}
+    closes = {i['close']['conn']: i['close'] for i in timeline if i.get('close')}
+    users, pending, relay = {}, [], {}
+    for item in timeline:
+        addr = item.get('fields', {}).get('addr') if item['kind'] == 'lobby-event' else None
+        match = re.search(r'127\.0\.0\.1:\d+', item['text']) if item['kind'] in ('lobby-open', 'relay-start', 'relay-join',
+                                                                                    'relay-prejoin', 'relay-leave', 'relay-end') else None
+        addr = addr or (match.group(0) if match else None)
+        if addr and addr in service:
+            item['listener'] = service[addr]['listener']
+            item['gateway_conn'] = service[addr]['conn']
+        if item['kind'] == 'battle-info':
+            for user, session in re.findall(r'\{(\w{6}) (\d+) ', item['text']):
+                users[session] = user
+        elif item['kind'] == 'relay-session':
+            pending.append(item['text'].split()[2] if len(item['text'].split()) > 2 else '')
+        elif item['kind'] == 'relay-join' and addr:
+            session = pending.pop(0) if pending else None
+            relay[addr] = {'session': session, 'user': users.get(session), 'joined': item['utc'],
+                           'listener': item.get('listener'), 'gateway': closes.get(item.get('gateway_conn'))}
+        elif item['kind'] == 'relay-leave' and addr in relay:
+            relay[addr]['left'] = item['utc']
+    return relay
 
 
 def fields(text):
@@ -247,6 +281,7 @@ def main():
                'scope': 'passive local logs and read-only database; no network traffic; login keys redacted',
                'window': window, 'log_timezone': str(tz), 'sources': sources, 'checks': checks,
                'gateway_summary': gateway_summary(summary['gateway']),
+               'battle_connections': attribute(timeline),
                'battle_record_rows': in_window, 'users': user_rows, 'summary': summary, 'timeline': timeline}
     (args.out / 'receipt.json').write_text(json.dumps(receipt, indent=1, ensure_ascii=False) + '\n')
     print(json.dumps({'out': str(args.out / 'receipt.json'), 'checks': checks}, indent=2))

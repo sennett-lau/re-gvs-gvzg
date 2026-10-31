@@ -114,8 +114,10 @@ The staged upstream changes are recorded with before/after hashes:
 * The separate capability-protected Go gateway provides TCP streams and DNS UDP
   datagrams only to configured loopback destinations. It logs one line when each
   WebSocket opens and one when it closes. The close line records the listener
-  label, duration, close reason, byte and message counts per direction, and a
-  histogram of gaps between messages. It never logs payload bytes or the capability.
+  label, duration, close reason, byte and message counts per direction, a
+  histogram of gaps between messages, and the local address of its service
+  connection. The service logs that address as its peer, which joins the two
+  logs. It never logs payload bytes or the capability.
 
 ### Service layout
 
@@ -209,7 +211,9 @@ python3 poc/original-online/network/backend_receipt.py --logs /private/backend/l
 The receipt lists DNAS and login requests, lobby key-pairs, `[lobby-event]` lines,
 `BattleInfo`, relay joins and leaves, `BattleResult` bodies, `battle_record` rows
 created or updated in the window, disconnects, gateway connection statistics and
-errors. A `checks` object summarizes them.
+errors. A `checks` object summarizes them. `battle_connections` joins each relay
+address to its session and user (from `BattleInfo`), its device listener, and
+its gateway statistics.
 
 ## Runtime composition
 
