@@ -495,8 +495,29 @@ drives EE commands through `sif::set_dma`. Each saved state is byte-identical to
 the vendor state. A model with the vendor EE kernel gives the worker no EE time
 when replies arrive with no latency, 6 ms/s at 50 us and 12 ms/s at 100 us; it
 assumes two synchronous RPCs per frame. The delay also applies to CD, file and
-asynchronous replies. Whether it removes the stall in a game run is not yet
-established.
+asynchronous replies.
+
+On 2026-10-31 two builds from one commit were compared on the second Mac, where
+the stall recurs. The builds differed only in `--sif-latency-us 100`. Each run
+started two clients, which logged in and stopped on the lobby map. The control
+and latency runs alternated, and both used the same backend build and the same
+direct tailnet listener.
+
+| Build | Runs | Logins | Logins with a stalled DNAS connection |
+|---|---|---|---|
+| Control | 4 | 8 | 7 |
+| 100 us latency | 5 | 10 | 0 |
+
+The one-sided Fisher exact p is 0.00025. The receipts' `dnas_stalled` counts
+matched the adapter's idle reports for every client.
+
+* Each stalled login got through 10-34 s after the service closed the stalled
+  connection, 89-301 s after the run's first DNAS request.
+* With the latency, every client reached the lobby 24-27 s after the run's first
+  DNAS request.
+* The clients' own timings showed the same load time before DNAS in both builds.
+
+Battle-time effects of the latency are not yet established.
 
 `threaded_bridge_probe.cpp` with `threaded_bridge_pre.js` is a small real Emscripten
 `-pthread -sPROXY_TO_PTHREAD=1 -sPTHREAD_POOL_SIZE=1 -sENVIRONMENT=node`
