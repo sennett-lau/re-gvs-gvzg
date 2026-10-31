@@ -182,7 +182,8 @@ class Client {
     for(let i=0;i<12;i++){await this.press('Enter');await sleep(2500);if((await this.snapshot()).sample?.scene?.mode===2)break;}
     await this.until(async()=>(await this.snapshot()).sample?.scene?.mode===2,'main menu');await sleep(3500);await this.capture('main-menu');
     for(let i=0;i<7;i++)await this.press('ArrowDown');await this.press('KeyX');
-    await this.until(()=>this.lastState?.state===1&&this.lastState.substate===1&&this.lastState.timer6<=0,'original mode7 confirm');
+    // Keep the screen and scene record when the Online confirm never comes.
+    await this.until(()=>this.lastState?.state===1&&this.lastState.substate===1&&this.lastState.timer6<=0,'original mode7 confirm').catch(async error=>{await this.capture('mode7-timeout').catch(()=>{});throw error;});
     await this.capture('mode7-confirm');await this.press('KeyX');
     for(const [word,name] of [[1026,'load-net'],[67330,'load-slot1'],[198402,'load-confirm'],[524803,'broadband'],[516,'network-connection'],[517,'connection-notice']]){
       await this.prompt(word,name);if(savedRoute&&name==='broadband')return;
