@@ -289,9 +289,8 @@ group each client's lobby events, battle connections, results and
 ### Restart and disconnect behavior
 
 These results come from the backend logs, throwaway server instances, static
-analysis of the original client and the game runs named below. How the original
-clients react to a restart while they are connected has not yet been observed in
-a game run.
+analysis of the original client and the game runs named below. A restart during
+a battle has not yet been observed in a game run.
 
 * **Restart.** On 2026-10-31, `stop` followed by `start` took 1-3 s. The
   database, capability token and device tunnels were unchanged. Lobby users,
@@ -303,6 +302,16 @@ a game run.
   with no client connected. The database, token and record counts were the same
   before and after. In capture36 the same cards then logged in with the same
   pilots, were matched, and both posted their results.
+* **Restart while clients are in the lobby.** In capture40 two clients had
+  finished a match and were idle on the lobby map. The restart took 1.7 s, and
+  the lobby logged a close for both sessions. The clients sent nothing more and
+  showed no error at first. About 121 s after the close, each client showed the
+  original message 「回線が不安定なため切断されました。○ボタンを押して下さい」 (the
+  connection is unstable and was cut; press ○). ○ led to the original top page.
+  The ordinary login then reached the lobby map on new sessions with the same
+  pilots. At this login each client answered the result question again with the
+  result of its last battle. The backend updated the same two `battle_record` rows
+  with the same values, so a repeated result is harmless.
 * **Session end and results.** Lobby 02 uses the default battle rule, which sets
   no fixed number of consecutive matches. Clients therefore keep playing in one
   relay session until a player chooses to end on the continue/end panel shown after
