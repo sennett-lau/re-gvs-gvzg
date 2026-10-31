@@ -226,6 +226,35 @@ errors. A `checks` object summarizes them. `battle_connections` joins each relay
 address to its session and user (from `BattleInfo`), its device listener, and
 its gateway statistics.
 
+### Restart and disconnect behavior
+
+These results come from the backend logs, throwaway server instances and static
+analysis of the original client. How the original clients react to a backend
+restart or a closed opponent has not yet been observed in a game run.
+
+* **Restart.** On 2026-10-31, `stop` followed by `start` took 1-3 s. The
+  database, capability token and device tunnels were unchanged. Lobby users,
+  rooms, pending battle allocations and after-battle entries are kept in memory and
+  are lost. Every lobby and relay connection closes. A result that arrives after a
+  restart is still saved to `battle_record`, because the lookup uses the database.
+  The returning client then receives the ordinary pilot list instead of its
+  after-battle entry.
+* **Same pilot logs in again.** Covered by the stale-close fix above. Without it,
+  the old connection's late close removed the new session.
+* **Opponent leaves during a battle.** The relay frees the leaving peer's slot and
+  sends nothing to the remaining peer. The original client has no opponent-left
+  message. It counts each peer's silence and, after 540 ticks, ends with its own
+  "peer lost" error, keeps the result, and leaves the battle. Closing the
+  remaining peer's socket instead would produce a different client error.
+* **Silent client.** The relay drops a peer after the read deadline above,
+  10 s by default. A client that is still loading or waiting at the ready barrier
+  sends nothing during that time.
+* **Tunnel loss.** The backend machine's SSH client gives up after four
+  unanswered 15 s keepalives and closes every forwarded connection; the services
+  then see EOF. `tunnel up` replaces a dead master's stale control socket. Loss
+  without any TCP close (for example a sleeping device) has not been tested. The
+  device's SSH server may hold the old listener until it notices the dead session.
+
 ## Runtime composition
 
 `prepare_runtime.py` exports `prepare(copied_upstream_tree)`. It changes only the
