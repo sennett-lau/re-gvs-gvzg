@@ -141,7 +141,7 @@ class ProfileTest(unittest.TestCase):
         self.assertTrue(resolved['device_segment'] and resolved['thread_return_exit'])
         self.assertEqual({name: resolved[name] for name in private}, private)
         self.assertEqual(record['name'], 'original-online-v1')
-        self.assertEqual(record['diagnostics'], {'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True})
+        self.assertEqual(record['diagnostics'], {'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True, 'idle_diagnostic': False})
         with self.assertRaisesRegex(ValueError, 'game-only'): build.original_online({**options, 'image': 'utility'}, source)
         with self.assertRaisesRegex(ValueError, 'core_entry_profile'):
             build.original_online({**options, 'core_entry_profile': None}, source)

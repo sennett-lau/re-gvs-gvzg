@@ -32,6 +32,9 @@ MOCK = r'''
 #include <map>
 #include <tuple>
 #include <vector>
+#ifdef ORIGINAL_EXEC_WAIT_IDLE
+unsigned g_idle_events = 0;  // the adapter's counter, defined after the weak reference
+#endif
 namespace ps2 {
 inline constexpr std::uint64_t kEeClock = 294912000ull;
 inline constexpr std::uint32_t kRamSize = 0x2000000u;
@@ -106,6 +109,9 @@ std::map<int, EventFlag> &g_events = g_events_flags;
 namespace ps2::iop::kernel {
 void original_exec_wait_object(unsigned sample, int kind, int id) { flags::original_exec_wait_object(sample, kind, id); }
 }
+#ifdef ORIGINAL_EXEC_WAIT_IDLE
+extern "C" unsigned original_online_idle_events() { return g_idle_events; }
+#endif
 
 int main() {
     using namespace ps2;
@@ -174,6 +180,17 @@ int main() {
     std::fprintf(stderr, "phase regress\n");
     original_exec::wait_snapshot::Gate gate;
     assert(gate.poll(100, 39, 1000) == -2 && gate.poll(99, 39, 1000) == -1 && gate.done() && gate.poll(1000000, 39, 1000) == 0);
+#ifdef ORIGINAL_EXEC_WAIT_IDLE
+    // Four idle reports: three bounded episodes; the fourth is ignored.
+    std::uint64_t at = clock * 2000;
+    for (unsigned events = 1; events <= 4; ++events) {
+        std::fprintf(stderr, "phase idle-%u\n", events);
+        g_idle_events = events;
+        for (std::uint64_t ms = 0; ms <= 70000; ms += 250) poll(at + ms * clock / 1000);
+        at += clock * 100;
+    }
+    assert(std::memcmp(ram.data(), ram_before.data(), ram.size()) == 0);
+#endif
 }
 '''
 
@@ -194,6 +211,11 @@ class WaitSnapshotTest(unittest.TestCase):
             originals = {name: (source / name).read_text() for name in waits.SOURCES}
             tree = waits.prepare_tree(source)
             prepared = waits.prepare_kernel(default_kernel)
+            self.assertNotIn('ORIGINAL_EXEC_WAIT_IDLE', prepared)
+            self.assertIsNone(waits.manifest(default_kernel, prepared, {})['idle_trigger'])
+            idle = waits.prepare_kernel(default_kernel, idle=True)
+            self.assertTrue(idle.startswith('#define ORIGINAL_EXEC_WAIT_IDLE 1\n'))
+            self.assertEqual(waits.manifest(default_kernel, idle, {})['idle_trigger']['delays_ms'], [0, 5000, 30000, 60000])
             self.assertEqual(prepared.count('    original_exec_wait_poll();\n'), 1)
             self.assertIn('if (g_in_handler) return;\n    original_exec_wait_poll();', prepared)
             for name in waits.SOURCES:
@@ -202,8 +224,9 @@ class WaitSnapshotTest(unittest.TestCase):
                 self.assertEqual(tree[name]['input_sha256'], waits.sha(originals[name]))
                 self.assertEqual(tree[name]['output_sha256'], waits.sha(after))
             (root / 'kernel.cpp').write_text(prepared)
+            (root / 'kernel_idle.cpp').write_text(idle)
             includes = [HERE, RUNTIME / 'include', source / 'runtime/src', source / 'runtime/src/iop']
-            for path in [root / 'kernel.cpp', *[source / name for name in waits.SOURCES]]:
+            for path in [root / 'kernel.cpp', root / 'kernel_idle.cpp', *[source / name for name in waits.SOURCES]]:
                 with self.subTest(path=path.name):
                     subprocess.run(['c++', '-std=c++20', '-fsyntax-only', '-Wall', '-Wextra', '-DORIGINAL_EXEC_IMAGE="game"',
                                     *['-I' + str(p) for p in includes], str(path)], check=True, capture_output=True)
@@ -240,13 +263,37 @@ class WaitSnapshotTest(unittest.TestCase):
                 build.plan('utility', Path(temp), Path(temp), work, Path(temp), wait_snapshot=True)
             self.assertFalse(work.exists())
 
-    def test_mock_runtime_records_are_bounded_scheduled_and_read_only(self):
+    def run_mock(self, *flags):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             (root / 'probe.cpp').write_text(MOCK)
-            subprocess.run(['c++', '-std=c++20', '-Wall', '-Wextra', '-Werror', '-Wno-unused-variable', '-I' + str(HERE),
+            subprocess.run(['c++', '-std=c++20', '-Wall', '-Wextra', '-Werror', '-Wno-unused-variable', *flags, '-I' + str(HERE),
                             str(root / 'probe.cpp'), '-o', str(root / 'probe')], check=True, capture_output=True)
-            result = subprocess.run([str(root / 'probe')], check=True, capture_output=True, text=True)
+            return subprocess.run([str(root / 'probe')], check=True, capture_output=True, text=True)
+
+    def test_idle_trigger_records_bounded_episodes_and_stays_read_only(self):
+        result = self.run_mock('-DORIGINAL_EXEC_WAIT_IDLE=1')
+        phases, current = {}, None
+        for line in result.stderr.splitlines():
+            if line.startswith('phase '): current = line[6:]; phases[current] = []; continue
+            phases[current].append(json.loads(line.removeprefix('[original-exec-wait] ')))
+        # The state-39 gate behaves as without the idle trigger.
+        self.assertEqual([r['result'] for r in phases['samples'] if r['kind'] == 'gate'], list(range(1, 12)))
+        for episode in [1, 2, 3]:
+            records = phases[f'idle-{episode}']
+            gates = [r for r in records if r['kind'] == 'idle-gate']
+            self.assertEqual([r['result'] for r in gates], [-3, *[100 * episode + i for i in range(1, 5)]])
+            self.assertEqual([r['delay_ms'] for r in gates[1:]], waits.idle_constants())
+            self.assertTrue(all(r['episode'] == episode and r['idle_events'] == episode for r in gates))
+            for gate in gates[1:]:
+                elapsed_ms = (gate['ee_cycles'] - gate['trigger_cycles']) * 1000 // 294912000
+                self.assertGreaterEqual(elapsed_ms, gate['delay_ms']); self.assertLessEqual(elapsed_ms, gate['delay_ms'] + 250)
+            threads = [r for r in records if r['kind'] == 'thread' and r['sample'] == 100 * episode + 1]
+            self.assertEqual([r['processor'] for r in threads].count('EE'), 5)
+        self.assertEqual(phases['idle-4'], [])
+
+    def test_mock_runtime_records_are_bounded_scheduled_and_read_only(self):
+        result = self.run_mock()
         phases, current = {}, None
         for line in result.stderr.splitlines():
             if line.startswith('phase '): current = line[6:]; phases[current] = []; continue

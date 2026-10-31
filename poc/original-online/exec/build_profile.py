@@ -149,7 +149,8 @@ def original_online(options, source_root):
     record = {'name': ORIGINAL_ONLINE_BUNDLE, 'components': components, 'switches': ORIGINAL_ONLINE_SWITCHES,
               'diagnostics': {'wait_snapshot': bool(options.get('wait_snapshot')),
                               'observer_trace_budget': options.get('observer_trace_budget'),
-                              'quiet_logs': bool(options.get('quiet_logs'))}}
+                              'quiet_logs': bool(options.get('quiet_logs')),
+                              'idle_diagnostic': bool(options.get('idle_diagnostic'))}}
     return resolved, record
 
 
@@ -253,10 +254,12 @@ def compose_disc_model(image, source, path):
     return manifest, inputs
 
 
-def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False, browser_path=None, core_entry_path=None, quiet_logs=False, bundle=None):
+def plan(image, base, sdk, work, storage_path, network_path=None, source_root=ROOT, device_path=None, device_segment=False, overlay_path=None, cdvd_identity_path=None, disc_model_path=None, trace_budget=None, wait_snapshot=False, thread_return_exit=False, browser_path=None, core_entry_path=None, quiet_logs=False, bundle=None, idle_diagnostic=False):
     if image != 'game' and trace_budget is not None: raise ValueError('Observer budget is game-only')
     if image != 'game' and wait_snapshot: raise ValueError('Wait snapshot is game-only')
     if image != 'game' and quiet_logs: raise ValueError('Quiet logs are game-only')
+    if idle_diagnostic and (image != 'game' or not wait_snapshot or not network_path):
+        raise ValueError('Idle diagnostic is game-only and requires the wait snapshot and the network adapter')
     if image != 'game' and thread_return_exit: raise ValueError('Thread-return exit is game-only')
     if browser_path and (image != 'game' or not overlay_path): raise ValueError('Browser entry profile is game-only and requires the overlay profile')
     if core_entry_path and image != 'game': raise ValueError('Core entry profile is game-only')
@@ -301,8 +304,10 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     if network_path:
         network_hash = digest(network_path)
         network = module('exec_network_preparation', network_path)
-        # Quiet logs also count the adapter's per-call trace lines instead of printing them.
-        network_manifest = network.prepare(source, quiet_trace=True) if quiet_logs else network.prepare(source)
+        # Quiet logs also count the adapter's per-call trace lines instead of printing them;
+        # the idle diagnostic reports sockets left silent after a TLS handshake.
+        options = {**({'quiet_trace': True} if quiet_logs else {}), **({'idle_diagnostic': True} if idle_diagnostic else {})}
+        network_manifest = network.prepare(source, **options)
         if digest(network_path) != network_hash: raise ValueError('Network preparer changed during composition')
     discovery = module('exec_module_discovery', HERE / 'discovery_prepare.py')
     discovery_manifest = discovery.prepare(source, source_root / 'poc/original-online/module_names.hpp')
@@ -411,7 +416,7 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
     wait_manifest = None
     if waits:
         before = kernel_text
-        kernel_text = waits.prepare_kernel(kernel_text)
+        kernel_text = waits.prepare_kernel(kernel_text, idle=idle_diagnostic)
         wait_manifest = waits.manifest(before, kernel_text, wait_tree)
     (prepared / 'kernel.cpp').write_text(kernel_text)
     (prepared / 'web.cpp').write_text(host_text)
@@ -543,19 +548,20 @@ def main():
     parser.add_argument('--disc-model-prepare', type=Path, help='Explicit game-only reference-emulator command75 HLE; modeled output, off by default')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
     parser.add_argument('--original-online', action='store_true', help='Game-only bundle of the reviewed original Online corrections; requires the three private entry bundles')
+    parser.add_argument('--idle-diagnostic', action='store_true', help='Explicit game-only B34 diagnostic: wait-snapshot episodes when the network adapter reports a socket idle after a TLS handshake; requires --wait-snapshot')
     parser.add_argument('--quiet-logs', action='store_true', help='Explicit game-only long-run logging: the observer and network adapter count per-call records instead of printing them; off by default')
     args = parser.parse_args()
     bundle = None
     if args.original_online:
         options = {name: getattr(args, name) for name in ['image', *ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES, *ORIGINAL_ONLINE_PRIVATE,
-                                                          'wait_snapshot', 'observer_trace_budget', 'quiet_logs']}
+                                                          'wait_snapshot', 'observer_trace_budget', 'quiet_logs', 'idle_diagnostic']}
         options = {name: value.resolve() if isinstance(value, Path) else value for name, value in options.items()}
         resolved, bundle = original_online(options, args.source_root.resolve())
         for name in [*ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES]: setattr(args, name, resolved[name])
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:
-        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit, args.browser_entry_profile.resolve() if args.browser_entry_profile else None, args.core_entry_profile.resolve() if args.core_entry_profile else None, args.quiet_logs, bundle)
+        manifest = plan(args.image, base, sdk, work, args.storage_prepare.resolve(), args.network_prepare.resolve() if args.network_prepare else None, args.source_root.resolve(), args.device_prepare.resolve() if args.device_prepare else None, args.device_segment, args.overlay_profile.resolve() if args.overlay_profile else None, args.cdvd_identity_prepare.resolve() if args.cdvd_identity_prepare else None, args.disc_model_prepare.resolve() if args.disc_model_prepare else None, args.observer_trace_budget, args.wait_snapshot, args.thread_return_exit, args.browser_entry_profile.resolve() if args.browser_entry_profile else None, args.core_entry_profile.resolve() if args.core_entry_profile else None, args.quiet_logs, bundle, args.idle_diagnostic)
     except Exception as error:
         if not existed and work.exists():
             failure = {'status': 'preparation-failed', 'recorded_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),

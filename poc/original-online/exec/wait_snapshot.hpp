@@ -33,6 +33,31 @@ struct Gate {
     bool done() const { return rejected || next == delays_ms.size(); }
 };
 
+// Optional second trigger: the network adapter's idle diagnostic counts connected
+// port-443 sockets that stay silent after the TLS handshake. Each new count starts
+// one bounded episode of samples; samples are numbered base * episode + index.
+inline constexpr std::array<std::uint32_t, 4> idle_delays_ms{0, 5000, 30000, 60000};
+inline constexpr unsigned idle_episode_limit = 3, idle_sample_base = 100;
+struct IdleGate {
+    bool active = false, rejected = false;
+    unsigned seen = 0, episodes = 0, next = 0;
+    std::uint64_t start = 0;
+    // 0: nothing, -1: regressing clock (stop), -3: episode record, else a sample number.
+    int poll(std::uint64_t now, unsigned events, std::uint64_t clock) {
+        if (rejected) return 0;
+        if (!active) {
+            if (events <= seen || episodes == idle_episode_limit) return 0;
+            seen = events; active = true; ++episodes; next = 0; start = now; return -3;
+        }
+        if (now < start) { rejected = true; return -1; }
+        if (now - start < idle_delays_ms[next] * clock / 1000u) return 0;
+        const int sample = static_cast<int>(idle_sample_base * episodes + next + 1);
+        // Events counted during an episode do not start another one.
+        if (++next == idle_delays_ms.size()) { active = false; seen = events; }
+        return sample;
+    }
+};
+
 struct Row {
     int id{}, status{}, priority{}, init_priority{}, wait{}, wait_id{}, wakeups{};
     std::uint64_t order{};

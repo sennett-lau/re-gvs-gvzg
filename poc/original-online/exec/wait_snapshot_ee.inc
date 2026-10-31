@@ -1,17 +1,38 @@
 // Inserted only into an explicitly requested copied EE kernel, inside ps2::kernel.
+void original_exec_wait_sample(unsigned sample, std::uint64_t cycle);
+#ifdef ORIGINAL_EXEC_WAIT_IDLE
+// Defined by the network adapter's opt-in idle diagnostic; absent means no idle trigger.
+extern "C" __attribute__((weak)) unsigned original_online_idle_events();
+#endif
 void original_exec_wait_poll() {
     namespace ws = original_exec::wait_snapshot;
     static ws::Gate gate;
-    if (gate.done()) return;
     const auto cycle = ps2::now();
+#ifdef ORIGINAL_EXEC_WAIT_IDLE
+    static ws::IdleGate idle;
+    if (original_online_idle_events) {
+        const unsigned events = original_online_idle_events();
+        if (const int result = idle.poll(cycle, events, ps2::kEeClock)) {
+            const unsigned index = result > 0 ? static_cast<unsigned>(result) % ws::idle_sample_base - 1u : 0u;
+            std::fprintf(stderr, "[original-exec-wait] {\"kind\":\"idle-gate\",\"result\":%d,\"ee_cycles\":%llu,\"trigger_cycles\":%llu,\"idle_events\":%u,\"episode\":%u,\"delay_ms\":%u}\n",
+                result, static_cast<unsigned long long>(cycle), static_cast<unsigned long long>(idle.start), events, idle.episodes,
+                result > 0 ? ws::idle_delays_ms[index] : 0u);
+            if (result > 0) original_exec_wait_sample(static_cast<unsigned>(result), cycle);
+        }
+    }
+#endif
+    if (gate.done()) return;
     const auto state = ld32(ws::state_address);
     const int result = gate.poll(cycle, state, ps2::kEeClock);
     if (!result) return;
     std::fprintf(stderr, "[original-exec-wait] {\"kind\":\"gate\",\"result\":%d,\"ee_cycles\":%llu,\"trigger_cycles\":%llu,\"state_word\":%u,\"delay_ms\":%u}\n",
         result, static_cast<unsigned long long>(cycle), static_cast<unsigned long long>(gate.start), state,
         result > 0 ? ws::delays_ms[static_cast<unsigned>(result - 1)] : 0u);
-    if (result < 0) return;
-    const auto sample = static_cast<unsigned>(result);
+    if (result > 0) original_exec_wait_sample(static_cast<unsigned>(result), cycle);
+}
+
+void original_exec_wait_sample(unsigned sample, std::uint64_t cycle) {
+    namespace ws = original_exec::wait_snapshot;
     std::fprintf(stderr, "[original-exec-wait] {\"kind\":\"processor\",\"sample\":%u,\"processor\":\"EE\",\"ee_cycles\":%llu,\"current\":%d,\"pc\":%u,"
         "\"thread_count\":%zu,\"thread_limit\":%u,\"threads_limited\":%s,\"semaphore_count\":%zu,\"alarm_count\":%zu}\n",
         sample, static_cast<unsigned long long>(cycle), g_current, g_cpu.pc, g_threads.size(), ws::thread_limit,
