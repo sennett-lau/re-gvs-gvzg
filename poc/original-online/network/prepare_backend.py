@@ -70,6 +70,25 @@ STALE_CLOSE = (
     '\t\teventLog(p, "stale-close")\n'
     '\t\tif p.Lobby != nil && p.Lobby.Users[p.UserID] == &p.User {\n\t\t\ta.OnExitLobby(p)\n\t\t}\n'
     '\t\treturn\n\t}\n\ta.OnExitLobby(p)\n\tdelete(a.users, p.UserID)\n}\n')
+# Explicit relay read deadline. Upstream drops a battle peer after 10 s without
+# received bytes; the original client is silent while loading and waits up to
+# 3600 ticks for the slowest peer. The default stays 10 s.
+READ_TIMEOUT = [
+    ('pkg/battle/tcp_peer.go', '\t"io"\n\t"net"\n', '\t"io"\n\t"net"\n\t"os"\n'),
+    ('pkg/battle/tcp_peer.go', 'u.conn.SetReadDeadline(time.Now().Add(time.Second * 10))',
+     'u.conn.SetReadDeadline(time.Now().Add(readTimeout))'),
+    ('pkg/battle/tcp_peer.go', 'type TCPPeer struct {\n',
+     '// readTimeout drops a peer that sends nothing for this long: upstream 10 s,\n'
+     '// or ZDXSV_BATTLE_READ_TIMEOUT as a positive Go duration.\n'
+     'var readTimeout = readTimeoutFrom(os.Getenv("ZDXSV_BATTLE_READ_TIMEOUT"))\n\n'
+     'func readTimeoutFrom(value string) time.Duration {\n'
+     '\tif d, err := time.ParseDuration(value); err == nil && d > 0 {\n\t\treturn d\n\t}\n'
+     '\treturn 10 * time.Second\n}\n\ntype TCPPeer struct {\n'),
+    ('pkg/battle/tcp_server.go', 'import (\n\t"net"\n)\n',
+     'import (\n\t"net"\n\n\t"github.com/golang/glog"\n)\n'),
+    ('pkg/battle/tcp_server.go', '\tfor {\n\t\tconn, err := listner.AcceptTCP()\n',
+     '\tglog.Infoln("battle read timeout", readTimeout)\n\tfor {\n\t\tconn, err := listner.AcceptTCP()\n'),
+]
 
 
 def digest(path):
@@ -183,6 +202,18 @@ def prepare(archive, work):
     robustness_edits = [{'file': relative, 'before': after_events, 'after': digest(path),
         'reason': 'a close after a newer login of the same user keeps that newer session (upstream removes by user id)',
         'regression_test': {'file': test, 'sha256': digest(source / test)}}]
+    for relative, old, new in READ_TIMEOUT:
+        path = source / relative
+        text = path.read_text()
+        if text.count(old) != 1:
+            raise SystemExit('read timeout patch precondition failed: ' + relative)
+        path.write_text(text.replace(old, new))
+    test = 'pkg/battle/original_online_read_timeout_test.go'
+    shutil.copyfile(HERE / 'read_timeout_test.go', source / test)
+    for relative in sorted({r for r, _, _ in READ_TIMEOUT}):
+        robustness_edits.append({'file': relative, 'before': before[relative], 'after': digest(source / relative),
+            'reason': 'explicit battle read deadline (ZDXSV_BATTLE_READ_TIMEOUT, default upstream 10 s)',
+            'regression_test': {'file': test, 'sha256': digest(source / test)}})
     gateway = source / 'src/original-online-gateway'
     gateway.mkdir()
     shutil.copyfile(HERE / 'gateway.go', gateway / 'main.go')
@@ -190,7 +221,8 @@ def prepare(archive, work):
     commands = [['go', 'build', *flags, '-o', str(work/'zdxsv'), './src/zdxsv'],
                 ['go', 'build', *flags, '-o', str(work/'gateway'), './src/original-online-gateway'],
                 ['go', 'vet', './pkg/lobby', './src/original-online-gateway'],
-                ['go', 'test', '-count=1', '-run', 'TestStaleClose', './pkg/lobby']]
+                ['go', 'test', '-count=1', '-run', 'TestStaleClose', './pkg/lobby'],
+                ['go', 'test', '-count=1', '-run', 'TestReadTimeout', './pkg/battle']]
     manifest = {'timestamp': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 'upstream': UPSTREAM, 'upstream_revision': REVISION, 'archive_sha256': ARCHIVE_SHA256,
                 'upstream_files': before, 'listener_edits': edits, 'compatibility_edits': compatibility_edits,

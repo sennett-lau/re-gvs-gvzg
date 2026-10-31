@@ -96,6 +96,9 @@ class Backend:
             'ZDXSV_LOBBY_PUBLIC_ADDR': a('lobby'), 'ZDXSV_LOBBY_API_ADDR': a('api'),
             'ZDXSV_BATTLE_ADDR': a('battle'), 'ZDXSV_BATTLE_PUBLIC_ADDR': a('battle'),
             'ZDXSV_LOBBY_RELAY_ADDR': '', 'ZDXSV_LOBBY_OPS_ADDR': '', 'GOMAXPROCS': '2'})
+        # Battle relay read deadline as a Go duration; unset keeps upstream 10 s.
+        if self.conf.get('battle_read_timeout'):
+            env['ZDXSV_BATTLE_READ_TIMEOUT'] = str(self.conf['battle_read_timeout'])
         return env
 
     def gateway_config(self):

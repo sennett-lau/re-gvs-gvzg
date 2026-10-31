@@ -111,6 +111,17 @@ The staged upstream changes are recorded with before/after hashes:
   matched: Lobby 02 logged `Failed to start battle`. The fix logs
   `[lobby-event] stale-close`. `stale_close_test.go` reproduces both cases with
   upstream test helpers; it fails without the fix, and the build runs it.
+* The battle relay's read deadline is explicit. Upstream drops a battle peer
+  after 10 s without received bytes, and that stays the default. The config key
+  `battle_read_timeout` (a Go duration, passed as `ZDXSV_BATTLE_READ_TIMEOUT`)
+  changes it, and the server logs the value in effect. The original client sends
+  nothing while it loads a battle or a round, and it waits up to 3600 ticks for
+  the slowest peer, so a healthy client can be silent for longer than 10 s.
+  The client has no opponent-left message: a remaining client detects a silent
+  peer itself after 540 ticks and ends with its own "peer lost" error. The relay
+  therefore neither notifies nor closes the remaining peer. `04 F0 00 00`, which
+  the relay treats as the end of a connection, is the client's keepalive on the
+  post-battle result screens.
 * The separate capability-protected Go gateway provides TCP streams and DNS UDP
   datagrams only to configured loopback destinations. It logs one line when each
   WebSocket opens and one when it closes. The close line records the listener
