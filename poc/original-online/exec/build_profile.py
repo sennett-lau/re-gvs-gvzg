@@ -126,12 +126,21 @@ ORIGINAL_ONLINE_PREPARERS = {
 }
 ORIGINAL_ONLINE_SWITCHES = ['device_segment', 'thread_return_exit']
 ORIGINAL_ONLINE_PRIVATE = ['overlay_profile', 'browser_entry_profile', 'core_entry_profile']
+# Release candidate: v1 plus the network owner's SIF delivery latency, which
+# removed the DNAS stall before the HTTP request (B34) in an A/B. v1 stays the
+# unchanged reproducible record.
+ORIGINAL_ONLINE_V2_BUNDLE = 'original-online-v2'
+ORIGINAL_ONLINE_V2_SIF_LATENCY_US = 100
+ORIGINAL_ONLINE_V2_LATENCY_PREPARER = 'poc/original-online/network/sif_latency_prepare.py'
 
 
-def original_online(options, source_root):
+def original_online(options, source_root, bundle=ORIGINAL_ONLINE_BUNDLE):
     """Fill the bundle's options; reject partial or conflicting selections."""
+    if bundle not in (ORIGINAL_ONLINE_BUNDLE, ORIGINAL_ONLINE_V2_BUNDLE): raise ValueError('Unknown original Online bundle: ' + bundle)
+    v2 = bundle == ORIGINAL_ONLINE_V2_BUNDLE
     if options['image'] != 'game': raise ValueError('The original Online bundle is game-only')
     conflicts = [name for name in [*ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES] if options.get(name)]
+    if v2 and options.get('sif_latency_us') is not None: conflicts.append('sif_latency_us')
     if conflicts: raise ValueError('The original Online bundle defines these options: ' + ', '.join(conflicts))
     missing = [name for name in ORIGINAL_ONLINE_PRIVATE if not options.get(name)]
     if missing: raise ValueError('The original Online bundle requires private inputs: ' + ', '.join(missing))
@@ -146,13 +155,19 @@ def original_online(options, source_root):
     for name in ORIGINAL_ONLINE_PRIVATE:
         path = options[name] / 'manifest.json'
         components[name] = {'path': str(options[name]), 'manifest_sha256': digest(path) if path.is_file() else None}
-    record = {'name': ORIGINAL_ONLINE_BUNDLE, 'components': components, 'switches': ORIGINAL_ONLINE_SWITCHES,
-              'diagnostics': {'wait_snapshot': bool(options.get('wait_snapshot')),
-                              'observer_trace_budget': options.get('observer_trace_budget'),
-                              'quiet_logs': bool(options.get('quiet_logs')),
-                              'idle_diagnostic': bool(options.get('idle_diagnostic')),
-                              'sif_latency_us': options.get('sif_latency_us')}}
-    return resolved, record
+    diagnostics = {'wait_snapshot': bool(options.get('wait_snapshot')),
+                   'observer_trace_budget': options.get('observer_trace_budget'),
+                   'quiet_logs': bool(options.get('quiet_logs')),
+                   'idle_diagnostic': bool(options.get('idle_diagnostic'))}
+    if not v2:
+        diagnostics['sif_latency_us'] = options.get('sif_latency_us')
+        return resolved, {'name': bundle, 'components': components, 'switches': ORIGINAL_ONLINE_SWITCHES, 'diagnostics': diagnostics}
+    path = (source_root / ORIGINAL_ONLINE_V2_LATENCY_PREPARER).resolve()
+    if not path.is_file(): raise ValueError('Missing committed bundle preparer: ' + ORIGINAL_ONLINE_V2_LATENCY_PREPARER)
+    components['sif_latency_prepare'] = {'path': str(path), 'sha256': digest(path)}
+    resolved['sif_latency_us'] = ORIGINAL_ONLINE_V2_SIF_LATENCY_US
+    return resolved, {'name': bundle, 'base': ORIGINAL_ONLINE_BUNDLE, 'components': components, 'switches': ORIGINAL_ONLINE_SWITCHES,
+                      'sif_latency_us': ORIGINAL_ONLINE_V2_SIF_LATENCY_US, 'diagnostics': diagnostics}
 
 
 def module(name, path):
@@ -316,6 +331,9 @@ def plan(image, base, sdk, work, storage_path, network_path=None, source_root=RO
         # B34 candidate: IOP->EE SIF packets reach EE RAM no earlier than queue time + N us.
         latency_path = source_root / 'poc/original-online/network/sif_latency_prepare.py'
         sif_latency_inputs = {str(latency_path): digest(latency_path)}
+        bundled = (bundle or {}).get('components', {}).get('sif_latency_prepare')
+        if bundled and (bundled['sha256'] != sif_latency_inputs[str(latency_path)] or (bundle or {}).get('sif_latency_us') != sif_latency_us):
+            raise ValueError('SIF latency differs from the bundle record')
         sif_latency_manifest = module('exec_sif_latency', latency_path).prepare(source, sif_latency_us)
     discovery = module('exec_module_discovery', HERE / 'discovery_prepare.py')
     discovery_manifest = discovery.prepare(source, source_root / 'poc/original-online/module_names.hpp')
@@ -556,18 +574,21 @@ def main():
     parser.add_argument('--cdvd-identity-prepare', type=Path, help='Explicit game-only cdvdman ordinal80/82 candidate from the device owner; off by default')
     parser.add_argument('--disc-model-prepare', type=Path, help='Explicit game-only reference-emulator command75 HLE; modeled output, off by default')
     parser.add_argument('--source-root', type=Path, default=ROOT, help='Unchanged repository input snapshot; supports a partial build machine checkout')
-    parser.add_argument('--original-online', action='store_true', help='Game-only bundle of the reviewed original Online corrections; requires the three private entry bundles')
+    bundles = parser.add_mutually_exclusive_group()
+    bundles.add_argument('--original-online', action='store_true', help='Game-only bundle of the reviewed original Online corrections; requires the three private entry bundles')
+    bundles.add_argument('--original-online-v2', action='store_true', help='Release-candidate bundle: --original-online plus SIF delivery latency 100 us; rejects an explicit --sif-latency-us')
     parser.add_argument('--idle-diagnostic', action='store_true', help='Explicit game-only B34 diagnostic: wait-snapshot episodes when the network adapter reports a port-443 connection that sent nothing for 10 s; requires --wait-snapshot')
     parser.add_argument('--sif-latency-us', type=int, help='Explicit game-only B34 candidate: deliver IOP->EE SIF packets N us after queueing (network-owned preparer); off by default')
     parser.add_argument('--quiet-logs', action='store_true', help='Explicit game-only long-run logging: the observer and network adapter count per-call records instead of printing them; off by default')
     args = parser.parse_args()
     bundle = None
-    if args.original_online:
+    if args.original_online or args.original_online_v2:
         options = {name: getattr(args, name) for name in ['image', *ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES, *ORIGINAL_ONLINE_PRIVATE,
                                                           'wait_snapshot', 'observer_trace_budget', 'quiet_logs', 'idle_diagnostic', 'sif_latency_us']}
         options = {name: value.resolve() if isinstance(value, Path) else value for name, value in options.items()}
-        resolved, bundle = original_online(options, args.source_root.resolve())
-        for name in [*ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES]: setattr(args, name, resolved[name])
+        name = ORIGINAL_ONLINE_V2_BUNDLE if args.original_online_v2 else ORIGINAL_ONLINE_BUNDLE
+        resolved, bundle = original_online(options, args.source_root.resolve(), name)
+        for name in [*ORIGINAL_ONLINE_PREPARERS, *ORIGINAL_ONLINE_SWITCHES, 'sif_latency_us']: setattr(args, name, resolved[name])
     base, sdk, work = args.base.resolve(), args.sdk.resolve(), args.work.resolve()
     existed = work.exists()
     try:

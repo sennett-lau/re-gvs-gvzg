@@ -1,9 +1,12 @@
 import hashlib
 import importlib.util
+import io
 import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
+from unittest import mock
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('exec_build_profile', HERE / 'build_profile.py')
@@ -150,5 +153,55 @@ class ProfileTest(unittest.TestCase):
                 build.original_online({**options, name: Path('/explicit') if name.endswith('prepare') else True}, source)
         with tempfile.TemporaryDirectory() as temp:
             with self.assertRaisesRegex(ValueError, 'Missing committed bundle preparer'): build.original_online(options, Path(temp))
+
+    def test_original_online_v1_record_is_unchanged_by_v2(self):
+        source = HERE.parents[2]
+        private = {name: Path('/private/' + name) for name in build.ORIGINAL_ONLINE_PRIVATE}
+        options = {'image': 'game', **private, 'wait_snapshot': True, 'observer_trace_budget': None, 'quiet_logs': True, 'idle_diagnostic': True, 'sif_latency_us': 100}
+        resolved, record = build.original_online(options, source)
+        self.assertEqual(resolved['sif_latency_us'], 100)
+        self.assertEqual(list(record), ['name', 'components', 'switches', 'diagnostics'])
+        self.assertEqual(record['name'], 'original-online-v1')
+        self.assertEqual(list(record['components']), [*build.ORIGINAL_ONLINE_PREPARERS, *build.ORIGINAL_ONLINE_PRIVATE])
+        self.assertEqual(json.dumps(record['diagnostics']),
+                         '{"wait_snapshot": true, "observer_trace_budget": null, "quiet_logs": true, "idle_diagnostic": true, "sif_latency_us": 100}')
+        self.assertEqual(build.original_online(options, source, 'original-online-v1'), (resolved, record))
+
+    def test_original_online_v2_adds_the_sif_latency_and_rejects_conflicts(self):
+        source = HERE.parents[2]
+        private = {name: Path('/private/' + name) for name in build.ORIGINAL_ONLINE_PRIVATE}
+        options = {'image': 'game', **private, 'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True, 'idle_diagnostic': False, 'sif_latency_us': None}
+        v1, v1_record = build.original_online(options, source)
+        resolved, record = build.original_online(options, source, 'original-online-v2')
+        self.assertEqual(resolved, {**v1, 'sif_latency_us': 100})
+        self.assertEqual(record['name'], 'original-online-v2')
+        self.assertEqual(record['base'], 'original-online-v1')
+        self.assertEqual(record['sif_latency_us'], 100)
+        latency = source / 'poc/original-online/network/sif_latency_prepare.py'
+        self.assertEqual(record['components'], {**v1_record['components'], 'sif_latency_prepare': {'path': str(latency.resolve()), 'sha256': build.digest(latency)}})
+        self.assertEqual(record['switches'], v1_record['switches'])
+        self.assertEqual(record['diagnostics'], {'wait_snapshot': False, 'observer_trace_budget': None, 'quiet_logs': True, 'idle_diagnostic': False})
+        for value in [0, 50, 100]:
+            with self.assertRaisesRegex(ValueError, 'defines these options: sif_latency_us'):
+                build.original_online({**options, 'sif_latency_us': value}, source, 'original-online-v2')
+        with self.assertRaisesRegex(ValueError, 'defines these options: network_prepare, sif_latency_us'):
+            build.original_online({**options, 'network_prepare': Path('/explicit'), 'sif_latency_us': 100}, source, 'original-online-v2')
+        with self.assertRaisesRegex(ValueError, 'browser_entry_profile'):
+            build.original_online({**options, 'browser_entry_profile': None}, source, 'original-online-v2')
+        with self.assertRaisesRegex(ValueError, 'game-only'): build.original_online({**options, 'image': 'utility'}, source, 'original-online-v2')
+        with self.assertRaisesRegex(ValueError, 'Unknown original Online bundle'): build.original_online(options, source, 'original-online-v3')
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for relative in build.ORIGINAL_ONLINE_PREPARERS.values():
+                (root / relative).parent.mkdir(parents=True, exist_ok=True); (root / relative).write_text('')
+            build.original_online(options, root)
+            with self.assertRaisesRegex(ValueError, 'Missing committed bundle preparer: poc/original-online/network/sif_latency_prepare.py'):
+                build.original_online(options, root, 'original-online-v2')
+
+    def test_both_original_online_bundles_cannot_be_selected(self):
+        argv = ['build_profile.py', '--image', 'game', '--base', '/b', '--sdk', '/s', '--work', '/w', '--original-online', '--original-online-v2']
+        with mock.patch.object(sys, 'argv', argv), mock.patch.object(sys, 'stderr', io.StringIO()) as stderr:
+            with self.assertRaises(SystemExit): build.main()
+        self.assertIn('not allowed with argument', stderr.getvalue())
 
 if __name__ == '__main__': unittest.main()
