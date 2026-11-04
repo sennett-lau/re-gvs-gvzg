@@ -1,0 +1,323 @@
+{
+ "date": "2026-10-28 to 2026-11-01",
+ "status": "local research record; build profile original-online-v2 is the release candidate",
+ "scope": "Two independent original mode 7 clients through a private patched zdxsv backend. Chrome on one Windows PC and on a MacBook Pro. Output muted, audio processing active. No public hosting, phone, four-player session or battle-time backend restart.",
+ "build": {
+  "profile": "--original-online-v2",
+  "base": "original-online-v1 plus SIF delivery latency 100 us",
+  "commit": "3f65603",
+  "game_wasm_sha256_prefix": "5a19f14d",
+  "site_build_info_sha256_prefix": "d0930d74",
+  "default_build_changed": false,
+  "reproducibility": "builds 44 and 45 from a separate source archive equal builds 42 and 33 byte for byte; build31 from committed source equals the capture26 game WASM"
+ },
+ "backend": {
+  "upstream": "https://github.com/inada-s/zdxsv",
+  "revision": "35ffbdad9257eca5043bb4977d26cc07468b5045",
+  "archive_sha256": "51ca60ad9cbcf735e1d769dae1501be46494392eebaa8f4e195e8241d133a1eb",
+  "patches": [
+   "loopback listeners",
+   "ordinary descriptions for lobbies 3 and 4",
+   "log-only lobby events",
+   "stale-close keeps the newer session",
+   "explicit battle read deadline"
+  ],
+  "source": "apps/server/"
+ },
+ "first_battle": {
+  "capture": "capture26",
+  "paired_utc": "2026-10-30T21:45:33Z",
+  "host": "one PC, two Chrome contexts",
+  "relay_bytes_sent_received": {
+   "A": [
+    45186,
+    233881
+   ],
+   "B": [
+    45106,
+    233561
+   ]
+  },
+  "fps_inferred": 59.7
+ },
+ "stability": [
+  {
+   "check": "unattended repeated matches",
+   "run": "capture39",
+   "matches": 3,
+   "results_stored": "6/6",
+   "after_room_cycles": 3,
+   "battle_fps_mean": {
+    "A": 59.98,
+    "B": 59.98
+   },
+   "battle_min_10s_window": {
+    "A": 59.15,
+    "B": 59.37
+   },
+   "relay_frames_per_s_each_direction": [
+    19.2,
+    19.8
+   ],
+   "max_frame_gap_s": [
+    1.6,
+    2.0
+   ]
+  },
+  {
+   "check": "every unattended match since capture31",
+   "runs": [
+    "capture31",
+    "capture35",
+    "capture36",
+    "capture37",
+    "capture39",
+    "capture40",
+    "capture41",
+    "capture56",
+    "capture57"
+   ],
+   "matches": 13,
+   "reached_results_and_lobby": 13,
+   "note": "one match ended by a deliberate disconnect"
+  },
+  {
+   "check": "opponent leaves during a battle",
+   "runs": [
+    "capture33",
+    "capture34",
+    "capture37"
+   ],
+   "remaining_client_closes_relay_after_s": [
+    13.1,
+    13.2
+   ],
+   "original_error": 8,
+   "longest_silence_ticks": [
+    523,
+    524
+   ],
+   "client_peer_silence_limit_ticks": 540
+  },
+  {
+   "check": "rejoin after a drop",
+   "run": "capture37",
+   "rejoin_after_s": 30,
+   "second_match_results": "2/2, no battle error"
+  },
+  {
+   "check": "backend restart between sessions",
+   "run": "capture36",
+   "restart_s": [
+    1,
+    3
+   ],
+   "database_and_token_unchanged": true
+  },
+  {
+   "check": "backend restart with both clients in the lobby",
+   "run": "capture40",
+   "restart_s": 1.7,
+   "original_notice_after_s": 121,
+   "notice": "回線が不安定なため切断されました。○ボタンを押して下さい",
+   "relogin": true
+  },
+  {
+   "check": "cross-device PC and MacBook Pro",
+   "runs": {
+    "capture35": "direct tailnet listeners",
+    "capture36": "SSH tunnels"
+   },
+   "battle_fps_mean": {
+    "capture35": [
+     60.0,
+     60.0
+    ],
+    "capture36": [
+     60.0,
+     59.99
+    ]
+   },
+   "relay_frames_per_s_each_direction": [
+    18.5,
+    18.9
+   ],
+   "max_frame_gap_s": [
+    1.7,
+    2.1
+   ]
+  },
+  {
+   "check": "observer overhead",
+   "runs": {
+    "full": "capture41",
+    "quiet": "capture39"
+   },
+   "console_lines_per_min_A": {
+    "full": 20039,
+    "quiet": 856
+   },
+   "battle_fps_mean_A": {
+    "full": 59.97,
+    "quiet": 59.98
+   }
+  },
+  {
+   "check": "release candidate smoke run",
+   "run": "capture57",
+   "battle_fps_mean": {
+    "A": 59.99,
+    "B": 60.0
+   },
+   "round_s": 335,
+   "relay_frames_per_s_each_direction": 19.42,
+   "page_or_runtime_errors": 0
+  }
+ ],
+ "head_of_line_case": {
+  "run": "capture31",
+  "path": "both clients on a MacBook Pro over Wi-Fi on another subnet, one SSH tunnel",
+  "frame_delivery_ms": {
+   "median": 17,
+   "p90": 785,
+   "p99": 1161
+  },
+  "comparison_p90_ms": {
+   "capture28": 17
+  },
+  "tunnel_bytes_retransmitted_percent": 6.3,
+  "round_minutes": [
+   15,
+   24
+  ],
+  "normal_round_minutes": [
+   4,
+   5
+  ]
+ },
+ "b34_ab": {
+  "host": "MacBook Pro, both clients per run, saved connection to lobby map",
+  "arms": {
+   "C": "--original-online plus diagnostics",
+   "L": "C plus --sif-latency-us 100"
+  },
+  "order": "C L L C C L L C C L C (runs 45-55; runs 48 and 52 failed before any network traffic and are not counted)",
+  "stalled_logins": {
+   "C": "7/8",
+   "L": "0/10"
+  },
+  "stalled_runs": {
+   "C": "4/4",
+   "L": "0/5"
+  },
+  "fisher_one_sided_p": {
+   "per_login": 0.00025,
+   "per_run": 0.008
+  },
+  "load_average_range": [
+   2,
+   22
+  ],
+  "boot_to_dnas_s_both_arms": [
+   121.4,
+   122.7
+  ],
+  "dnas_to_login_s_both_arms": [
+   26.1,
+   26.5
+  ],
+  "limitation": "logins in one run are not independent; 100 us is an effective experimental value, not a measured PS2 timing"
+ },
+ "probe_limit": {
+  "runs": [
+   "capture58",
+   "capture59",
+   "capture60",
+   "capture61",
+   "capture62"
+  ],
+  "finding": "the probe's main-menu step is blind; at about 45-55 fps under heavy host load it can miss the Online confirm",
+  "commits": [
+   "d4cd6e8",
+   "23fef48",
+   "e941b42"
+  ],
+  "scope": "test harness limitation, not a game or runtime fault"
+ },
+ "harness_failures": [
+  "capture27",
+  "capture30",
+  "capture32",
+  "capture33",
+  "capture34",
+  "capture38"
+ ],
+ "screenshots": {
+  "original-online-top-page.png": {
+   "source": "pc-capture-net-57/A-screen-003-top.png",
+   "source_sha256": "eb69e41df0d333b7edb652498364b9ee74dde7ece36ffaf772a40014c51df440",
+   "size": [
+    945,
+    662
+   ],
+   "redacted_boxes": [],
+   "sha256": "8cb4e221533b4ff1a4f8edb4240645325a7804d06a333b83594d6e2179870b06"
+  },
+  "original-online-lobby-map.png": {
+   "source": "pc-capture-net-57/A-screen-011-unclassified.png",
+   "source_sha256": "705f7776cf3a0b9f9947736fbfbae9b451dac54a21641a814051944f44d3f616",
+   "size": [
+    945,
+    662
+   ],
+   "redacted_boxes": [],
+   "sha256": "2f482bb319a87d4a6f149a97e2589d177e051987dc8e1bc9fb14a9fad0fae45c"
+  },
+  "original-online-faction.png": {
+   "source": "pc-capture-net-57/A-screen-018-faction.png",
+   "source_sha256": "841e40dfe66e15920a94ff14b98a39863dfe68befce4457b59fa586f5e71a5cb",
+   "size": [
+    945,
+    662
+   ],
+   "redacted_boxes": [],
+   "sha256": "ef7251be9e33b0a7daad55def011e1a2c51d77426737e580538657d4ab80c4e5"
+  },
+  "original-online-battle.png": {
+   "source": "vision/A-operator-97-after.png",
+   "source_sha256": "8685ce091371dedb6fbc50742356dde959814c3435e5903361653435e6ef383b",
+   "size": [
+    945,
+    662
+   ],
+   "redacted_boxes": [],
+   "sha256": "b7a65d9de570505bfbcf7edc68fab0ffe2007343f3df842453a6c077289f8ec2"
+  },
+  "original-online-rematch.png": {
+   "source": "pc-capture-net-57/A-screen-031-rematch.png",
+   "source_sha256": "03cf584fe545be733188874222052a77e28352a87d18a91d63b1b4478e3e7459",
+   "size": [
+    945,
+    662
+   ],
+   "redacted_boxes": [
+    [
+     130,
+     92,
+     330,
+     152
+    ],
+    [
+     130,
+     376,
+     330,
+     436
+    ]
+   ],
+   "sha256": "b8608d5698cd143561908da53d21780fafb903067d76e558d7df918d1e7e3c0a",
+   "edit": "Two boxes filled with the panel color to hide the pilot ID and pilot name lines"
+  }
+ },
+ "excluded": "card bytes, account and pilot identifiers, login keys, battle codes, capability tokens, host addresses and absolute private paths",
+ "raw_archive": ".local/original-online/exec-continuation/dispatch-ctx_4070a79b125f"
+}

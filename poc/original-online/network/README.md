@@ -1,11 +1,14 @@
 # Original Online network candidate
 
-This directory contains an executable private backend, a browser byte transport,
-and an opt-in runtime adapter for the original AVETCP client. It does not use
+This directory contains a browser byte transport and an opt-in runtime adapter
+for the original AVETCP client. The private backend is in
+[`apps/server/`](../../../apps/server/README.md). It does not use
 local-Versus mode4, controller replication, or a replacement session protocol.
-Two independent original mode7 clients have reached an **active battle**
-through this candidate, as two browser instances on one PC. Neither client used a
-synthetic protocol client or mode4. The backend logs show this path:
+Two independent original mode7 clients play complete sessions through this
+candidate: registration, login, lobby, pairing, battle, results and the return
+to the lobby. This works with both clients on one PC and with one client on a PC
+and one on a MacBook Pro. Neither client uses a synthetic protocol client or
+mode4. The backend logs show this path:
 
 1. DNAS `i-connect` and `others` requests.
 2. The original browser's `GET /00000020/CRS-top.jsp`.
@@ -13,10 +16,11 @@ synthetic protocol client or mode4. The backend logs show this path:
 4. A lobby key-pair that matches each account's session.
 5. Pilot creation, then auto-start in lobby 02 (エゥーゴ against ティターンズ).
 6. Both clients joining the same central TCP battle relay.
+7. Each client's result, the after-battle room and the lobby map.
 
-Round completion, results posting, return to the room, deliberate disconnects
-and reconnects have not been tested yet. Two physical devices have not been
-tested either.
+Disconnects, rejoins and backend restarts follow the original client's own
+recovery paths. The stability results are in
+[chapter 08](../../../docs/chapters/08-independent-clients.md#stability-evidence).
 
 The login request appeared only after a runtime fix: an EE thread whose entry
 function returns now ends as `ExitThread`. Before the fix, the libhttp open worker
@@ -54,7 +58,7 @@ DNS and DNAS/login support bootstrap and authentication. Lobby/session services
 support room setup, battle allocation, and post-battle or reconnect operations.
 They are not shown to be queried on every battle frame; the active battle byte
 path is the gateway and TCP relay. Running the complete backend continuously is
-the intended arrangement, with actual-client recovery behavior still unproved.
+the intended arrangement. Restart and disconnect results are in the server README.
 The private per-client ARP/DHCP segment supplies Ethernet bootstrap separately;
 successful DHCP alone does not prove any original transport service request.
 

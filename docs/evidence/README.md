@@ -41,6 +41,7 @@ This reproduces the numeric analysis. Rerunning the game still requires the matc
 - [Early mobile gameplay](../media/early-mobile-gameplay.mp4): a user-recorded showcase from an early optimized phone build. [Clip provenance](mobile-demo-provenance.json) records the trim and crop. Its exact build is unidentified.
 - [Labeled native comparison](../media/repeat-vs-interpolate-quarter-speed.mp4) and [four-sample filmstrip](../media/repeat-vs-interpolate-filmstrip.png): repeat control on the left, interpolation on the right. Labels and cumulative unique counts remain visible when downloaded.
 - [Unedited PC screenshot](../media/pc-versus-120-request.png): the actual Versus scene and test overlay.
+- Original Online Mode captures: [top page](../media/original-online-top-page.png), [lobby map](../media/original-online-lobby-map.png), [faction choice](../media/original-online-faction.png), [battle](../media/original-online-battle.png) and [continue/end panel](../media/original-online-rematch.png). The [path record](original-online-path.json) gives each source capture and hash. Pilot IDs and names are hidden in the panel copy.
 - [Disassembly](code/hook-instructions.txt), [render branch](code/render-boundary.diff), [input gate](code/input-gate.diff) and [cue-clock diff](code/cue-clock.diff).
 - [Provenance](review-provenance.json): source/output hashes, selected frame-sequence fingerprints and the video encoding command.
 
@@ -88,7 +89,7 @@ Read [04 · The frame-rate goal](../chapters/04-frame-rate.md) for the metric de
 
 ## Stream Mode, Online Mode and the lockstep experiment
 
-**Stream Mode** runs one game host. **Online Mode** means two independent instances using the original 通信対戦 flow. The existing local-Versus lockstep experiment does not implement Online Mode. See the [native boundary record](original-online-boundary.json) for original-byte checks, runtime gaps and the isolated module-discovery implementation.
+**Stream Mode** runs one game host. **Online Mode** means two independent instances using the original 通信対戦 flow. The existing local-Versus lockstep experiment does not implement Online Mode. See the [native boundary record](original-online-boundary.json) for original-byte checks, runtime gaps and the isolated module-discovery implementation. The [path record](original-online-path.json) holds the complete-session, stability, cross-device and B34 A/B results.
 
 The [2026-10-26 implementation review](implementation-review.json) checks suggestions against actual source: GPU/CLUT batching, relay-only streaming, configurable lockstep delay and the live FNV-1a hash/wait path. It records source inspection, not a new performance result.
 
@@ -97,7 +98,7 @@ The [2026-10-26 implementation review](implementation-review.json) checks sugges
 | [A · One host, two controllers](../chapters/07-host-streaming.md) | [Network findings](network-findings.json): `streaming` | Inspected transport/controller behavior and a reported two-device success | A retained full match, end-to-end latency and recovery on separate clients |
 | [B · A game on each device](../chapters/08-independent-clients.md) | [Network findings](network-findings.json): `native_actor_control`, `native_lockstep`, `negative_control` | Actor ownership and bounded agreement, including a deliberately incorrect-input test | General agreement across devices and complete game flows |
 | Why did browser state diverge? | [Network findings](network-findings.json): `disc_readiness_causality`, `checkpoint240_complete_ram_comparison`, `browser_release_stress` | Controlled disc-readiness failure and agreement after the timing correction | Rollback, mid-match resynchronization and long internet sessions |
-| Can the original Network Battle flow be restored? | [Network findings](network-findings.json): `original_online`, `coop_anything` | Inspected dispatch/UI/server behavior and the assessment of an external approach | A working original lobby connection and complete browser integration |
+| Can the original Network Battle flow be restored? | [Online path](original-online-path.json): `stability`, `b34_ab`, `head_of_line_case`. [Network findings](network-findings.json): `original_online`, `coop_anything` | Complete sessions between two original clients through a private backend, on one PC and across two devices | Public hosting, phones, four-player sessions and a backend restart during a battle |
 
 The later [multiplayer integration record](multiplayer-integration.json) adds a menu handoff into local Versus, normal boot, active two-human battles, own-player cropping and a dedicated streaming host with two clients. Its optimized-build checks used separate browser contexts on one PC; they do not establish original Online Mode. The [setup guide](../GAME_FILES.md#multiplayer-integration) includes the repeatable GPU harness.
 

@@ -16,13 +16,13 @@ A **65-second fullscreen battle** on a confirmed 180-Hz desktop reached **120.02
 
 [See the measured rates and game capture](docs/chapters/06-adaptive-rendering.md#the-latest-paired-pc-result).
 
-### Normal boot to round end · matching tick 13,560
+### Original Online Mode · 3 of 3 unattended matches
 
-**✅ Verified · Same-PC browser pair**
+**✅ Verified · Two original clients, private backend**
 
-Two browsers started normally, selected opposing human players and remained in sync through active battle and the original round-end sequence. Separate physical devices remain to be tested.
+Two independent original clients registered, logged in, met in a lobby, played full matches, posted results and returned to the lobby. This worked on one PC and between a PC and a MacBook Pro.
 
-[Read the lockstep experiment](docs/chapters/08-independent-clients.md#move-from-the-fixture-into-the-full-game).
+[See the session flow and stability evidence](docs/chapters/08-independent-clients.md#original-online-mode-works-end-to-end).
 
 ### 0 failures · 1,265 input phases
 
@@ -89,7 +89,7 @@ Compare two ways to play together on separate devices.
 
 - [08 · Online Mode and independent-client experiments](docs/chapters/08-independent-clients.md)
 
-  Research original 通信対戦 between independent instances. The existing local-Versus lockstep POC remains a separate experiment.
+  Play original 通信対戦 between independent instances through a private backend. The earlier local-Versus lockstep POC remains a separate experiment.
 
 ### Findings and further work
 

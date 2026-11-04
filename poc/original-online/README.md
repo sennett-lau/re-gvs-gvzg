@@ -2,7 +2,7 @@
 
 This isolated profile preserves original menu result `7`. It does not enable the local-Versus lockstep bridge or provide a network backend. Findings and acceptance limits belong in [chapter 08](../../docs/chapters/08-independent-clients.md#the-native-boundary-and-first-bounded-implementation).
 
-The composed executable profile in [`exec/`](exec/README.md) adds the opt-in corrections that let two original clients reach an active battle through a private backend. It describes the wait snapshot, the thread-return exit, the cross-image entry profiles, the pad mapping and the two-client probe options. The measured result and its limits are in [chapter 08](../../docs/chapters/08-independent-clients.md#two-original-clients-reach-a-private-backend-battle).
+The composed executable profile in [`exec/`](exec/README.md) adds the opt-in corrections that let two original clients play complete Online sessions through a private backend. It describes the wait snapshot, the thread-return exit, the cross-image entry profiles, the pad mapping and the two-client probe options. The measured result and its limits are in [chapter 08](../../docs/chapters/08-independent-clients.md#original-online-mode-works-end-to-end).
 
 `prepare.py` inserts bounded observation at 16 original labels across five generated units. It rejects multiplayer overrides and preserves every guest instruction. The observer records input-helper returns, connection fields, UI queue production/consumption, SIF entry/return and local RPC-end acknowledgements. These acknowledgements do not establish operation success. Keep raw output private under `.local/`.
 
