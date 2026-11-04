@@ -15,6 +15,7 @@ This repository contains the research Wiki, complete retained C++ translation, r
 | `apps/wiki/` | Reader template, styles, navigation and theme controls | Yes |
 | `scripts/` | Reader, game build/server, verification, packaging and numeric analysis | Yes |
 | `apps/game/` | Game UI, input, diagnostics and one matched `prebuilt/` set | Exported; measured adaptive engine |
+| `apps/server/` | Private original Online backend: patched zdxsv build, WebSocket gateway, supervisor and receipts | Source only; builds and state stay private |
 | `generated/` | Complete retained generated C++ and translation tables | 1,186 fingerprinted files |
 | `src/hooks/`, `src/multiplayer/`, `patches/` | Game-specific hooks and runtime/compiler changes | Exported with regressions |
 | `vendor/` | Unmodified pinned compiler/runtime source and notices | Exported with per-file hashes |
