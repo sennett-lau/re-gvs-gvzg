@@ -91,7 +91,7 @@ Use [Game setup](docs/GAME_FILES.md) for the exact build, server and package com
 
 The CI recipe also runs those portable checks. It does not rebuild the complete game from a private disc or run a GPU browser. Use the optional silent GPU smoke test for changes to the game host, packaging or runtime. Keep raw test output under `.local/` and retain only selected results in `docs/evidence/`.
 
-Before preparing publication, run `python3 scripts/check-publication.py --history`. This checks selected private markers and commit identities across reachable history in addition to current file sizes and excluded payloads. Review its findings; do not remove upstream attribution to conceal provenance.
+Before preparing publication, run `python3 scripts/check-publication.py --history`. This checks selected private markers and commit identities in the history reachable from `HEAD`, in addition to current file sizes and excluded payloads. Unrelated local refs, such as agent checkpoints, are outside this publication scope. Review its findings; do not remove upstream attribution to conceal provenance.
 
 ## Reader validation
 

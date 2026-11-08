@@ -27,6 +27,7 @@ jobs:
       - run: npm run verify:research
       - run: npm run verify:game
       - run: python3 scripts/game/tools.py --work .local/ci-compiler
+      - run: python3 tests/publication_test.py
       - run: npm run check:publication
       - run: git diff --exit-code -- docs/figures/pc-cadence.svg docs/figures/pc-display-180hz.svg
       - run: npm run wiki:build
